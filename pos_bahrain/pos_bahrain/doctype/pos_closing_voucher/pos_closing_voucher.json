@@ -720,8 +720,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-09-10 17:32:22.575473", 
- "modified_by": "Administrator", 
+ "modified": "2018-09-11 11:39:21.079705", 
+ "modified_by": "hafeesk@gmail.com", 
  "module": "Pos Bahrain", 
  "name": "POS Closing Voucher", 
  "name_case": "", 
@@ -744,7 +744,7 @@
    "role": "System Manager", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "write": 1
   }, 
   {
@@ -764,7 +764,7 @@
    "role": "Sales Manager", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "write": 1
   }
  ], 
