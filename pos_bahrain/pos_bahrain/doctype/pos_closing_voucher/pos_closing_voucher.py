@@ -63,9 +63,9 @@ class POSClosingVoucher(Document):
 
                 for m in mop:
                         if m['name'] == "Cash":
-                                if opening_cash and opening_cash[0][1]:
-                                        opening_amount = opening_cash[0][1]
-                                else:
+                                if opening_cash and opening_cash[0][0]:
+                                #        opening_amount = opening_cash[0][1]
+                                #else:
                                         opening_amount = opening_cash[0][0]
                                 self.append('payment_reconciliation', {
                                         'mode_of_payment': m['name'],
