@@ -93,7 +93,7 @@ class POSClosingVoucher(Document):
                 
 		currency = get_company_currency(self.company)
 		currency = frappe.get_doc('Currency', currency)
-                return frappe.render_template("erpnext/selling/doctype/pos_closing_voucher/closing_voucher_details.html",
+                return frappe.render_template("pos_bahrain/pos_bahrain/doctype/pos_closing_voucher/closing_voucher_details.html",
                         {"data": self, "currency": currency})
 
 @frappe.whitelist()
