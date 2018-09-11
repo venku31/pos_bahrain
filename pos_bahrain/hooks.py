@@ -15,21 +15,28 @@ app_license = "MIT"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/pos_bahrain/css/pos_bahrain.css"
+# app_include_css = "/assets/css/pos_css.css"
 # app_include_js = "/assets/pos_bahrain/js/pos_bahrain.js"
+app_include_css = "/assets/css/jmi.min.css"
+app_include_js = "/assets/js/jmi.min.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/pos_bahrain/css/pos_bahrain.css"
 # web_include_js = "/assets/pos_bahrain/js/pos_bahrain.js"
 
 # include js in page
-# page_js = {"page" : "public/js/file.js"}
+page_js = {
+	"pos" : "public/js/pos_page_js.js",
+	"point-of-sale" : "public/js/pos_page_js.js"
+}
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
+
+fixtures = ["Custom Field"]
 
 # Home Pages
 # ----------

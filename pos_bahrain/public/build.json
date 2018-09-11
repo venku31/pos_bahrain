@@ -1,0 +1,8 @@
+{
+	"css/jmi.min.css": [
+		"public/css/pos_css.css"
+	],
+	"js/jmi.min.js": [
+		"public/js/pos_bahrain.html"
+	]
+}
