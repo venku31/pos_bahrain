@@ -1,4 +1,8 @@
 erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
+  init: function (wrapper) {
+    frappe.require('assets/frappe/js/lib/JsBarcode.all.min.js');
+    this._super(wrapper);
+  },
 	set_primary_action: function () {
                 var me = this;
                 this.page.set_primary_action(__("New Cart"), function () {
@@ -72,11 +76,18 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 	create_invoice: function () {
                 var me = this;
                 var invoice_data = {};
+                function get_barcode_uri(text) {
+                  return JsBarcode(document.createElement('canvas'), text, {
+                    height: 40,
+                    displayValue: false,
+                  })._renderProperties.element.toDataURL();
+                }
                 this.si_docs = this.get_doc_from_localstorage();
                 if (this.frm.doc.offline_pos_name) {
                         this.update_invoice();
                 } else {
                         this.frm.doc.offline_pos_name = $.now();
+                        this.frm.doc.pos_name_barcode_uri = get_barcode_uri(this.frm.doc.offline_pos_name);
                         this.frm.doc.posting_date = frappe.datetime.get_today();
                         this.frm.doc.posting_time = frappe.datetime.now_time();
                         this.frm.doc.pos_total_qty = this.frm.doc.qty_total;
