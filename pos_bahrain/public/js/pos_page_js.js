@@ -1,9 +1,9 @@
 erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
-  init: function (wrapper) {
+  init: function(wrapper) {
     frappe.require('assets/frappe/js/lib/JsBarcode.all.min.js');
     this._super(wrapper);
   },
-  onload: function () {
+  onload: function() {
     this._super();
     this.batch_dialog = new frappe.ui.Dialog({
       title: __('Select Batch No'),
@@ -26,28 +26,33 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     });
     this.batch_no_details = batch_no_details;
   },
-  mandatory_batch_no: function () {
+  mandatory_batch_no: function() {
     const { has_batch_no, item_code } = this.items[0];
     this.batch_dialog.get_field('batch').$input.empty();
     this.batch_dialog.get_primary_btn().off('click');
     this.batch_dialog.get_close_btn().off('click');
     if (has_batch_no && !this.item_batch_no[item_code]) {
       this.batch_no_details[item_code].forEach(({ name, expiry_date }) => {
-        this.batch_dialog.get_field('batch').$input.append(
-          $('<option />', { value: name })
-          .text(`${name} | ${expiry_date ? frappe.datetime.str_to_user(expiry_date) : '--'}`)
-        );
+        this.batch_dialog
+          .get_field('batch')
+          .$input.append(
+            $('<option />', { value: name }).text(
+              `${name} | ${
+                expiry_date ? frappe.datetime.str_to_user(expiry_date) : '--'
+              }`
+            )
+          );
       });
       this.batch_dialog.get_field('batch').set_input();
       this.batch_dialog.set_primary_action(__('Submit'), () => {
-        this.item_batch_no[item_code] = this.batch_dialog.get_value('batch')
+        this.item_batch_no[item_code] = this.batch_dialog.get_value('batch');
         this.batch_dialog.hide();
       });
       this.batch_dialog.get_close_btn().on('click', () => {
         this.item_code = item_code;
         this.render_selected_item();
         this.remove_selected_item();
-        this.wrapper.find('.selected-item').empty()
+        this.wrapper.find('.selected-item').empty();
         this.item_code = null;
       });
       this.batch_dialog.show();
