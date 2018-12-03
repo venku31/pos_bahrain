@@ -43,6 +43,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         this.batch_dialog.hide();
       });
       this.batch_dialog.show();
+      this.batch_dialog.$wrapper.find('.modal-backdrop').off('click');
     }
   },
 	set_primary_action: function () {
