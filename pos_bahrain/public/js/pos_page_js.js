@@ -19,12 +19,15 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   },
   init_master_data: async function(r) {
     this._super(r);
-    const { message: batch_no_details } = await frappe.call({
-      method: 'pos_bahrain.api.item.get_batch_no_details',
+    const {
+      message: { batch_no_details, uom_details } = {},
+    } = await frappe.call({
+      method: 'pos_bahrain.api.item.get_more_pos_data',
       freeze: true,
-      freeze_message: __('Syncing Item Batch details'),
+      freeze_message: __('Syncing Item details'),
     });
     this.batch_no_details = batch_no_details;
+    this.uom_details = uom_details;
   },
   mandatory_batch_no: function() {
     const { has_batch_no, item_code } = this.items[0];
