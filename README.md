@@ -1,6 +1,7 @@
 ## Pos Bahrain
 
 Pos Enhancement over the default POS of ERPNext
+
     • Opening Cash (Doctype)
     • Cashier to enter the opening cash received.
       
