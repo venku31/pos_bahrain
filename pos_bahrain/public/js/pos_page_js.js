@@ -26,8 +26,17 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       freeze: true,
       freeze_message: __('Syncing Item details'),
     });
-    this.batch_no_details = batch_no_details;
-    this.uom_details = uom_details;
+    if (!batch_no_details || !uom_details) {
+      frappe.msgprint({
+        indicator: 'orange',
+        title: 'Warning',
+        message:
+          'Unable to load extended Item details. Usage will be restricted.',
+      });
+    } else {
+      this.batch_no_details = batch_no_details;
+      this.uom_details = uom_details;
+    }
   },
   mandatory_batch_no: function() {
     const { has_batch_no, item_code } = this.items[0];
