@@ -5,8 +5,13 @@ import frappe
 
 def _groupby(key, list_of_dicts):
     from itertools import groupby
+    from operator import itemgetter
+
     keywise = {}
-    for k, v in groupby(list_of_dicts, lambda x: x.get(key)):
+    for k, v in groupby(
+        sorted(list_of_dicts, key=itemgetter(key)),
+        itemgetter(key),
+    ):
         keywise[k] = list(v)
     return keywise
 
@@ -39,7 +44,7 @@ def get_uom_details():
                 parent AS item_code,
                 uom,
                 conversion_factor
-            FROM `tabUOM Conversion Detail`;
+            FROM `tabUOM Conversion Detail`
         """,
         as_dict=1
     )
