@@ -19,12 +19,15 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   },
   init_master_data: async function(r) {
     this._super(r);
-    const { message: batch_no_details } = await frappe.call({
-      method: 'pos_bahrain.api.item.get_batch_no_details',
+    const {
+      message: { batch_no_details, uom_details } = {},
+    } = await frappe.call({
+      method: 'pos_bahrain.api.item.get_more_pos_data',
       freeze: true,
-      freeze_message: __('Syncing Item Batch details'),
+      freeze_message: __('Syncing Item details'),
     });
     this.batch_no_details = batch_no_details;
+    this.uom_details = uom_details;
   },
   mandatory_batch_no: function() {
     const { has_batch_no, item_code } = this.items[0];
@@ -58,6 +61,55 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       this.batch_dialog.show();
       this.batch_dialog.$wrapper.find('.modal-backdrop').off('click');
     }
+  },
+  add_new_item_to_grid: function() {
+    this._super();
+    this.child.uom = this.items[0].stock_uom;
+    this.child.conversion_factor = 1;
+  },
+  render_selected_item: function() {
+    this._super();
+    $(`
+      <div class="pos-list-row">
+        <div class="cell">Uom:</div>
+        <select type="text" class="form-control cell pos-item-uom" />
+      </div>
+    `).prependTo(this.wrapper.find('.pos-selected-item-action'));
+    const $select = this.wrapper.find('.pos-item-uom').on('change', e => {
+      e.stopPropagation();
+      const { uom, conversion_factor } = this.uom_details[this.item_code].find(
+        ({ uom }) => uom === e.target.value
+      );
+      if (uom) {
+        this.child.uom = uom;
+      }
+      if (conversion_factor) {
+        this.child.conversion_factor = conversion_factor;
+      }
+      this.child.price_list_rate =
+        flt(
+          this.price_list_data[this.child.item_code] *
+            this.child.conversion_factor,
+          9
+        ) / flt(this.frm.doc.conversion_rate, 9);
+      this.child.rate =
+        flt(
+          this.price_list_data[this.child.item_code] *
+            this.child.conversion_factor,
+          9
+        ) / flt(this.frm.doc.conversion_rate, 9);
+      this.child.amount = flt(this.child.qty) * flt(this.child.rate);
+      this.render_selected_item();
+      this.update_paid_amount_status(false);
+    });
+    this.uom_details[this.item_code].forEach(({ uom }) => {
+      $('<option />', {
+        value: uom,
+        selected: this.child && uom === this.child.uom,
+      })
+        .text(`${uom}`)
+        .appendTo($select);
+    });
   },
 	set_primary_action: function () {
                 var me = this;

@@ -3,7 +3,22 @@ from __future__ import unicode_literals
 import frappe
 
 
+def _groupby(key, list_of_dicts):
+    from itertools import groupby
+    keywise = {}
+    for k, v in groupby(list_of_dicts, lambda x: x.get(key)):
+        keywise[k] = list(v)
+    return keywise
+
+
 @frappe.whitelist()
+def get_more_pos_data():
+    return {
+        'batch_no_details': get_batch_no_details(),
+        'uom_details': get_uom_details(),
+    }
+
+
 def get_batch_no_details():
     batches = frappe.db.sql(
         """
@@ -14,9 +29,18 @@ def get_batch_no_details():
         """,
         as_dict=1,
     )
-    itemwise = {}
-    for batch in batches:
-        if batch.item not in itemwise:
-            itemwise.setdefault(batch.item, [])
-        itemwise[batch.item].append(batch)
-    return itemwise
+    return _groupby('item', batches)
+
+
+def get_uom_details():
+    uoms = frappe.db.sql(
+        """
+            SELECT
+                parent AS item_code,
+                uom,
+                conversion_factor
+            FROM `tabUOM Conversion Detail`;
+        """,
+        as_dict=1
+    )
+    return _groupby('item_code', uoms)
