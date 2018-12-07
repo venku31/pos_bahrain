@@ -31,12 +31,26 @@ page_js = {
 }
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {
+	'Mode of Payment': 'public/js/mode_of_payment.js'
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
-fixtures = ["Custom Field"]
+fixtures = [
+	{
+		'doctype': 'Custom Field',
+		'filters': [['name', 'in', [
+			'Sales Invoice-pos_total_qty',
+			'POS Closing Voucher Details-opening_amount',
+			'POS Closing Voucher Details-expected_amount_with_opening',
+			'Mode of Payment-currency_section',
+			'Mode of Payment-in_alt_currency',
+			'Mode of Payment-alt_currency',
+		]]]
+	},
+]
 
 # Home Pages
 # ----------

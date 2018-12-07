@@ -19,23 +19,28 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   },
   init_master_data: async function(r) {
     this._super(r);
-    const {
-      message: { batch_no_details, uom_details } = {},
-    } = await frappe.call({
-      method: 'pos_bahrain.api.item.get_more_pos_data',
-      freeze: true,
-      freeze_message: __('Syncing Item details'),
-    });
-    if (!batch_no_details || !uom_details) {
+    try {
+      const {
+        message: { batch_no_details, uom_details, exchange_rates } = {},
+      } = await frappe.call({
+        method: 'pos_bahrain.api.item.get_more_pos_data',
+        freeze: true,
+        freeze_message: __('Syncing Item details'),
+      });
+
+      if (!batch_no_details || !uom_details || !exchange_rates) {
+        throw new Error();
+      }
+      this.batch_no_details = batch_no_details;
+      this.uom_details = uom_details;
+      this.exchange_rates = exchange_rates;
+    } catch (e) {
       frappe.msgprint({
         indicator: 'orange',
         title: 'Warning',
         message:
           'Unable to load extended Item details. Usage will be restricted.',
       });
-    } else {
-      this.batch_no_details = batch_no_details;
-      this.uom_details = uom_details;
     }
   },
   mandatory_batch_no: function() {
@@ -230,5 +235,34 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 	},
 
 
-})
-		
+  bind_amount_change_event: function() {
+    this.selected_mode.off('change');
+    this.selected_mode.on('change', e => {
+      this.payment_val = flt(e.target.value) || 0.0;
+      this.idx = this.selected_mode.attr('idx');
+      const { mode_of_payment } = this.frm.doc.payments.find(
+        ({ idx }) => cint(idx) === cint(this.idx)
+      );
+      const currency = this.exchange_rates[mode_of_payment]
+        ? this.exchange_rates[mode_of_payment].currency
+        : this.frm.doc.currency;
+      this.selected_mode.val(format_currency(this.payment_val, currency));
+      this.update_payment_amount();
+    });
+  },
+  update_payment_amount: function() {
+    this.frm.doc.payments = this.frm.doc.payments.map(payment => {
+      if (cint(payment.idx) === cint(this.idx)) {
+        const conversion_rate = this.exchange_rates[payment.mode_of_payment]
+          ? this.exchange_rates[payment.mode_of_payment].conversion_rate
+          : 1;
+        return Object.assign({}, payment, {
+          amount: flt(this.selected_mode.val(), 2) * flt(conversion_rate, 2),
+        });
+      }
+      return payment;
+    });
+    this.calculate_outstanding_amount(false);
+    this.show_amounts();
+  },
+});
