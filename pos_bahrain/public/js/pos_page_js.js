@@ -90,40 +90,37 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         <select type="text" class="form-control cell pos-item-uom" />
       </div>
     `).prependTo(this.wrapper.find('.pos-selected-item-action'));
-    const $select = this.wrapper.find('.pos-item-uom').on('change', e => {
-      e.stopPropagation();
-      const { uom, conversion_factor } = this.uom_details[this.item_code].find(
-        ({ uom }) => uom === e.target.value
-      );
-      if (uom) {
-        this.child.uom = uom;
-      }
-      if (conversion_factor) {
-        this.child.conversion_factor = conversion_factor;
-      }
-      this.child.price_list_rate =
-        flt(
-          this.price_list_data[this.child.item_code] *
-            this.child.conversion_factor,
-          9
-        ) / flt(this.frm.doc.conversion_rate, 9);
-      this.child.rate =
-        flt(
-          this.price_list_data[this.child.item_code] *
-            this.child.conversion_factor,
-          9
-        ) / flt(this.frm.doc.conversion_rate, 9);
-      this.child.amount = flt(this.child.qty) * flt(this.child.rate);
-      this.render_selected_item();
-      this.update_paid_amount_status(false);
-    });
+    const $select = this.wrapper.find('.pos-item-uom').off('change');
+    const selected_item = this.frm.doc.items.find(
+      ({ item_code }) => this.item_code === item_code
+    );
     this.uom_details[this.item_code].forEach(({ uom }) => {
       $('<option />', {
         value: uom,
-        selected: this.child && uom === this.child.uom,
+        selected: selected_item && uom === selected_item.uom,
       })
         .text(`${uom}`)
         .appendTo($select);
+    });
+    $select.on('change', e => {
+      e.stopPropagation();
+      const { uom, conversion_factor = 1 } = this.uom_details[
+        this.item_code
+      ].find(({ uom }) => uom === e.target.value);
+      if (uom && selected_item) {
+        const rate =
+          flt(this.price_list_data[this.item_code] * conversion_factor, 9) /
+          flt(this.frm.doc.conversion_rate, 9);
+        Object.assign(selected_item, {
+          uom,
+          conversion_factor,
+          rate,
+          price_list_rate: rate,
+          amount: flt(selected_item.qty) * flt(rate),
+        });
+      }
+      this.render_selected_item();
+      this.update_paid_amount_status(false);
     });
   },
 	set_primary_action: function () {
