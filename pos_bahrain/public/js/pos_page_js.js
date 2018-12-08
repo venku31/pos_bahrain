@@ -37,9 +37,10 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     } catch (e) {
       frappe.msgprint({
         indicator: 'orange',
-        title: 'Warning',
-        message:
-          'Unable to load extended Item details. Usage will be restricted.',
+        title: __('Warning'),
+        message: __(
+          'Unable to load extended Item details. Usage will be restricted.'
+        ),
       });
     }
   },
@@ -85,7 +86,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     this._super();
     $(`
       <div class="pos-list-row">
-        <div class="cell">Uom:</div>
+        <div class="cell">${__('UOM')}:</div>
         <select type="text" class="form-control cell pos-item-uom" />
       </div>
     `).prependTo(this.wrapper.find('.pos-selected-item-action'));
