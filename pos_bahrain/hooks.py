@@ -48,6 +48,11 @@ fixtures = [
 			'Mode of Payment-currency_section',
 			'Mode of Payment-in_alt_currency',
 			'Mode of Payment-alt_currency',
+			'Sales Invoice Payment-pos_section',
+			'Sales Invoice Payment-mop_currency',
+			'Sales Invoice Payment-cb11',
+			'Sales Invoice Payment-mop_conversion_rate',
+			'Sales Invoice Payment-mop_amount',
 		]]]
 	},
 ]

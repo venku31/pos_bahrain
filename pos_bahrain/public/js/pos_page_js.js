@@ -109,14 +109,16 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       ].find(({ uom }) => uom === e.target.value);
       if (uom && selected_item) {
         const rate =
-          flt(this.price_list_data[this.item_code] * conversion_factor, 9) /
-          flt(this.frm.doc.conversion_rate, 9);
+          flt(
+            this.price_list_data[this.item_code] * conversion_factor,
+            precision()
+          ) / flt(this.frm.doc.conversion_rate, precision());
         Object.assign(selected_item, {
           uom,
           conversion_factor,
           rate,
           price_list_rate: rate,
-          amount: flt(selected_item.qty) * flt(rate),
+          amount: flt(selected_item.qty) * rate,
         });
       }
       this.render_selected_item();
@@ -233,33 +235,149 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 	},
 
 
+  get_exchange_rate: function(mop) {
+    const { mode_of_payment } =
+      this.frm.doc.payments.find(
+        ({ idx, mode_of_payment }) =>
+          mop ? mop === mode_of_payment : cint(idx) === cint(this.idx)
+      ) || {};
+    return (
+      this.exchange_rates[mode_of_payment] || {
+        conversion_rate: this.frm.doc.conversion_rate || 1,
+        currency: this.frm.doc.currency,
+      }
+    );
+  },
+  make_payment: function() {
+    if (this.dialog) {
+      this.dialog.$wrapper.remove();
+    }
+    this._super();
+  },
+  show_payment_details: function() {
+    const multimode_payments = $(this.$body).find('.multimode-payments').html(`
+      <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active">
+          <a role="tab" data-toggle="tab" data-target="#multimode_loc">${__(
+            'Base'
+          )}</a>
+        </li>
+        <li role="presentation">
+          <a role="tab" data-toggle="tab" data-target="#multimode_alt">${__(
+            'Alternate'
+          )}</a>
+        </li>
+      </ul>
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="multimode_loc" />
+        <div role="tabpanel" class="tab-pane" id="multimode_alt" />
+      </div>
+    `);
+    const multimode_loc = multimode_payments.find('#multimode_loc');
+    const multimode_alt = multimode_payments.find('#multimode_alt');
+    if (this.frm.doc.payments.length) {
+      this.frm.doc.payments.forEach(
+        ({ mode_of_payment, amount, idx, type }) => {
+          const { currency, conversion_rate } = this.get_exchange_rate(
+            mode_of_payment
+          );
+          const in_alt_currency = Object.keys(this.exchange_rates).includes(
+            mode_of_payment
+          );
+          const $payment = $(
+            frappe.render_template('payment_details', {
+              mode_of_payment,
+              amount,
+              idx,
+              currency,
+              type,
+            })
+          ).appendTo(in_alt_currency ? multimode_alt : multimode_loc);
+          if (in_alt_currency) {
+            $payment.find('div.col-xs-6:first-of-type').css({
+              padding: '0 15px',
+              display: 'flex',
+              'flex-flow': 'column nowrap',
+              height: '100%',
+              'justify-content': 'center',
+            }).html(`
+              <div>${mode_of_payment}</div>
+              <div style="font-size: 0.75em; color: #888;">
+                CR: ${flt(conversion_rate, precision()).toFixed(3)}
+                /
+                <span class="local-currency-amount">${format_currency(
+                  amount * flt(conversion_rate, precision()),
+                  this.frm.doc.currency
+                )}</span>
+              </div>
+            `);
+          }
+          if (type === 'Cash' && amount === this.frm.doc.paid_amount) {
+            this.idx = idx;
+            this.selected_mode = $(this.$body).find(`input[idx='${this.idx}']`);
+            this.highlight_selected_row();
+            this.bind_amount_change_event();
+          }
+        }
+      );
+    } else {
+      $('<p>No payment mode selected in pos profile</p>').appendTo(
+        multimode_payments
+      );
+    }
+  },
+  set_outstanding_amount: function() {
+    this.selected_mode = $(this.$body).find(`input[idx='${this.idx}']`);
+    this.highlight_selected_row();
+    this.payment_val = 0.0;
+    const { conversion_rate, currency } = this.get_exchange_rate();
+    if (
+      this.frm.doc.outstanding_amount > 0 &&
+      flt(this.selected_mode.val()) == 0.0
+    ) {
+      this.payment_val = flt(
+        this.frm.doc.outstanding_amount / conversion_rate,
+        precision()
+      );
+      this.selected_mode.val(format_currency(this.payment_val, currency));
+      this.update_payment_amount();
+    } else if (flt(this.selected_mode.val()) > 0) {
+      this.payment_val = flt(this.selected_mode.val());
+    }
+    this.selected_mode.select();
+    this.bind_amount_change_event();
+  },
   bind_amount_change_event: function() {
     this.selected_mode.off('change');
     this.selected_mode.on('change', e => {
       this.payment_val = flt(e.target.value) || 0.0;
       this.idx = this.selected_mode.attr('idx');
-      const { mode_of_payment } = this.frm.doc.payments.find(
-        ({ idx }) => cint(idx) === cint(this.idx)
-      );
-      const currency = this.exchange_rates[mode_of_payment]
-        ? this.exchange_rates[mode_of_payment].currency
-        : this.frm.doc.currency;
+      const { currency } = this.get_exchange_rate();
       this.selected_mode.val(format_currency(this.payment_val, currency));
       this.update_payment_amount();
     });
   },
   update_payment_amount: function() {
-    this.frm.doc.payments = this.frm.doc.payments.map(payment => {
-      if (cint(payment.idx) === cint(this.idx)) {
-        const conversion_rate = this.exchange_rates[payment.mode_of_payment]
-          ? this.exchange_rates[payment.mode_of_payment].conversion_rate
-          : 1;
-        return Object.assign({}, payment, {
-          amount: flt(this.selected_mode.val(), 2) * flt(conversion_rate, 2),
-        });
-      }
-      return payment;
-    });
+    const selected_payment = this.frm.doc.payments.find(
+      ({ idx }) => cint(idx) === cint(this.idx)
+    );
+    if (selected_payment) {
+      const {
+        conversion_rate: mop_conversion_rate,
+        currency: mop_currency,
+      } = this.get_exchange_rate();
+      const mop_amount = flt(this.selected_mode.val(), precision());
+      const amount = mop_amount * flt(mop_conversion_rate, precision());
+      Object.assign(selected_payment, {
+        amount,
+        mop_currency,
+        mop_conversion_rate,
+        mop_amount,
+      });
+      $(this.$body)
+        .find('.selected-payment-mode .local-currency-amount')
+        .text(format_currency(amount, this.frm.doc.currency));
+    }
     this.calculate_outstanding_amount(false);
     this.show_amounts();
   },
