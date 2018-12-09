@@ -109,14 +109,16 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       ].find(({ uom }) => uom === e.target.value);
       if (uom && selected_item) {
         const rate =
-          flt(this.price_list_data[this.item_code] * conversion_factor, 9) /
-          flt(this.frm.doc.conversion_rate, 9);
+          flt(
+            this.price_list_data[this.item_code] * conversion_factor,
+            precision()
+          ) / flt(this.frm.doc.conversion_rate, precision());
         Object.assign(selected_item, {
           uom,
           conversion_factor,
           rate,
           price_list_rate: rate,
-          amount: flt(selected_item.qty) * flt(rate),
+          amount: flt(selected_item.qty) * rate,
         });
       }
       this.render_selected_item();
@@ -233,33 +235,47 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 	},
 
 
+  get_exchange_rate: function(mop) {
+    const { mode_of_payment } =
+      this.frm.doc.payments.find(
+        ({ idx, mode_of_payment }) =>
+          mop ? mop === mode_of_payment : cint(idx) === cint(this.idx)
+      ) || {};
+    return (
+      this.exchange_rates[mode_of_payment] || {
+        conversion_rate: this.frm.doc.conversion_rate || 1,
+        currency: this.frm.doc.currency,
+      }
+    );
+  },
   bind_amount_change_event: function() {
     this.selected_mode.off('change');
     this.selected_mode.on('change', e => {
       this.payment_val = flt(e.target.value) || 0.0;
       this.idx = this.selected_mode.attr('idx');
-      const { mode_of_payment } = this.frm.doc.payments.find(
-        ({ idx }) => cint(idx) === cint(this.idx)
-      );
-      const currency = this.exchange_rates[mode_of_payment]
-        ? this.exchange_rates[mode_of_payment].currency
-        : this.frm.doc.currency;
+      const { currency } = this.get_exchange_rate();
       this.selected_mode.val(format_currency(this.payment_val, currency));
       this.update_payment_amount();
     });
   },
   update_payment_amount: function() {
-    this.frm.doc.payments = this.frm.doc.payments.map(payment => {
-      if (cint(payment.idx) === cint(this.idx)) {
-        const conversion_rate = this.exchange_rates[payment.mode_of_payment]
-          ? this.exchange_rates[payment.mode_of_payment].conversion_rate
-          : 1;
-        return Object.assign({}, payment, {
-          amount: flt(this.selected_mode.val(), 2) * flt(conversion_rate, 2),
-        });
-      }
-      return payment;
-    });
+    const selected_payment = this.frm.doc.payments.find(
+      ({ idx }) => cint(idx) === cint(this.idx)
+    );
+    if (selected_payment) {
+      const {
+        conversion_rate: mop_conversion_rate,
+        currency: mop_currency,
+      } = this.get_exchange_rate();
+      const mop_amount = flt(this.selected_mode.val(), precision());
+      const amount = mop_amount * flt(mop_conversion_rate, precision());
+      Object.assign(selected_payment, {
+        amount,
+        mop_currency,
+        mop_conversion_rate,
+        mop_amount,
+      });
+    }
     this.calculate_outstanding_amount(false);
     this.show_amounts();
   },
