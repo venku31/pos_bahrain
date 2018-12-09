@@ -249,13 +249,33 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     );
   },
   show_payment_details: function() {
-    var multimode_payments = $(this.$body)
-      .find('.multimode-payments')
-      .empty();
+    const multimode_payments = $(this.$body).find('.multimode-payments').html(`
+      <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active">
+          <a role="tab" data-toggle="tab" data-target="#multimode_loc">${__(
+            'Base'
+          )}</a>
+        </li>
+        <li role="presentation">
+          <a role="tab" data-toggle="tab" data-target="#multimode_alt">${__(
+            'Alternate'
+          )}</a>
+        </li>
+      </ul>
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="multimode_loc" />
+        <div role="tabpanel" class="tab-pane" id="multimode_alt" />
+      </div>
+    `);
+    const multimode_loc = multimode_payments.find('#multimode_loc');
+    const multimode_alt = multimode_payments.find('#multimode_alt');
     if (this.frm.doc.payments.length) {
       this.frm.doc.payments.forEach(
         ({ mode_of_payment, amount, idx, type }) => {
           const { currency, conversion_rate } = this.get_exchange_rate(
+            mode_of_payment
+          );
+          const in_alt_currency = Object.keys(this.exchange_rates).includes(
             mode_of_payment
           );
           const $payment = $(
@@ -266,10 +286,9 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
               currency,
               type,
             })
-          )
-            .appendTo(multimode_payments)
-            .find('div.col-xs-6:first-of-type')
-            .css({
+          ).appendTo(in_alt_currency ? multimode_alt : multimode_loc);
+          if (in_alt_currency) {
+            $payment.find('div.col-xs-6:first-of-type').css({
               padding: '0 15px',
               display: 'flex',
               'flex-flow': 'column nowrap',
@@ -286,6 +305,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
                 )}</span>
               </div>
             `);
+          }
           if (type === 'Cash' && amount === this.frm.doc.paid_amount) {
             this.idx = idx;
             this.selected_mode = $(this.$body).find(`input[idx='${this.idx}']`);
