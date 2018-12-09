@@ -248,6 +248,79 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       }
     );
   },
+  show_payment_details: function() {
+    var multimode_payments = $(this.$body)
+      .find('.multimode-payments')
+      .empty();
+    if (this.frm.doc.payments.length) {
+      this.frm.doc.payments.forEach(
+        ({ mode_of_payment, amount, idx, type }) => {
+          const { currency, conversion_rate } = this.get_exchange_rate(
+            mode_of_payment
+          );
+          const $payment = $(
+            frappe.render_template('payment_details', {
+              mode_of_payment,
+              amount,
+              idx,
+              currency,
+              type,
+            })
+          )
+            .appendTo(multimode_payments)
+            .find('div.col-xs-6:first-of-type')
+            .css({
+              padding: '0 15px',
+              display: 'flex',
+              'flex-flow': 'column nowrap',
+              height: '100%',
+              'justify-content': 'center',
+            }).html(`
+              <div>${mode_of_payment}</div>
+              <div style="font-size: 0.75em; color: #888;">
+                CR: ${flt(conversion_rate, precision()).toFixed(3)}
+                /
+                <span class="local-currency-amount">${format_currency(
+                  amount * flt(conversion_rate, precision()),
+                  this.frm.doc.currency
+                )}</span>
+              </div>
+            `);
+          if (type === 'Cash' && amount === this.frm.doc.paid_amount) {
+            this.idx = idx;
+            this.selected_mode = $(this.$body).find(`input[idx='${this.idx}']`);
+            this.highlight_selected_row();
+            this.bind_amount_change_event();
+          }
+        }
+      );
+    } else {
+      $('<p>No payment mode selected in pos profile</p>').appendTo(
+        multimode_payments
+      );
+    }
+  },
+  set_outstanding_amount: function() {
+    this.selected_mode = $(this.$body).find(`input[idx='${this.idx}']`);
+    this.highlight_selected_row();
+    this.payment_val = 0.0;
+    const { conversion_rate, currency } = this.get_exchange_rate();
+    if (
+      this.frm.doc.outstanding_amount > 0 &&
+      flt(this.selected_mode.val()) == 0.0
+    ) {
+      this.payment_val = flt(
+        this.frm.doc.outstanding_amount / conversion_rate,
+        precision()
+      );
+      this.selected_mode.val(format_currency(this.payment_val, currency));
+      this.update_payment_amount();
+    } else if (flt(this.selected_mode.val()) > 0) {
+      this.payment_val = flt(this.selected_mode.val());
+    }
+    this.selected_mode.select();
+    this.bind_amount_change_event();
+  },
   bind_amount_change_event: function() {
     this.selected_mode.off('change');
     this.selected_mode.on('change', e => {
@@ -275,6 +348,9 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         mop_conversion_rate,
         mop_amount,
       });
+      $(this.$body)
+        .find('.selected-payment-mode .local-currency-amount')
+        .text(format_currency(amount, this.frm.doc.currency));
     }
     this.calculate_outstanding_amount(false);
     this.show_amounts();
