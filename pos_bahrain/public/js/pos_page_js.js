@@ -248,6 +248,12 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       }
     );
   },
+  make_payment: function() {
+    if (this.dialog) {
+      this.dialog.$wrapper.remove();
+    }
+    this._super();
+  },
   show_payment_details: function() {
     const multimode_payments = $(this.$body).find('.multimode-payments').html(`
       <ul class="nav nav-tabs" role="tablist">
