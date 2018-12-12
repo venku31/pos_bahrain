@@ -53,6 +53,15 @@ fixtures = [
 			'Sales Invoice Payment-cb11',
 			'Sales Invoice Payment-mop_conversion_rate',
 			'Sales Invoice Payment-mop_amount',
+			'Batch-naming_series',
+		]]]
+	},
+	{
+		'doctype': 'Property Setter',
+		'filters': [['name', 'in', [
+			'Batch-batch_id-reqd',
+			'Batch-expiry_date-in_list_view',
+			'Batch-expiry_date-bold',
 		]]]
 	},
 ]
@@ -105,13 +114,11 @@ fixtures = [
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-#	}
-# }
+doc_events = {
+	'Batch': {
+		'autoname': 'pos_bahrain.doc_events.batch.autoname',
+	}
+}
 
 # Scheduled Tasks
 # ---------------

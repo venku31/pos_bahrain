@@ -1,0 +1,53 @@
+[
+ {
+  "_assign": null, 
+  "_comments": null, 
+  "_liked_by": null, 
+  "_user_tags": null, 
+  "default_value": null, 
+  "doc_type": "Batch", 
+  "docstatus": 0, 
+  "doctype": "Property Setter", 
+  "doctype_or_field": "DocField", 
+  "field_name": "batch_id", 
+  "modified": "2018-12-12 17:47:49.538330", 
+  "name": "Batch-batch_id-reqd", 
+  "property": "reqd", 
+  "property_type": "Check", 
+  "value": "0"
+ }, 
+ {
+  "_assign": null, 
+  "_comments": null, 
+  "_liked_by": null, 
+  "_user_tags": null, 
+  "default_value": null, 
+  "doc_type": "Batch", 
+  "docstatus": 0, 
+  "doctype": "Property Setter", 
+  "doctype_or_field": "DocField", 
+  "field_name": "expiry_date", 
+  "modified": "2018-12-12 17:49:08.092081", 
+  "name": "Batch-expiry_date-in_list_view", 
+  "property": "in_list_view", 
+  "property_type": "Check", 
+  "value": "1"
+ }, 
+ {
+  "_assign": null, 
+  "_comments": null, 
+  "_liked_by": null, 
+  "_user_tags": null, 
+  "default_value": null, 
+  "doc_type": "Batch", 
+  "docstatus": 0, 
+  "doctype": "Property Setter", 
+  "doctype_or_field": "DocField", 
+  "field_name": "expiry_date", 
+  "modified": "2018-12-12 17:49:08.098507", 
+  "name": "Batch-expiry_date-bold", 
+  "property": "bold", 
+  "property_type": "Check", 
+  "value": "1"
+ }
+]
