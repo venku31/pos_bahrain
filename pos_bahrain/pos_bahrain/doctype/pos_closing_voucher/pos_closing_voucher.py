@@ -61,8 +61,14 @@ class POSClosingVoucher(Document):
                 self.payment_reconciliation = []
                 opening_cash = frappe.db.sql("""select opening_cash,closing_cash from `tabOpening Cash` where date=%s and cashier=%s and pos_profile=%s""",(self.period_start_date,self.user,self.pos_profile))
 
+                default_cash = frappe.db.get_value("Company",get_default_company() ,"default_cash_account")
+                
+                mop_cash = frappe.db.sql("""select mp.name from `tabMode of Payment` mp inner join `tabMode of Payment Account` mpa on mpa.parent=mp.name where mpa.default_account='{}'""".format(default_cash))
+                
+
                 for m in mop:
-                        if m['name'] == "Cash":
+			
+                        if m['name'] == mop_cash[0][0]:
                                 if opening_cash and opening_cash[0][0]:
                                 #        opening_amount = opening_cash[0][1]
                                 #else:
