@@ -36,7 +36,6 @@ page_js = {
 # include js in doctype views
 doctype_js = {
 	'Mode of Payment': 'public/js/mode_of_payment.js',
-	'Stock Entry': 'public/js/stock_entry.js',
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
