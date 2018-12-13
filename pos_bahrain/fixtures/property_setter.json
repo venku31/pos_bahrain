@@ -49,5 +49,22 @@
   "property": "bold", 
   "property_type": "Check", 
   "value": "1"
+ }, 
+ {
+  "_assign": null, 
+  "_comments": null, 
+  "_liked_by": null, 
+  "_user_tags": null, 
+  "default_value": null, 
+  "doc_type": "Batch", 
+  "docstatus": 0, 
+  "doctype": "Property Setter", 
+  "doctype_or_field": "DocField", 
+  "field_name": "batch_id", 
+  "modified": "2018-12-13 21:28:05.750738", 
+  "name": "Batch-batch_id-bold", 
+  "property": "bold", 
+  "property_type": "Check", 
+  "value": "1"
  }
 ]

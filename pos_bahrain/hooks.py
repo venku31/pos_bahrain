@@ -18,7 +18,10 @@ app_license = "MIT"
 # app_include_css = "/assets/css/pos_css.css"
 # app_include_js = "/assets/pos_bahrain/js/pos_bahrain.js"
 app_include_css = "/assets/css/jmi.min.css"
-app_include_js = "/assets/js/jmi.min.js"
+app_include_js = [
+	'/assets/js/jmi.min.js',
+	'/assets/pos_bahrain/js/batch_quick_entry.js',
+]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/pos_bahrain/css/pos_bahrain.css"
@@ -32,7 +35,8 @@ page_js = {
 
 # include js in doctype views
 doctype_js = {
-	'Mode of Payment': 'public/js/mode_of_payment.js'
+	'Mode of Payment': 'public/js/mode_of_payment.js',
+	'Stock Entry': 'public/js/stock_entry.js',
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -60,6 +64,7 @@ fixtures = [
 		'doctype': 'Property Setter',
 		'filters': [['name', 'in', [
 			'Batch-batch_id-reqd',
+			'Batch-batch_id-bold',
 			'Batch-expiry_date-in_list_view',
 			'Batch-expiry_date-bold',
 		]]]
