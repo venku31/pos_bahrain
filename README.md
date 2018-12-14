@@ -12,7 +12,8 @@
 
 ## Future Updates:
   1. POS to Fetch only those batch and Items which are in stock in the POS profile selected warehouse. 
-  2. Select Default Warehouse in Purchase receipt - (Multi Company Scenerio)
+  2. Select Default Warehouse in Purchase receipt - (Multi Company Scenerio).
+  3. Show Expiry Date while selecting Batch from drop down in Stock Entry (Material Receipt).
 
 
 
