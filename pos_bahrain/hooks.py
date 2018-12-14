@@ -36,6 +36,7 @@ page_js = {
 # include js in doctype views
 doctype_js = {
 	'Mode of Payment': 'public/js/mode_of_payment.js',
+	'Stock Entry': 'public/js/stock_entry.js',
 	'Company': 'public/js/company.js',
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
@@ -64,6 +65,7 @@ fixtures = [
 	{
 		'doctype': 'Property Setter',
 		'filters': [['name', 'in', [
+			'Batch-search_fields',
 			'Batch-batch_id-reqd',
 			'Batch-batch_id-bold',
 			'Batch-expiry_date-in_list_view',
