@@ -36,6 +36,7 @@ page_js = {
 # include js in doctype views
 doctype_js = {
 	'Mode of Payment': 'public/js/mode_of_payment.js',
+	'Company': 'public/js/company.js',
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -57,6 +58,7 @@ fixtures = [
 			'Sales Invoice Payment-mop_conversion_rate',
 			'Sales Invoice Payment-mop_amount',
 			'Batch-naming_series',
+			'Company-default_warehouse',
 		]]]
 	},
 	{
@@ -153,7 +155,7 @@ doc_events = {
 # Overriding Whitelisted Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "pos_bahrain.event.get_events"
-# }
-
+override_whitelisted_methods = {
+	'erpnext.stock.get_item_details.get_item_details':
+		'pos_bahrain.api.get_item_details.get_item_details',
+}
