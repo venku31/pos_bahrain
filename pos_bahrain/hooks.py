@@ -155,7 +155,7 @@ doc_events = {
 # Overriding Whitelisted Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "pos_bahrain.event.get_events"
-# }
-
+override_whitelisted_methods = {
+	'erpnext.stock.get_item_details.get_item_details':
+		'pos_bahrain.api.get_item_details.get_item_details',
+}
