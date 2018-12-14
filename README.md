@@ -10,7 +10,7 @@
   6. Make batch number naming Series.
   7. Fetch item number directly in JS using Material Receipt/Purchase receipt Item selection.
 
-## Future Updates:
+## Future Updates
   1. POS to Fetch only those batch and Items which are in stock in the POS profile selected warehouse. 
   2. Select Default Warehouse in Purchase receipt - (Multi Company Scenerio).
   3. Show Expiry Date while selecting Batch from drop down in Stock Entry (Material Receipt).
