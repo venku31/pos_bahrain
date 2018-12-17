@@ -24,6 +24,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         message: { batch_no_details, uom_details, exchange_rates } = {},
       } = await frappe.call({
         method: 'pos_bahrain.api.item.get_more_pos_data',
+        args: { profile: this.pos_profile_data.name },
         freeze: true,
         freeze_message: __('Syncing Item details'),
       });
@@ -31,6 +32,13 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       if (!batch_no_details || !uom_details || !exchange_rates) {
         throw new Error();
       }
+      this.batch_no_data = Object.keys(batch_no_details).reduce(
+        (a, x) =>
+          Object.assign(a, {
+            [x]: batch_no_details[x].map(({ name }) => name),
+          }),
+        {}
+      );
       this.batch_no_details = batch_no_details;
       this.uom_details = uom_details;
       this.exchange_rates = exchange_rates;

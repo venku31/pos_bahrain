@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 
 
 def _groupby(key, list_of_dicts):
@@ -17,25 +18,54 @@ def _groupby(key, list_of_dicts):
 
 
 @frappe.whitelist()
-def get_more_pos_data():
+def get_more_pos_data(profile):
+    pos_profile = frappe.get_doc('POS Profile', profile)
+    if not pos_profile:
+        return frappe.throw(
+            _('POS Profile: {} is not valid.'.format(profile))
+        )
+    warehouse = pos_profile.warehouse or frappe.db.get_value(
+        'Company', pos_profile.company, 'default_warehouse',
+    )
+    if not warehouse:
+        return frappe.throw(
+            _(
+                'No valid Warehouse found. Please select warehouse in '
+                'POS Profile.'
+            )
+        )
     return {
-        'batch_no_details': get_batch_no_details(),
+        'batch_no_details': get_batch_no_details(warehouse),
         'uom_details': get_uom_details(),
         'exchange_rates': get_exchange_rates(),
     }
 
 
-def get_batch_no_details():
+def get_batch_no_details(warehouse):
     batches = frappe.db.sql(
         """
-            SELECT name, item, expiry_date
-            FROM `tabBatch`
+            SELECT
+                name,
+                item,
+                expiry_date,
+                (
+                    SELECT SUM(actual_qty)
+                    FROM `tabStock Ledger Entry`
+                    WHERE batch_no=b.name AND
+                        item_code=b.item AND
+                        warehouse=%(warehouse)s
+                ) as qty
+            FROM `tabBatch` AS b
             WHERE IFNULL(expiry_date, '4000-10-10') >= CURDATE()
             ORDER BY expiry_date
         """,
+        values={'warehouse': warehouse},
         as_dict=1,
     )
-    return _groupby('item', batches)
+    return _groupby(
+        'item',
+        filter(lambda x: x.get('qty'), batches)
+    )
 
 
 def get_uom_details():
