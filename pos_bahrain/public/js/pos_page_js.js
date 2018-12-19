@@ -242,9 +242,23 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 		this.make_customer();
 		this.make_list_customers();
 		this.bind_numeric_keypad();
+    this.bind_keyboard_shortcuts();
 	},
-
-
+  bind_keyboard_shortcuts: function() {
+    $(document).on('keydown', e => {
+      if (this.numeric_keypad && e.keyCode === 120) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (this.dialog && this.dialog.is_visible) {
+          this.dialog.hide();
+        } else {
+          $(this.numeric_keypad)
+            .find('.pos-pay')
+            .trigger('click');
+        }
+      }
+    });
+  },
   get_exchange_rate: function(mop) {
     const { mode_of_payment } =
       this.frm.doc.payments.find(
