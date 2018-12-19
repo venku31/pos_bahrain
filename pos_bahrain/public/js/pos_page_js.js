@@ -73,6 +73,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       this.batch_dialog.set_primary_action(__('Submit'), () => {
         this.item_batch_no[item_code] = this.batch_dialog.get_value('batch');
         this.batch_dialog.hide();
+        this.set_focus();
       });
       this.batch_dialog.get_close_btn().on('click', () => {
         this.item_code = item_code;
@@ -80,6 +81,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         this.remove_selected_item();
         this.wrapper.find('.selected-item').empty();
         this.item_code = null;
+        this.set_focus();
       });
       this.batch_dialog.show();
       this.batch_dialog.$wrapper.find('.modal-backdrop').off('click');
