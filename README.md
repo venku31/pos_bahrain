@@ -10,11 +10,15 @@
   6. Make batch number naming Series.
   7. Fetch item number directly in JS using Material Receipt/Purchase receipt Item selection.
   8. Select Default Warehouse in Purchase receipt - (Multi Company Scenerio).
+  9. Shortcut Key to press Pay in POS - Used F9 to press Pay.
+  10. Focus back to Item Search field for user to input next item directly. (When Batch item is scanned)
+  11. POS to Fetch only those batch and Items which are in stock in the POS profile selected warehouse.
+  12. Show Expiry Date while selecting Batch from drop down in Stock Entry (Material Receipt).
 
 ## Future Updates
-  1. POS to Fetch only those batch and Items which are in stock in the POS profile selected warehouse. 
-  2. Show Expiry Date while selecting Batch from drop down in Stock Entry (Material Receipt).
-
+  1. Enhancing Closing Voucher - Generate Print format for Closing.
+  2. Limiting reports to respected company.
+  3. 
 
 
 #### License
