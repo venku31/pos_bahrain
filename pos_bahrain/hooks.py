@@ -128,6 +128,8 @@ doc_events = {
 	}
 }
 
+on_session_creation = 'pos_bahrain.doc_events.set_user_defaults'
+
 # Scheduled Tasks
 # ---------------
 
