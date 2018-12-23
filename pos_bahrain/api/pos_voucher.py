@@ -72,7 +72,7 @@ def get_data(
         """,
         values={'invoices': map(lambda x: x.name, invoices)},
         as_dict=1,
-    )
+    ) if invoices else []
     taxes = frappe.db.sql(
         """
             SELECT
@@ -84,7 +84,7 @@ def get_data(
         """,
         values={'invoices': map(lambda x: x.name, invoices)},
         as_dict=1,
-    )
+    ) if invoices else []
     return {
         'period_from': args.get('period_from'),
         'period_to': args.get('period_to'),
