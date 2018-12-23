@@ -466,3 +466,29 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     this.show_amounts();
   },
 });
+
+erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
+  set_primary_action: function() {
+    this._super();
+    this.page.add_menu_item('Test POS Voucher', async () => {
+      if (this.connection_status) {
+        if (!this.pos_voucher) {
+          this.set_opening_entry();
+        } else {
+          frappe.dom.freeze('Syncing');
+          this.sync_sales_invoice();
+          await frappe.after_server_call();
+          frappe.set_route('Form', 'POS Voucher', this.pos_voucher, {
+            period_to: frappe.datetime.now_datetime(),
+            fetch_data: true,
+          });
+          frappe.dom.unfreeze();
+        }
+      } else {
+        frappe.msgprint({
+          message: __('Please perform this when online.'),
+        });
+      }
+    });
+  },
+});
