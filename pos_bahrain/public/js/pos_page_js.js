@@ -21,10 +21,18 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     this._super(r);
     try {
       const {
-        message: { batch_no_details, uom_details, exchange_rates } = {},
+        message: {
+          batch_no_details,
+          uom_details,
+          exchange_rates,
+          pos_voucher,
+        } = {},
       } = await frappe.call({
         method: 'pos_bahrain.api.item.get_more_pos_data',
-        args: { profile: this.pos_profile_data.name },
+        args: {
+          profile: this.pos_profile_data.name,
+          company: this.doc.company,
+        },
         freeze: true,
         freeze_message: __('Syncing Item details'),
       });
@@ -42,6 +50,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       this.batch_no_details = batch_no_details;
       this.uom_details = uom_details;
       this.exchange_rates = exchange_rates;
+      this.set_opening_entry(pos_voucher);
     } catch (e) {
       frappe.msgprint({
         indicator: 'orange',
@@ -49,6 +58,57 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         message: __(
           'Unable to load extended Item details. Usage will be restricted.'
         ),
+      });
+    }
+  },
+  set_opening_entry: async function(pos_voucher) {
+    if (pos_voucher) {
+      this.pos_voucher = pos_voucher;
+    } else {
+      const dialog = new frappe.ui.Dialog({
+        title: __('Enter Opening Cash'),
+        fields: [
+          {
+            fieldtype: 'Datetime',
+            fieldname: 'period_from',
+            label: __('Start Date Time'),
+            default: frappe.datetime.now_datetime(),
+          },
+          {
+            fieldtype: 'Currency',
+            fieldname: 'opening_amount',
+            label: __('Amount'),
+          },
+        ],
+      });
+      dialog.show();
+      dialog.get_close_btn().hide();
+      dialog.$wrapper.find('.modal-backdrop').off('click');
+      dialog.set_primary_action('Enter', async () => {
+        try {
+          const { message: voucher_name } = await frappe.call({
+            method: 'pos_bahrain.api.pos_voucher.create_opening',
+            args: {
+              posting: dialog.get_value('period_from'),
+              opening_amount: dialog.get_value('opening_amount'),
+              company: this.doc.company,
+              pos_profile: this.pos_profile_data.name,
+            },
+          });
+          if (!voucher_name) {
+            throw Exception;
+          }
+          this.pos_voucher = voucher_name;
+        } catch (e) {
+          frappe.msgprint({
+            message: __('Unable to create POS Voucher opening entry.'),
+            title: __('Warning'),
+            indicator: 'orange',
+          });
+        } finally {
+          dialog.hide();
+          dialog.$wrapper.remove();
+        }
       });
     }
   },
