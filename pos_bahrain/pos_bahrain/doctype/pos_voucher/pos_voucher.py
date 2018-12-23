@@ -4,7 +4,33 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe.utils import now
 from frappe.model.document import Document
 
+
 class POSVoucher(Document):
-	pass
+	def validate(self):
+		existing = frappe.db.sql(
+			"""
+				SELECT 1 FROM `tabPOS Voucher`
+				WHERE
+					name != %(name)s AND
+					company = %(company)s AND
+					pos_profile = %(pos_profile)s AND
+					user = %(user)s AND
+					period_from <= %(period_to)s AND
+					period_to >= %(period_from)s
+			""",
+			values={
+				'name': self.name,
+				'company': self.company,
+				'pos_profile': self.pos_profile,
+				'user': self.user,
+				'period_from': self.period_from or now(),
+				'period_to': self.period_to or now(),
+			},
+		)
+		if existing:
+			frappe.throw(
+				'Another POS Voucher already exists during this time frame.'
+			)
