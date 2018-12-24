@@ -46,7 +46,9 @@ def get_data(
                 name,
                 pos_total_qty,
                 base_grand_total AS grand_total,
-                base_net_total AS net_total
+                base_net_total AS net_total,
+                paid_amount,
+                change_amount
             FROM `tabSales Invoice`
             WHERE docstatus = 1 AND
                 is_pos = 1 AND
@@ -66,7 +68,8 @@ def get_data(
                 type,
                 SUM(base_amount) AS base_amount,
                 mop_currency,
-                SUM(mop_amount) AS mop_amount
+                SUM(mop_amount) AS mop_amount,
+                `default`
             FROM `tabSales Invoice Payment`
             WHERE parent in %(invoices)s
             GROUP BY mode_of_payment
@@ -74,11 +77,6 @@ def get_data(
         values={'invoices': map(lambda x: x.name, invoices)},
         as_dict=1,
     ) if invoices else []
-    cash_payments = filter(lambda x: x.type == 'Cash', payments)
-    noncash_amount = sum([
-        x.get('base_amount', 0) \
-            for x in filter(lambda x: x.type != 'Cash', payments)
-    ])
     taxes = frappe.db.sql(
         """
             SELECT
@@ -96,7 +94,6 @@ def get_data(
         'period_to': args.get('period_to'),
         'user': args.get('user'),
         'invoices': invoices,
-        'payments': cash_payments,
-        'noncash_amount': noncash_amount,
+        'payments': payments,
         'taxes': taxes,
     }
