@@ -86,7 +86,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       });
       dialog.show();
       dialog.get_close_btn().hide();
-      dialog.$wrapper.find('.modal-backdrop').off('click');
       dialog.set_primary_action('Enter', async () => {
         try {
           const { message: voucher_name } = await frappe.call({
