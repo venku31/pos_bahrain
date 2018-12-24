@@ -13,8 +13,15 @@ frappe.ui.form.on('POS Voucher', {
     }
   },
   fetch_and_set_data: async function(frm) {
-    frm.set_value('closing_amount', 0);
-    const { period_from, period_to, company, pos_profile, user } = frm.doc;
+    const {
+      period_from,
+      period_to,
+      company,
+      pos_profile,
+      user,
+      opening_amount = 0,
+      total_collected = 0,
+    } = frm.doc;
     const {
       message: { invoices = [], payments = [], taxes = [] } = {},
     } = await frappe.call({
@@ -39,16 +46,27 @@ frappe.ui.form.on('POS Voucher', {
       'tax_total',
       taxes.reduce((a, { tax_amount = 0 }) => a + tax_amount, 0)
     );
+    frm.set_value('closing_amount', opening_amount + total_collected);
+    const existing_collected = frm.doc.payments
+      ? frm.doc.payments.reduce(
+          (a, { mode_of_payment, collected_amount = 0 }) =>
+            Object.assign(a, { [mode_of_payment]: collected_amount }),
+          {}
+        )
+      : {};
     frm.clear_table('payments');
-    payments.forEach(({ base_amount: expected_amount, ...rest }) => {
-      frm.add_child(
-        'payments',
-        Object.assign({}, rest, {
-          expected_amount,
-          difference_amount: -expected_amount,
-        })
-      );
-    });
+    payments.forEach(
+      ({ mode_of_payment, base_amount: expected_amount, ...rest }) => {
+        frm.add_child(
+          'payments',
+          Object.assign({ mode_of_payment }, rest, {
+            collected_amount: existing_collected[mode_of_payment] || 0,
+            expected_amount,
+            difference_amount: -expected_amount,
+          })
+        );
+      }
+    );
     frm.refresh_field('payments');
     frm.clear_table('invoices');
     invoices.forEach(
