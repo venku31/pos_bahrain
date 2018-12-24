@@ -15,10 +15,11 @@ def create_opening(
         'pos_profile': pos_profile,
         'user': user or frappe.session.user,
         'opening_amount': opening_amount,
-    }).insert()
+    }).insert(ignore_permissions=True)
     return pv.name
 
 
+@frappe.whitelist()
 def get_unclosed(user, pos_profile, company):
     return frappe.db.exists('POS Voucher', {
         'user': user,
@@ -73,6 +74,11 @@ def get_data(
         values={'invoices': map(lambda x: x.name, invoices)},
         as_dict=1,
     ) if invoices else []
+    cash_payments = filter(lambda x: x.type == 'Cash', payments)
+    noncash_amount = sum([
+        x.get('base_amount', 0) \
+            for x in filter(lambda x: x.type != 'Cash', payments)
+    ])
     taxes = frappe.db.sql(
         """
             SELECT
@@ -90,6 +96,7 @@ def get_data(
         'period_to': args.get('period_to'),
         'user': args.get('user'),
         'invoices': invoices,
-        'payments': payments,
+        'payments': cash_payments,
+        'noncash_amount': noncash_amount,
         'taxes': taxes,
     }
