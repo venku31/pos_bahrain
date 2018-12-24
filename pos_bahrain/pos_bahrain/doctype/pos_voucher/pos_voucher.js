@@ -30,8 +30,8 @@ frappe.ui.form.on('POS Voucher', {
       0
     );
     frm.set_value('grand_total', grand_total);
-    frm.set_value('total_invoices', payments.length);
-    frm.set_value('average_sales', grand_total / flt(payments.length));
+    frm.set_value('total_invoices', invoices.length);
+    frm.set_value('average_sales', grand_total / flt(invoices.length));
     frm.set_value(
       'net_total',
       invoices.reduce((a, { net_total = 0 }) => a + net_total, 0)
@@ -59,8 +59,8 @@ frappe.ui.form.on('POS Voucher', {
         ...rest
       }) => {
         const mop_conversion_rate = mop_amount ? base_amount / mop_amount : 1;
-        const expected_amount = rest.default
-          ? (mop_amount || base_amount) - change_total
+        const expected_amount = cint(rest.default)
+          ? base_amount - change_total
           : mop_amount || base_amount;
         frm.add_child(
           'payments',
