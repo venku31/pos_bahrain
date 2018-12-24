@@ -21,12 +21,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     this._super(r);
     try {
       const {
-        message: {
-          batch_no_details,
-          uom_details,
-          exchange_rates,
-          pos_voucher,
-        } = {},
+        message: { batch_no_details, uom_details, exchange_rates } = {},
       } = await frappe.call({
         method: 'pos_bahrain.api.item.get_more_pos_data',
         args: {
@@ -50,7 +45,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       this.batch_no_details = batch_no_details;
       this.uom_details = uom_details;
       this.exchange_rates = exchange_rates;
-      this.set_opening_entry(pos_voucher);
+      await this.set_opening_entry();
     } catch (e) {
       frappe.msgprint({
         indicator: 'orange',
@@ -61,7 +56,15 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       });
     }
   },
-  set_opening_entry: async function(pos_voucher) {
+  set_opening_entry: async function() {
+    const { message: pos_voucher } = await frappe.call({
+      method: 'pos_bahrain.api.pos_voucher.get_unclosed',
+      args: {
+        user: frappe.session.user,
+        pos_profile: this.pos_profile_data.name,
+        company: this.doc.company,
+      },
+    });
     if (pos_voucher) {
       this.pos_voucher = pos_voucher;
     } else {
@@ -475,22 +478,28 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     this.page.add_menu_item('Test POS Voucher', async () => {
       if (this.connection_status) {
         if (!this.pos_voucher) {
-          this.set_opening_entry();
-        } else {
-          frappe.dom.freeze('Syncing');
-          this.sync_sales_invoice();
-          await frappe.after_server_call();
-          frappe.set_route('Form', 'POS Voucher', this.pos_voucher, {
-            period_to: frappe.datetime.now_datetime(),
-            fetch_data: true,
-          });
-          frappe.dom.unfreeze();
+          await this.set_opening_entry();
         }
+        frappe.dom.freeze('Syncing');
+        this.sync_sales_invoice();
+        await frappe.after_server_call();
+        frappe.set_route('Form', 'POS Voucher', this.pos_voucher, {
+          period_to: frappe.datetime.now_datetime(),
+          fetch_data: true,
+        });
+        frappe.dom.unfreeze();
+        this.pos_voucher = null;
       } else {
         frappe.msgprint({
           message: __('Please perform this when online.'),
         });
       }
     });
+  },
+  refresh: function() {
+    this._super();
+    if (!this.pos_voucher) {
+      this.set_opening_entry();
+    }
   },
 });

@@ -19,6 +19,7 @@ def create_opening(
     return pv.name
 
 
+@frappe.whitelist()
 def get_unclosed(user, pos_profile, company):
     return frappe.db.exists('POS Voucher', {
         'user': user,

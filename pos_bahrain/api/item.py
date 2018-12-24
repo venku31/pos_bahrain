@@ -3,9 +3,6 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 
-from pos_bahrain.api.pos_voucher import get_unclosed
-
-
 def _groupby(key, list_of_dicts):
     from itertools import groupby
     from operator import itemgetter
@@ -40,7 +37,6 @@ def get_more_pos_data(profile, company):
         'batch_no_details': get_batch_no_details(warehouse),
         'uom_details': get_uom_details(),
         'exchange_rates': get_exchange_rates(),
-        'pos_voucher': get_unclosed(frappe.session.user, profile, company),
     }
 
 
