@@ -25,10 +25,13 @@ frappe.ui.form.on('POS Voucher', {
       freeze: true,
       freeze_message: 'Loading data',
     });
-    frm.set_value(
-      'grand_total',
-      invoices.reduce((a, { grand_total = 0 }) => a + grand_total, 0)
+    const grand_total = invoices.reduce(
+      (a, { grand_total = 0 }) => a + grand_total,
+      0
     );
+    frm.set_value('grand_total', grand_total);
+    frm.set_value('total_invoices', payments.length);
+    frm.set_value('average_sales', grand_total / flt(payments.length));
     frm.set_value(
       'net_total',
       invoices.reduce((a, { net_total = 0 }) => a + net_total, 0)
