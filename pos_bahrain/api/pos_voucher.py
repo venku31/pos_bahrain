@@ -75,9 +75,8 @@ def get_data(
     ) if invoices else []
     cash_payments = filter(lambda x: x.type == 'Cash', payments)
     noncash_amount = sum([
-        x.get('base_amount', 0) for x in filter(
-            lambda x: x.type != 'Cash', payments
-        )
+        x.get('base_amount', 0) \
+            for x in filter(lambda x: x.type != 'Cash', payments)
     ])
     taxes = frappe.db.sql(
         """

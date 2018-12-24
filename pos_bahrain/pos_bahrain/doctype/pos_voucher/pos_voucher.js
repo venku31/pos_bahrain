@@ -62,13 +62,28 @@ frappe.ui.form.on('POS Voucher', {
       : {};
     frm.clear_table('payments');
     payments.forEach(
-      ({ mode_of_payment, base_amount: expected_amount, ...rest }) => {
+      ({
+        mode_of_payment,
+        base_amount = 0,
+        mop_currency,
+        mop_amount = 0,
+        ...rest
+      }) => {
+        const collected_amount = existing_collected[mode_of_payment] || 0;
+        const expected_amount = mop_amount || base_amount;
+        const base_collected_amount = expected_amount
+          ? (base_amount / expected_amount) * collected_amount
+          : collected_amount;
         frm.add_child(
           'payments',
           Object.assign({ mode_of_payment }, rest, {
-            collected_amount: existing_collected[mode_of_payment] || 0,
+            base_collected_amount,
+            base_expected_amount: base_amount,
+            collected_amount,
             expected_amount,
             difference_amount: -expected_amount,
+            mop_currency:
+              mop_currency || frappe.defaults.get_default('currency'),
           })
         );
       }
@@ -94,19 +109,32 @@ frappe.ui.form.on('POS Voucher', {
 });
 
 frappe.ui.form.on('POS Voucher Payment', {
-  collected_amount: function(frm, cdt, cdn) {
-    const { collected_amount, expected_amount } = frappe.get_doc(cdt, cdn);
+  collected_amount: async function(frm, cdt, cdn) {
+    const {
+      collected_amount,
+      expected_amount,
+      base_expected_amount,
+    } = frappe.get_doc(cdt, cdn);
     frappe.model.set_value(
       cdt,
       cdn,
       'difference_amount',
       collected_amount - expected_amount
     );
+    await frappe.model.set_value(
+      cdt,
+      cdn,
+      'base_collected_amount',
+      expected_amount
+        ? (base_expected_amount / expected_amount) * collected_amount
+        : collected_amount
+    );
     frm.set_value(
       'total_collected',
-      frm.doc.payments
-        .filter(({ type }) => type === 'Cash')
-        .reduce((a, { collected_amount = 0 }) => a + collected_amount, 0)
+      frm.doc.payments.reduce(
+        (a, { base_collected_amount = 0 }) => a + base_collected_amount,
+        0
+      )
     );
   },
 });
