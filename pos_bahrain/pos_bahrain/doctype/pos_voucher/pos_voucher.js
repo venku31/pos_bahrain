@@ -11,24 +11,14 @@ frappe.ui.form.on('POS Voucher', {
     } else if (frm.doc.docstatus === 0 && !frm.doc.period_to) {
       frm.set_value('period_to', period_to);
     }
+    ['payments', 'invoices', 'taxes'].forEach(field => {
+      frm.set_df_property(field, 'read_only', 1);
+    });
   },
   fetch_and_set_data: async function(frm) {
+    const { period_from, period_to, company, pos_profile, user } = frm.doc;
     const {
-      period_from,
-      period_to,
-      company,
-      pos_profile,
-      user,
-      opening_amount = 0,
-      total_collected = 0,
-    } = frm.doc;
-    const {
-      message: {
-        invoices = [],
-        payments = [],
-        taxes = [],
-        noncash_amount = 0,
-      } = {},
+      message: { invoices = [], payments = [], taxes = [] } = {},
     } = await frappe.call({
       method: 'pos_bahrain.api.pos_voucher.get_data',
       args: { period_from, period_to, company, pos_profile, user },
@@ -51,15 +41,10 @@ frappe.ui.form.on('POS Voucher', {
       'tax_total',
       taxes.reduce((a, { tax_amount = 0 }) => a + tax_amount, 0)
     );
-    frm.set_value('closing_amount', opening_amount + total_collected);
-    frm.set_value('noncash_amount', noncash_amount);
-    const existing_collected = frm.doc.payments
-      ? frm.doc.payments.reduce(
-          (a, { mode_of_payment, collected_amount = 0 }) =>
-            Object.assign(a, { [mode_of_payment]: collected_amount }),
-          {}
-        )
-      : {};
+    frm.set_value(
+      'change_total',
+      invoices.reduce((a, { change_amount = 0 }) => a + change_amount, 0)
+    );
     frm.clear_table('payments');
     payments.forEach(
       ({
@@ -69,21 +54,20 @@ frappe.ui.form.on('POS Voucher', {
         mop_amount = 0,
         ...rest
       }) => {
-        const collected_amount = existing_collected[mode_of_payment] || 0;
         const expected_amount = mop_amount || base_amount;
-        const base_collected_amount = expected_amount
-          ? (base_amount / expected_amount) * collected_amount
-          : collected_amount;
+        const mop_conversion_rate = expected_amount
+          ? base_amount / expected_amount
+          : 1;
         frm.add_child(
           'payments',
           Object.assign({ mode_of_payment }, rest, {
-            base_collected_amount,
-            base_expected_amount: base_amount,
-            collected_amount,
+            collected_amount: expected_amount,
             expected_amount,
-            difference_amount: -expected_amount,
+            difference_amount: 0,
             mop_currency:
               mop_currency || frappe.defaults.get_default('currency'),
+            mop_conversion_rate,
+            base_collected_amount: expected_amount * flt(mop_conversion_rate),
           })
         );
       }
@@ -91,8 +75,11 @@ frappe.ui.form.on('POS Voucher', {
     frm.refresh_field('payments');
     frm.clear_table('invoices');
     invoices.forEach(
-      ({ name: invoice, pos_total_qty: total_quantity, grand_total }) => {
-        frm.add_child('invoices', { invoice, total_quantity, grand_total });
+      ({ name: invoice, pos_total_qty: total_quantity, ...rest }) => {
+        frm.add_child(
+          'invoices',
+          Object.assign({}, rest, { invoice, total_quantity })
+        );
       }
     );
     frm.refresh_field('invoices');
@@ -102,9 +89,20 @@ frappe.ui.form.on('POS Voucher', {
     });
     frm.refresh_field('taxes');
   },
-  total_collected: function(frm) {
-    const { opening_amount = 0, total_collected = 0 } = frm.doc;
-    frm.set_value('closing_amount', opening_amount + total_collected);
+  opening_amount: function(frm) {
+    frm.trigger('set_closing_amount');
+  },
+  change_total: function(frm) {
+    frm.trigger('set_closing_amount');
+  },
+  set_closing_amount: function(frm) {
+    const { opening_amount = 0, change_total = 0 } = frm.doc;
+    const { collected_amount = 0 } =
+      frm.doc.payments.find(mop => cint(mop.default) === 1) || {};
+    frm.set_value(
+      'closing_amount',
+      opening_amount + collected_amount - change_total
+    );
   },
 });
 
@@ -113,7 +111,8 @@ frappe.ui.form.on('POS Voucher Payment', {
     const {
       collected_amount,
       expected_amount,
-      base_expected_amount,
+      mop_conversion_rate,
+      ...rest
     } = frappe.get_doc(cdt, cdn);
     frappe.model.set_value(
       cdt,
@@ -121,20 +120,14 @@ frappe.ui.form.on('POS Voucher Payment', {
       'difference_amount',
       collected_amount - expected_amount
     );
-    await frappe.model.set_value(
+    frappe.model.set_value(
       cdt,
       cdn,
       'base_collected_amount',
-      expected_amount
-        ? (base_expected_amount / expected_amount) * collected_amount
-        : collected_amount
+      collected_amount * flt(mop_conversion_rate)
     );
-    frm.set_value(
-      'total_collected',
-      frm.doc.payments.reduce(
-        (a, { base_collected_amount = 0 }) => a + base_collected_amount,
-        0
-      )
-    );
+    if (rest.default) {
+      frm.trigger('set_closing_amount');
+    }
   },
 });
