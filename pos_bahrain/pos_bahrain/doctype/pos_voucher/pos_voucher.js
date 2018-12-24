@@ -25,10 +25,13 @@ frappe.ui.form.on('POS Voucher', {
       freeze: true,
       freeze_message: 'Loading data',
     });
-    frm.set_value(
-      'grand_total',
-      invoices.reduce((a, { grand_total = 0 }) => a + grand_total, 0)
+    const grand_total = invoices.reduce(
+      (a, { grand_total = 0 }) => a + grand_total,
+      0
     );
+    frm.set_value('grand_total', grand_total);
+    frm.set_value('total_invoices', payments.length);
+    frm.set_value('average_sales', grand_total / flt(payments.length));
     frm.set_value(
       'net_total',
       invoices.reduce((a, { net_total = 0 }) => a + net_total, 0)
@@ -41,10 +44,11 @@ frappe.ui.form.on('POS Voucher', {
       'tax_total',
       taxes.reduce((a, { tax_amount = 0 }) => a + tax_amount, 0)
     );
-    frm.set_value(
-      'change_total',
-      invoices.reduce((a, { change_amount = 0 }) => a + change_amount, 0)
+    const change_total = invoices.reduce(
+      (a, { change_amount = 0 }) => a + change_amount,
+      0
     );
+    frm.set_value('change_total', change_total);
     frm.clear_table('payments');
     payments.forEach(
       ({
@@ -54,10 +58,10 @@ frappe.ui.form.on('POS Voucher', {
         mop_amount = 0,
         ...rest
       }) => {
-        const expected_amount = mop_amount || base_amount;
-        const mop_conversion_rate = expected_amount
-          ? base_amount / expected_amount
-          : 1;
+        const mop_conversion_rate = mop_amount ? base_amount / mop_amount : 1;
+        const expected_amount = rest.default
+          ? (mop_amount || base_amount) - change_total
+          : mop_amount || base_amount;
         frm.add_child(
           'payments',
           Object.assign({ mode_of_payment }, rest, {
@@ -88,21 +92,16 @@ frappe.ui.form.on('POS Voucher', {
       frm.add_child('taxes', tax);
     });
     frm.refresh_field('taxes');
+    frm.trigger('set_closing_amount');
   },
   opening_amount: function(frm) {
     frm.trigger('set_closing_amount');
   },
-  change_total: function(frm) {
-    frm.trigger('set_closing_amount');
-  },
   set_closing_amount: function(frm) {
-    const { opening_amount = 0, change_total = 0 } = frm.doc;
+    const { opening_amount } = frm.doc;
     const { collected_amount = 0 } =
       frm.doc.payments.find(mop => cint(mop.default) === 1) || {};
-    frm.set_value(
-      'closing_amount',
-      opening_amount + collected_amount - change_total
-    );
+    frm.set_value('closing_amount', opening_amount + collected_amount);
   },
 });
 
