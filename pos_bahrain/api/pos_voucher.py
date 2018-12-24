@@ -15,7 +15,7 @@ def create_opening(
         'pos_profile': pos_profile,
         'user': user or frappe.session.user,
         'opening_amount': opening_amount,
-    }).insert()
+    }).insert(ignore_permissions=True)
     return pv.name
 
 
