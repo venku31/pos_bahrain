@@ -59,7 +59,9 @@ frappe.ui.form.on('POS Voucher', {
         ...rest
       }) => {
         const mop_conversion_rate = mop_amount ? base_amount / mop_amount : 1;
-        const expected_amount = (mop_amount || base_amount) - change_total;
+        const expected_amount = rest.default
+          ? (mop_amount || base_amount) - change_total
+          : mop_amount || base_amount;
         frm.add_child(
           'payments',
           Object.assign({ mode_of_payment }, rest, {
