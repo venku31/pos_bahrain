@@ -23,7 +23,12 @@ frappe.ui.form.on('POS Voucher', {
       total_collected = 0,
     } = frm.doc;
     const {
-      message: { invoices = [], payments = [], taxes = [] } = {},
+      message: {
+        invoices = [],
+        payments = [],
+        taxes = [],
+        noncash_amount = 0,
+      } = {},
     } = await frappe.call({
       method: 'pos_bahrain.api.pos_voucher.get_data',
       args: { period_from, period_to, company, pos_profile, user },
@@ -47,6 +52,7 @@ frappe.ui.form.on('POS Voucher', {
       taxes.reduce((a, { tax_amount = 0 }) => a + tax_amount, 0)
     );
     frm.set_value('closing_amount', opening_amount + total_collected);
+    frm.set_value('noncash_amount', noncash_amount);
     const existing_collected = frm.doc.payments
       ? frm.doc.payments.reduce(
           (a, { mode_of_payment, collected_amount = 0 }) =>
