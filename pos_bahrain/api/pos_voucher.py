@@ -9,7 +9,7 @@ def create_opening(
     opening_amount, company, pos_profile, user=None, posting=None
 ):
     pv = frappe.get_doc({
-        'doctype': 'POS Voucher',
+        'doctype': 'POS Closing Voucher',
         'period_from': posting or now(),
         'company': company,
         'pos_profile': pos_profile,
@@ -21,7 +21,7 @@ def create_opening(
 
 @frappe.whitelist()
 def get_unclosed(user, pos_profile, company):
-    return frappe.db.exists('POS Voucher', {
+    return frappe.db.exists('POS Closing Voucher', {
         'user': user,
         'pos_profile': pos_profile,
         'company': company,

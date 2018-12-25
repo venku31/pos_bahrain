@@ -103,7 +103,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
           this.pos_voucher = voucher_name;
         } catch (e) {
           frappe.msgprint({
-            message: __('Unable to create POS Voucher opening entry.'),
+            message: __('Unable to create POS Closing Voucher opening entry.'),
             title: __('Warning'),
             indicator: 'orange',
           });
@@ -201,7 +201,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   },
   set_primary_action: function() {
     this._super();
-    this.page.add_menu_item('POS Voucher', async () => {
+    this.page.add_menu_item('POS Closing Voucher', async () => {
       if (this.connection_status) {
         if (!this.pos_voucher) {
           await this.set_opening_entry();
@@ -209,7 +209,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         frappe.dom.freeze('Syncing');
         this.sync_sales_invoice();
         await frappe.after_server_call();
-        frappe.set_route('Form', 'POS Voucher', this.pos_voucher, {
+        frappe.set_route('Form', 'POS Closing Voucher', this.pos_voucher, {
           period_to: frappe.datetime.now_datetime(),
           fetch_data: true,
         });
