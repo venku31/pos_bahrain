@@ -56,15 +56,17 @@ frappe.ui.form.on('POS Closing Voucher', {
         base_amount = 0,
         mop_currency,
         mop_amount = 0,
+        is_default,
         ...rest
       }) => {
         const mop_conversion_rate = mop_amount ? base_amount / mop_amount : 1;
-        const expected_amount = cint(rest.default)
+        const expected_amount = is_default
           ? base_amount - change_total
           : mop_amount || base_amount;
         frm.add_child(
           'payments',
           Object.assign({ mode_of_payment }, rest, {
+            is_default,
             collected_amount: expected_amount,
             expected_amount,
             difference_amount: 0,
@@ -100,7 +102,7 @@ frappe.ui.form.on('POS Closing Voucher', {
   set_closing_amount: function(frm) {
     const { opening_amount } = frm.doc;
     const { collected_amount = 0 } =
-      frm.doc.payments.find(mop => cint(mop.default) === 1) || {};
+      frm.doc.payments.find(({ is_default }) => is_default === 1) || {};
     frm.set_value('closing_amount', opening_amount + collected_amount);
   },
 });
@@ -111,7 +113,7 @@ frappe.ui.form.on('POS Voucher Payment', {
       collected_amount,
       expected_amount,
       mop_conversion_rate,
-      ...rest
+      is_default,
     } = frappe.get_doc(cdt, cdn);
     frappe.model.set_value(
       cdt,
@@ -125,7 +127,7 @@ frappe.ui.form.on('POS Voucher Payment', {
       'base_collected_amount',
       collected_amount * flt(mop_conversion_rate)
     );
-    if (rest.default) {
+    if (is_default) {
       frm.trigger('set_closing_amount');
     }
   },

@@ -69,7 +69,7 @@ def get_data(
                 SUM(base_amount) AS base_amount,
                 mop_currency,
                 SUM(mop_amount) AS mop_amount,
-                `default`
+                `default` AS is_default
             FROM `tabSales Invoice Payment`
             WHERE parent in %(invoices)s
             GROUP BY mode_of_payment
