@@ -11,14 +11,14 @@ frappe.ui.form.on('POS Closing Voucher', {
     } else if (frm.doc.docstatus === 0 && !frm.doc.period_to) {
       frm.set_value('period_to', period_to);
     }
-    ['payments', 'invoices', 'taxes'].forEach(field => {
+    ['payments', 'invoices', 'returns', 'taxes'].forEach(field => {
       frm.set_df_property(field, 'read_only', 1);
     });
   },
   fetch_and_set_data: async function(frm) {
     const { period_from, period_to, company, pos_profile, user } = frm.doc;
     const {
-      message: { invoices = [], payments = [], taxes = [] } = {},
+      message: { invoices = [], returns = [], payments = [], taxes = [] } = {},
     } = await frappe.call({
       method: 'pos_bahrain.api.pos_voucher.get_data',
       args: { period_from, period_to, company, pos_profile, user },
@@ -47,6 +47,10 @@ frappe.ui.form.on('POS Closing Voucher', {
     const change_total = invoices.reduce(
       (a, { change_amount = 0 }) => a + change_amount,
       0
+    );
+    frm.set_value(
+      'returns_total',
+      returns.reduce((a, { grand_total = 0 }) => a + grand_total, 0)
     );
     frm.set_value('change_total', change_total);
     frm.clear_table('payments');
@@ -89,6 +93,16 @@ frappe.ui.form.on('POS Closing Voucher', {
       }
     );
     frm.refresh_field('invoices');
+    frm.clear_table('returns');
+    returns.forEach(
+      ({ name: invoice, pos_total_qty: total_quantity, ...rest }) => {
+        frm.add_child(
+          'returns',
+          Object.assign({}, rest, { invoice, total_quantity })
+        );
+      }
+    );
+    frm.refresh_field('returns');
     frm.clear_table('taxes');
     taxes.forEach(tax => {
       frm.add_child('taxes', tax);
