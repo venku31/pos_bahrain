@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 
+
 def _groupby(key, list_of_dicts):
     from itertools import groupby
     from operator import itemgetter
