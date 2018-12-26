@@ -33,16 +33,20 @@ frappe.ui.form.on('POS Closing Voucher', {
       freeze: true,
       freeze_message: 'Loading data',
     });
-    frm.set_value('grand_total', sum_by('grand_total', invoices));
+    const returns_total = sum_by('grand_total', returns);
+    frm.set_value('returns_total', -returns_total);
+    frm.set_value(
+      'grand_total',
+      sum_by('grand_total', invoices) + returns_total
+    );
     const net_total = sum_by('net_total', invoices);
-    frm.set_value('net_total', net_total);
-    frm.set_value('total_invoices', invoices.length);
+    frm.set_value('net_total', net_total + sum_by('net_total', returns));
+    frm.set_value('total_invoices', invoices.length + returns.length);
     frm.set_value('average_sales', net_total / flt(invoices.length));
     frm.set_value('total_quantity', sum_by('pos_total_qty', invoices));
     frm.set_value('tax_total', sum_by('tax_amount', taxes));
     frm.set_value('discount_total', sum_by('discount_amount', invoices));
     const change_total = sum_by('change_amount', invoices);
-    frm.set_value('returns_total', sum_by('grand_total', returns));
     frm.set_value('change_total', change_total);
     frm.clear_table('payments');
     payments.forEach(
