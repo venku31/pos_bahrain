@@ -103,7 +103,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
           this.pos_voucher = voucher_name;
         } catch (e) {
           frappe.msgprint({
-            message: __('Unable to create POS Voucher opening entry.'),
+            message: __('Unable to create POS Closing Voucher opening entry.'),
             title: __('Warning'),
             indicator: 'orange',
           });
@@ -201,7 +201,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   },
   set_primary_action: function() {
     this._super();
-    this.page.add_menu_item('POS Voucher', async () => {
+    this.page.add_menu_item('POS Closing Voucher', async () => {
       if (this.connection_status) {
         if (!this.pos_voucher) {
           await this.set_opening_entry();
@@ -209,7 +209,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         frappe.dom.freeze('Syncing');
         this.sync_sales_invoice();
         await frappe.after_server_call();
-        frappe.set_route('Form', 'POS Voucher', this.pos_voucher, {
+        frappe.set_route('Form', 'POS Closing Voucher', this.pos_voucher, {
           period_to: frappe.datetime.now_datetime(),
           fetch_data: true,
         });
@@ -316,25 +316,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       this.dialog.$wrapper.remove();
     }
     this._super();
-  },
-  set_default_payment: function(total_amount_to_pay, update_paid_amount) {
-    this._super(total_amount_to_pay, update_paid_amount);
-    if (update_paid_amount === undefined || update_paid_amount) {
-      this.frm.doc.payments.forEach(payment => {
-        const { mode_of_payment, base_amount } = payment;
-        if (payment.default) {
-          const {
-            conversion_rate: mop_conversion_rate,
-            currency: mop_currency,
-          } = this.get_exchange_rate(mode_of_payment);
-          Object.assign(payment, {
-            mop_currency,
-            mop_conversion_rate,
-            mop_amount: base_amount / flt(mop_conversion_rate, precision()),
-          });
-        }
-      });
-    }
   },
   show_payment_details: function() {
     const multimode_payments = $(this.$body).find('.multimode-payments').html(`

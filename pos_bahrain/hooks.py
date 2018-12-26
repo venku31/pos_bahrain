@@ -125,7 +125,10 @@ fixtures = [
 doc_events = {
 	'Batch': {
 		'autoname': 'pos_bahrain.doc_events.batch.autoname',
-	}
+	},
+	'Sales Invoice': {
+		'on_submit': 'pos_bahrain.doc_events.sales_invoice.on_submit',
+	},
 }
 
 on_session_creation = 'pos_bahrain.doc_events.set_user_defaults'
