@@ -14,6 +14,11 @@ frappe.ui.form.on('POS Closing Voucher', {
     ['payments', 'invoices', 'returns', 'taxes'].forEach(field => {
       frm.set_df_property(field, 'read_only', 1);
     });
+    if (frm.doc.docstatus === 0) {
+      frm.add_custom_button('Fetch Invoices', function() {
+        frm.trigger('fetch_and_set_data');
+      });
+    }
   },
   fetch_and_set_data: async function(frm) {
     function sum_by(field, list) {
