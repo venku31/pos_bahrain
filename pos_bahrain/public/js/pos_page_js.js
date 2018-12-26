@@ -317,25 +317,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     }
     this._super();
   },
-  set_default_payment: function(total_amount_to_pay, update_paid_amount) {
-    this._super(total_amount_to_pay, update_paid_amount);
-    if (update_paid_amount === undefined || update_paid_amount) {
-      this.frm.doc.payments.forEach(payment => {
-        const { mode_of_payment, base_amount } = payment;
-        if (payment.default) {
-          const {
-            conversion_rate: mop_conversion_rate,
-            currency: mop_currency,
-          } = this.get_exchange_rate(mode_of_payment);
-          Object.assign(payment, {
-            mop_currency,
-            mop_conversion_rate,
-            mop_amount: base_amount / flt(mop_conversion_rate, precision()),
-          });
-        }
-      });
-    }
-  },
   show_payment_details: function() {
     const multimode_payments = $(this.$body).find('.multimode-payments').html(`
       <ul class="nav nav-tabs" role="tablist">

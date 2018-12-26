@@ -106,7 +106,7 @@ def get_data(
         """
             SELECT
                 rate,
-                SUM(base_tax_amount) AS tax_amount
+                SUM(base_tax_amount_after_discount_amount) AS tax_amount
             FROM `tabSales Taxes and Charges`
             WHERE parent in %(invoices)s
             GROUP BY rate
