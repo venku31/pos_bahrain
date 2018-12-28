@@ -51,6 +51,7 @@ def get_data(
                 base_grand_total AS grand_total,
                 base_net_total AS net_total,
                 base_discount_amount AS discount_amount,
+                outstanding_amount,
                 paid_amount,
                 change_amount
             FROM `tabSales Invoice`
