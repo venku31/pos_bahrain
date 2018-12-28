@@ -7,7 +7,6 @@ import frappe
 from frappe.utils import now
 from frappe.model.document import Document
 
-
 class POSClosingVoucher(Document):
 	def validate(self):
 		existing = frappe.db.sql(
