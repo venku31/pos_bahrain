@@ -9,6 +9,7 @@ frappe.query_reports['Item Consumption Report'] = {
       label: __('Company'),
       fieldtype: 'Link',
       options: 'Company',
+      reqd: 1,
       default: frappe.defaults.get_user_default('company'),
     },
     {

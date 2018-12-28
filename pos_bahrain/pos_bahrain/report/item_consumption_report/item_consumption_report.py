@@ -4,10 +4,10 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import today, getdate
+from frappe.utils import today
 from functools import partial, reduce
 import operator
-from toolz import merge, pluck, get, compose, first, flip
+from toolz import merge, pluck, get, compose, first, flip, groupby, excepts
 
 from pos_bahrain.pos_bahrain.report.item_consumption_report.helpers \
 	import generate_intervals
@@ -15,14 +15,17 @@ from pos_bahrain.pos_bahrain.report.item_consumption_report.helpers \
 
 def execute(filters=None):
 	args = _get_args(filters)
-	columns = _get_columns(args)
-	data = _get_data(args, columns)
-	return compose(
+	columns_with_keys = _get_columns(args)
+	columns = compose(
 		list, partial(pluck, 'label')
-	)(columns), data
+	)(columns_with_keys)
+	data = _get_data(args, columns_with_keys)
+	return columns, data
 
 
 def _get_args(filters={}):
+	if not filters.get('company'):
+		frappe.throw(_('Company is required to generate report'))
 	return merge(filters, {
 		'price_list': frappe.db.get_value(
 			'Buying Settings', None, 'buying_price_list'
@@ -59,143 +62,115 @@ def _get_columns(args):
 
 
 def _get_data(args, columns):
-	items = frappe.get_all(
-		'Item',
-		fields=['item_code', 'brand', 'item_name'],
-		filters={'disabled': 0},
+	items = frappe.db.sql(
+		"""
+			SELECT
+				i.item_code AS item_code,
+				i.brand AS brand,
+				i.item_name AS item_name,
+				p.price_list_rate AS price,
+				b.actual_qty AS stock
+			FROM `tabItem` AS i
+			LEFT JOIN `tabItem Price` AS p
+				ON p.item_code = i.item_code AND p.price_list = %(price_list)s
+			LEFT JOIN (
+				SELECT
+					item_code, SUM(actual_qty) AS actual_qty
+				FROM `tabBin`
+				WHERE warehouse IN (
+					SELECT name FROM `tabWarehouse` WHERE company = %(company)s
+				)
+				GROUP BY item_code
+			) AS b
+				ON b.item_code = i.item_code
+		""",
+		values={
+			'price_list': args.get('price_list'),
+			'company': args.get('company'),
+		},
+		as_dict=1,
 	)
-	prices = frappe.get_all(
-		'Item Price',
-		fields=['item_code', 'price_list_rate'],
-		filters=[
-			['price_list', '=', args.get('price_list')],
-			['item_code', 'in', list(pluck('item_code', items))]
-		],
-	)
-	warehouses = frappe.get_all(
-		'Warehouse',
-		filters={'company': args.get('company')},
-	)
-	bins = frappe.get_all(
-		'Bin',
-		fields=['item_code', 'actual_qty'],
-		filters=[
-			['warehouse', 'in', list(pluck('name', warehouses))],
-		],
-	)
-	sles = frappe.get_all(
-		'Stock Ledger Entry',
-		fields=['item_code', 'posting_date', 'actual_qty'],
-		filters=[
-			['docstatus', '<', 2],
-			['voucher_type', '=', 'Sales Invoice'],
-			['company', '=', args.get('company')],
-			['posting_date', '>=', args.get('start_date')],
-			['posting_date', '<=', args.get('end_date')],
-		]
+	sles = frappe.db.sql(
+		"""
+			SELECT item_code, posting_date, actual_qty
+			FROM `tabStock Ledger Entry`
+			WHERE docstatus < 2 AND
+				voucher_type = 'Sales Invoice' AND
+				company = %(company)s AND
+				posting_date BETWEEN %(start_date)s AND %(end_date)s
+		""",
+		values={
+			'company': args.get('company'),
+			'start_date': args.get('start_date'),
+			'end_date': args.get('end_date'),
+		},
+		as_dict=1,
 	)
 	keys = compose(list, partial(pluck, 'key'))(columns)
-	periods = compose(
-		list,
-		partial(filter, lambda x: x.get('start_date') and x.get('end_date')),
-	)(columns)
+	periods = filter(lambda x: x.get('start_date') and x.get('end_date'), columns)
 
-	set_price = _set_price(prices)
-	set_stock = _set_stock(bins)
 	set_consumption = _set_consumption(sles, periods)
 
 	def make_row(item):
 		return compose(
 			partial(get, keys),
 			set_consumption,
-			set_stock,
-			set_price,
 		)(item)
 
 	return map(make_row, items)
 
 
-def _set_price(prices):
-	part_fn = compose(
-		partial(get, 'price_list_rate', default=0),
-		first,
-		partial(flip, filter, prices),
-	)
-
-	def fn(item):
-		try:
-			price = part_fn(lambda x: x.item_code == item.get('item_code'))
-		except StopIteration:
-			price = 0
-		return merge(item, {'price': price})
-	return fn
-
-
-def _set_stock(bins):
-	part_fn = compose(
-		sum,
-		partial(pluck, 'actual_qty'),
-		partial(flip, filter, bins),
-	)
-
-	def fn(item):
-		return merge(item, {
-			'stock': part_fn(
-				lambda x: x.item_code == item.get('item_code')
-			)
-		})
-	return fn
-
-
 def _set_consumption(sles, periods):
+	def groupby_filter(sl):
+		def fn(p):
+			return p.get('start_date') <= sl.get('posting_date') <= p.get('end_date')
+		return fn
+
+	groupby_fn = compose(
+		partial(get, 'key', default=None),
+		excepts(StopIteration, first, lambda __: {}),
+		partial(flip, filter, periods),
+		groupby_filter,
+	)
+
+	sles_grouped = groupby(groupby_fn, sles)
+
 	summer = compose(
 		operator.neg,
 		sum,
 		partial(pluck, 'actual_qty'),
 	)
 
-	def seg_date_filter(p):
-		start_date = p.get('start_date')
-		end_date = p.get('end_date')
-
-		def fn(x):
-			return start_date <= getdate(x.get('posting_date')) <= end_date \
-				if start_date and end_date else None
-		return fn
+	def seg_filter(x):
+		return lambda sl: sl.get('item_code') == x
 
 	segregator_fns = map(
 		lambda x: merge(x, {
-			'fn': compose(
+			'seger': compose(
 				summer,
-				partial(filter, seg_date_filter(x)),
-				partial(flip, filter, sles),
-			),
+				partial(flip, filter, get(x.get('key'), sles_grouped, [])),
+				seg_filter,
+			)
 		}),
 		periods
 	)
 
-	def segregator(item_code):
-		return reduce(
-			lambda a, p: merge(a, {
-				p.get('key'): p.get('fn')(lambda x: x.item_code == item_code),
-			}),
-			segregator_fns,
-			{}
-		)
+	def seg_reducer(item_code):
+		def fn(a, p):
+			key = get('key', p, None)
+			seger = get('seger', p, lambda __: None)
+			return merge(a, {key: seger(item_code)})
+		return fn
 
 	total_fn = compose(
-		summer, partial(flip, filter, sles),
+		summer, partial(flip, filter, sles), seg_filter,
 	)
 
-	def total(item_code):
-		return {
-			'total_consumption': total_fn(lambda x: x.item_code == item_code),
-		}
-
 	def fn(item):
+		item_code = item.get('item_code')
 		return merge(
 			item,
-			segregator(item.get('item_code')),
-			total(item.get('item_code')),
+			reduce(seg_reducer(item_code), segregator_fns, {}),
+			{'total_consumption': total_fn(item_code)},
 		)
 	return fn
