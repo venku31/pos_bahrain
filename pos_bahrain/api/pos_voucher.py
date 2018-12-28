@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.utils import now
 from functools import partial
+from toolz import merge, compose, pluck
 
 
 @frappe.whitelist()
@@ -120,6 +121,31 @@ def get_data(
         'user': args.get('user'),
         'invoices': invoices,
         'returns': returns,
-        'payments': payments,
+        'payments': _correct_mop_amounts(payments),
         'taxes': taxes,
     }
+
+
+def _correct_mop_amounts(payments):
+    '''
+        Correct conversion_rate for MOPs using base currency.
+        Required because conversion_rate is calculated as
+            base_amount / mop_amount
+        for MOPs using alternate currencies.
+    '''
+    base_mops = compose(
+        partial(pluck, 'name'),
+        frappe.get_all,
+    )(
+        'Mode of Payment',
+        filters={'in_alt_currency': 0}
+    )
+    base_currency = frappe.defaults.get_global_default('currency')
+
+    def correct(payment):
+        return merge(payment, {
+            'mop_amount': payment.base_amount,
+            'mop_currency': base_currency,
+        }) if payment.mode_of_payment in base_mops else payment
+
+    return map(correct, payments)
