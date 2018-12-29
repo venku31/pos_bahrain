@@ -18,7 +18,7 @@ def _groupby(key, list_of_dicts):
 
 
 @frappe.whitelist()
-def get_more_pos_data(profile):
+def get_more_pos_data(profile, company):
     pos_profile = frappe.get_doc('POS Profile', profile)
     if not pos_profile:
         return frappe.throw(
