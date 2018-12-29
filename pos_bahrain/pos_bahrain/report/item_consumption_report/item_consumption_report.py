@@ -40,6 +40,7 @@ def _get_columns(args):
 		{'key': 'item_code', 'label': _('Item Code') + ':Link/Item:120'},
 		{'key': 'brand', 'label': _('Brand') + ':Link/Brand:120'},
 		{'key': 'item_name', 'label': _('Item Name') + '::200'},
+		{'key': 'supplier', 'label': _('Supplier') + ':Link/Supplier:120'},
 		{
 			'key': 'price',
 			'label': args.get('price_list', 'Standard Buying Price') + ':Currency:120',
@@ -68,6 +69,7 @@ def _get_data(args, columns):
 				i.item_code AS item_code,
 				i.brand AS brand,
 				i.item_name AS item_name,
+				i.default_supplier AS supplier,
 				p.price_list_rate AS price,
 				b.actual_qty AS stock
 			FROM `tabItem` AS i
