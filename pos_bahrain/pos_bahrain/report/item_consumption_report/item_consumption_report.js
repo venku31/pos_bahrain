@@ -30,5 +30,12 @@ frappe.query_reports['Item Consumption Report'] = {
       fieldtype: 'Select',
       options: '\nWeekly\nMonthly\nYearly',
     },
+    {
+      fieldname: 'warehouse',
+      label: __('Warehouse'),
+      fieldtype: 'Link',
+      options: 'Warehouse',
+      get_query: { filters: { is_group: 0 } },
+    },
   ],
 };

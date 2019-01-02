@@ -99,10 +99,12 @@ def _get_data(args, columns):
 			WHERE docstatus < 2 AND
 				voucher_type = 'Sales Invoice' AND
 				company = %(company)s AND
+				warehouse = %(warehouse)s AND
 				posting_date BETWEEN %(start_date)s AND %(end_date)s
 		""",
 		values={
 			'company': args.get('company'),
+			'warehouse': args.get('warehouse'),
 			'start_date': args.get('start_date'),
 			'end_date': args.get('end_date'),
 		},
