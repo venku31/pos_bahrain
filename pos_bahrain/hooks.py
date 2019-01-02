@@ -72,6 +72,8 @@ fixtures = [
 			'Batch-batch_id-bold',
 			'Batch-expiry_date-in_list_view',
 			'Batch-expiry_date-bold',
+			'Sales Invoice Item-discount_percentage-precision',
+			'Sales Invoice Item-discount_percentage-depends_on',
 		]]]
 	},
 ]
