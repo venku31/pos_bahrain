@@ -117,5 +117,39 @@
   "property": "precision", 
   "property_type": "Select", 
   "value": "3"
+ }, 
+ {
+  "_assign": null, 
+  "_comments": null, 
+  "_liked_by": null, 
+  "_user_tags": null, 
+  "default_value": null, 
+  "doc_type": "Sales Order Item", 
+  "docstatus": 0, 
+  "doctype": "Property Setter", 
+  "doctype_or_field": "DocField", 
+  "field_name": "discount_percentage", 
+  "modified": "2019-01-03 00:12:23.287894", 
+  "name": "Sales Order Item-discount_percentage-depends_on", 
+  "property": "depends_on", 
+  "property_type": "Data", 
+  "value": "eval:doc.price_list_rate&&parent.discount_on_retail_price==0"
+ }, 
+ {
+  "_assign": null, 
+  "_comments": null, 
+  "_liked_by": null, 
+  "_user_tags": null, 
+  "default_value": null, 
+  "doc_type": "Sales Order Item", 
+  "docstatus": 0, 
+  "doctype": "Property Setter", 
+  "doctype_or_field": "DocField", 
+  "field_name": "discount_percentage", 
+  "modified": "2019-01-03 00:12:23.293224", 
+  "name": "Sales Order Item-discount_percentage-precision", 
+  "property": "precision", 
+  "property_type": "Select", 
+  "value": "3"
  }
 ]

@@ -62,6 +62,10 @@ fixtures = [
 			'Sales Invoice Item-other_prices_section',
 			'Sales Invoice Item-retail_price',
 			'Sales Invoice Item-discount_percentage_on_retail',
+			'Sales Order-discount_on_retail_price',
+			'Sales Order Item-other_prices_section',
+			'Sales Order Item-retail_price',
+			'Sales Order Item-discount_percentage_on_retail',
 		]]]
 	},
 	{
@@ -74,6 +78,8 @@ fixtures = [
 			'Batch-expiry_date-bold',
 			'Sales Invoice Item-discount_percentage-precision',
 			'Sales Invoice Item-discount_percentage-depends_on',
+			'Sales Order Item-discount_percentage-precision',
+			'Sales Order Item-discount_percentage-depends_on',
 		]]]
 	},
 ]
