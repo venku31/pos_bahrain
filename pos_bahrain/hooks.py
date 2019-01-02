@@ -40,6 +40,8 @@ doctype_js = {
 	'Company': 'public/js/company.js',
 	'Sales Invoice': 'public/js/alternate_discount.js',
 	'Sales Order': 'public/js/alternate_discount.js',
+	'Purchase Invoice': 'public/js/set_retail_price.js',
+	'Purchase Order': 'public/js/set_retail_price.js',
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -68,6 +70,8 @@ fixtures = [
 			'Sales Order Item-other_prices_section',
 			'Sales Order Item-retail_price',
 			'Sales Order Item-discount_percentage_on_retail',
+			'Purchase Invoice Item-retail_price',
+			'Purchase Order Item-retail_price',
 		]]]
 	},
 	{
