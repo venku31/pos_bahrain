@@ -38,6 +38,8 @@ doctype_js = {
 	'Mode of Payment': 'public/js/mode_of_payment.js',
 	'Stock Entry': 'public/js/stock_entry.js',
 	'Company': 'public/js/company.js',
+	'Sales Invoice': 'public/js/alternate_discount.js',
+	'Sales Order': 'public/js/alternate_discount.js',
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}

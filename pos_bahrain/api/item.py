@@ -109,3 +109,17 @@ def get_exchange_rates():
             ),
         }
     ), mops)}
+
+
+@frappe.whitelist()
+def get_retail_price(item_code):
+    retail_price_list = frappe.db.get_value(
+        'POS Bahrain Settings', None, 'retail_price_list',
+    )
+    if retail_price_list:
+        price = frappe.db.exists('Item Price', {
+            'item_code': item_code, 'price_list': retail_price_list,
+        })
+        if price:
+            return frappe.db.get_value('Item Price', price, 'price_list_rate')
+    return None
