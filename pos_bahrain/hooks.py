@@ -48,8 +48,6 @@ fixtures = [
 		'doctype': 'Custom Field',
 		'filters': [['name', 'in', [
 			'Sales Invoice-pos_total_qty',
-			'POS Closing Voucher Details-opening_amount',
-			'POS Closing Voucher Details-expected_amount_with_opening',
 			'Mode of Payment-currency_section',
 			'Mode of Payment-in_alt_currency',
 			'Mode of Payment-alt_currency',
@@ -60,6 +58,10 @@ fixtures = [
 			'Sales Invoice Payment-mop_amount',
 			'Batch-naming_series',
 			'Company-default_warehouse',
+			'Sales Invoice-discount_on_retail_price',
+			'Sales Invoice Item-other_prices_section',
+			'Sales Invoice Item-retail_price',
+			'Sales Invoice Item-discount_percentage_on_retail',
 		]]]
 	},
 	{
