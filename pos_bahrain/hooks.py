@@ -38,6 +38,10 @@ doctype_js = {
 	'Mode of Payment': 'public/js/mode_of_payment.js',
 	'Stock Entry': 'public/js/stock_entry.js',
 	'Company': 'public/js/company.js',
+	'Sales Invoice': 'public/js/alternate_discount.js',
+	'Sales Order': 'public/js/alternate_discount.js',
+	'Purchase Invoice': 'public/js/set_retail_price.js',
+	'Purchase Order': 'public/js/set_retail_price.js',
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -48,8 +52,6 @@ fixtures = [
 		'doctype': 'Custom Field',
 		'filters': [['name', 'in', [
 			'Sales Invoice-pos_total_qty',
-			'POS Closing Voucher Details-opening_amount',
-			'POS Closing Voucher Details-expected_amount_with_opening',
 			'Mode of Payment-currency_section',
 			'Mode of Payment-in_alt_currency',
 			'Mode of Payment-alt_currency',
@@ -60,6 +62,16 @@ fixtures = [
 			'Sales Invoice Payment-mop_amount',
 			'Batch-naming_series',
 			'Company-default_warehouse',
+			'Sales Invoice-discount_on_retail_price',
+			'Sales Invoice Item-other_prices_section',
+			'Sales Invoice Item-retail_price',
+			'Sales Invoice Item-discount_percentage_on_retail',
+			'Sales Order-discount_on_retail_price',
+			'Sales Order Item-other_prices_section',
+			'Sales Order Item-retail_price',
+			'Sales Order Item-discount_percentage_on_retail',
+			'Purchase Invoice Item-retail_price',
+			'Purchase Order Item-retail_price',
 		]]]
 	},
 	{
@@ -70,6 +82,10 @@ fixtures = [
 			'Batch-batch_id-bold',
 			'Batch-expiry_date-in_list_view',
 			'Batch-expiry_date-bold',
+			'Sales Invoice Item-discount_percentage-precision',
+			'Sales Invoice Item-discount_percentage-depends_on',
+			'Sales Order Item-discount_percentage-precision',
+			'Sales Order Item-discount_percentage-depends_on',
 		]]]
 	},
 ]
