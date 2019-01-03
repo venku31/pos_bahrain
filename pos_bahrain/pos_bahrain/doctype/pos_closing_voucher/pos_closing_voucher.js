@@ -3,17 +3,16 @@
 
 frappe.ui.form.on('POS Closing Voucher', {
   onload: async function(frm) {
-    const { period_to = frappe.datetime.now_datetime(), fetch_data } =
+    const { period_to = frappe.datetime.now_datetime() } =
       frappe.route_options || {};
-    if (fetch_data) {
-      await frm.set_value('period_to', period_to);
-      frm.trigger('fetch_and_set_data');
-    } else if (frm.doc.docstatus === 0 && !frm.doc.period_to) {
+    if (frm.doc.docstatus === 0 && !frm.doc.period_to) {
       frm.set_value('period_to', period_to);
     }
     ['payments', 'invoices', 'returns', 'taxes'].forEach(field => {
       frm.set_df_property(field, 'read_only', 1);
     });
+  },
+  refresh: function(frm) {
     if (frm.doc.docstatus === 0) {
       frm.add_custom_button('Fetch Invoices', function() {
         frm.trigger('fetch_and_set_data');
