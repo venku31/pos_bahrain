@@ -14,6 +14,7 @@ class POSClosingVoucher(Document):
 			"""
 				SELECT 1 FROM `tabPOS Closing Voucher`
 				WHERE
+					docstatus = 1 AND
 					name != %(name)s AND
 					company = %(company)s AND
 					pos_profile = %(pos_profile)s AND
