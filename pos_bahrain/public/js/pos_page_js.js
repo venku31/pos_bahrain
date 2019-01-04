@@ -211,7 +211,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         await frappe.after_server_call();
         frappe.set_route('Form', 'POS Closing Voucher', this.pos_voucher, {
           period_to: frappe.datetime.now_datetime(),
-          fetch_data: true,
         });
         frappe.dom.unfreeze();
         this.pos_voucher = null;

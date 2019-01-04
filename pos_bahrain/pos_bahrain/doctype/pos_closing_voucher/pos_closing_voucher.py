@@ -7,12 +7,14 @@ import frappe
 from frappe.utils import now
 from frappe.model.document import Document
 
+
 class POSClosingVoucher(Document):
 	def validate(self):
 		existing = frappe.db.sql(
 			"""
 				SELECT 1 FROM `tabPOS Closing Voucher`
 				WHERE
+					docstatus = 1 AND
 					name != %(name)s AND
 					company = %(company)s AND
 					pos_profile = %(pos_profile)s AND
