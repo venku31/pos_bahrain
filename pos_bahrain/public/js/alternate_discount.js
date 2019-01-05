@@ -34,6 +34,12 @@ const alternate_discount = {
       }
     },
     discount_percentage_on_retail: function(frm, cdt, cdn) {
+      frm.script_manager.trigger('set_discount_from_retail', cdt, cdn);
+    },
+    retail_price: function(frm, cdt, cdn) {
+      frm.script_manager.trigger('set_discount_from_retail', cdt, cdn);
+    },
+    set_discount_from_retail: function(frm, cdt, cdn) {
       const {
         retail_price,
         discount_percentage_on_retail,
@@ -43,7 +49,7 @@ const alternate_discount = {
         cdt,
         cdn,
         'rate',
-        discount_percentage_on_retail
+        discount_percentage_on_retail && retail_price
           ? retail_price * (1 - flt(discount_percentage_on_retail) / 100)
           : price_list_rate
       );
