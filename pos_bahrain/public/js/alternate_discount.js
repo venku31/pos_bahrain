@@ -34,15 +34,18 @@ const alternate_discount = {
       }
     },
     discount_percentage_on_retail: function(frm, cdt, cdn) {
-      const { retail_price, discount_percentage_on_retail } = frappe.get_doc(
-        cdt,
-        cdn
-      );
+      const {
+        retail_price,
+        discount_percentage_on_retail,
+        price_list_rate,
+      } = frappe.get_doc(cdt, cdn);
       frappe.model.set_value(
         cdt,
         cdn,
         'rate',
-        retail_price * (1 - flt(discount_percentage_on_retail) / 100)
+        discount_percentage_on_retail
+          ? retail_price * (1 - flt(discount_percentage_on_retail) / 100)
+          : price_list_rate
       );
     },
   },
