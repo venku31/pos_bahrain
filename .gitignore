@@ -4,3 +4,4 @@
 *.swp
 tags
 pos_bahrain/docs/current
+__pycache__/
