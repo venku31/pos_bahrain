@@ -76,7 +76,6 @@ def _get_data(args, columns):
         """,
         values=args,
         as_dict=1,
-        debug=1,
     )
 
     def set_expiry(row):
