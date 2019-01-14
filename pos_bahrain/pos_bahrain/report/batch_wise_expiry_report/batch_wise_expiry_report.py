@@ -20,9 +20,20 @@ def execute(filters=None):
 def _get_args(filters={}):
     if not filters.get("company"):
         frappe.throw(_("Company is required to generate report"))
-    if not filters.get("price_list1") or not filters.get("price_list2"):
-        frappe.throw(_("Price Lists are required to generate report"))
-    return merge(filters, {"query_date": filters.get("query_date") or today()})
+    return merge(
+        filters,
+        {
+            "query_date": filters.get("query_date") or today(),
+            "price_list1": frappe.db.get_value(
+                "Buying Settings", None, "buying_price_list"
+            )
+            or "Standard Buying",
+            "price_list2": frappe.db.get_value(
+                "Selling Settings", None, "selling_price_list"
+            )
+            or "Standard Selling",
+        },
+    )
 
 
 def _get_columns(args):
@@ -35,8 +46,8 @@ def _get_columns(args):
         {"key": "expiry_date", "label": _("Expiry Date") + ":Date:90"},
         {"key": "expiry_in_days", "label": _("Expiry in Days") + ":Int:90"},
         {"key": "qty", "label": _("Quantity") + ":Float:90"},
-        {"key": "price1", "label": args.get("price_list1", "") + ":Currency:120"},
-        {"key": "price2", "label": args.get("price_list2", "") + ":Currency:120"},
+        {"key": "price1", "label": args.get("price_list1") + ":Currency:120"},
+        {"key": "price2", "label": args.get("price_list2") + ":Currency:120"},
     ]
     return columns
 

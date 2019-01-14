@@ -18,19 +18,5 @@ frappe.query_reports['Batch-wise Expiry Report'] = {
       fieldtype: 'Date',
       default: frappe.datetime.get_today(),
     },
-    {
-      fieldname: 'price_list1',
-      label: __('Price List'),
-      fieldtype: 'Link',
-      options: 'Price List',
-      reqd: 1,
-    },
-    {
-      fieldname: 'price_list2',
-      label: __('Price List'),
-      fieldtype: 'Link',
-      options: 'Price List',
-      reqd: 1,
-    },
   ],
 };
