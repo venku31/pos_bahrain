@@ -48,9 +48,8 @@ def _get_data(clauses, args, keys):
                 SUM(sii.amount) AS gross,
                 sii.salesman AS salesman,
                 u.full_name AS salesman_name
-            FROM `tabSales Invoice` AS si
-            LEFT JOIN `tabSales Invoice Item` AS sii
-                ON sii.parenttype = 'Sales Invoice' AND sii.parent = si.name
+            FROM `tabSales Invoice Item` AS sii
+            LEFT JOIN `tabSales Invoice` AS si ON sii.parent = si.name
             LEFT JOIN `tabUser` AS u ON sii.salesman = u.name
             WHERE {clauses}
             GROUP BY sii.salesman, sii.item_code
