@@ -36,7 +36,9 @@ def _get_args(filters={}):
 def _get_columns(args):
     def add_interval_column(column):
         return [
-            merge(column, {"label": column.get("label") + ":Float:90"}),
+            merge(
+                column, {"label": _("{} Qty".format(column.get("label"))) + ":Float:90"}
+            ),
             {
                 "key": "{}_amount".format(column.get("key")),
                 "label": _("{} Amount".format(column.get("label"))) + ":Currency:120",
