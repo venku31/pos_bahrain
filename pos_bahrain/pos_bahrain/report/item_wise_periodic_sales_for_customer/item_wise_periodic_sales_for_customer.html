@@ -7,7 +7,12 @@
 <style>
 </style>
 
-{% const letterhead = filters.letter_head || (frappe.get_doc(":Company", filters.company) && frappe.get_doc(":Company", filters.company).default_letter_head) || frappe.defaults.get_default("letter_head"); %}
+{% const letterhead = filters.letter_head || (
+    frappe.get_doc(":Company", filters.company) &&
+    frappe.get_doc(":Company", filters.company).default_letter_head
+  ) ||
+  frappe.defaults.get_default("letter_head");
+%}
 
 {% if(letterhead) { %}
 <div>{%= frappe.boot.letter_heads[letterhead].header %}</div>
@@ -15,7 +20,11 @@
 
 <h2 class="text-center">{%= __(report.report_name) %}</h2>
 <h3 class="text-center">{%= filters.customer %}</h3>
-<h4 class="text-center">{%= frappe.datetime.str_to_user(filters.start_date) %} - {%= frappe.datetime.str_to_user(filters.end_date) %}</h4>
+<h4 class="text-center">
+  {%= frappe.datetime.str_to_user(filters.start_date) %}
+  -
+  {%= frappe.datetime.str_to_user(filters.end_date) %}
+</h4>
 
 <hr>
 
@@ -23,7 +32,9 @@
   <thead>
     <tr>
       {% for(var i = 0; i < report.columns.length; i++) { %}
-      <th class="{%= i > 2 ? 'text-right' : '' %}">{%= report.columns[i].label %}</th>
+      <th class="{%= i > 2 ? 'text-right' : '' %}">
+        {%= i === 0 ? 'Sr No' : report.columns[i].label %}
+      </th>
       {% } %}
     </tr>
   </thead>
@@ -32,7 +43,14 @@
     <tr>
       {% for(var i = 0; i < report.columns.length; i++) { %}
       {% const value = data[j][report.columns[i].label] %}
-      <td class="{%= i > 2 ? 'text-right' : '' %}">{%= (i > 2) && (i % 2 === 0) ? format_currency(value, frappe.defaults.get_default('currency')) : value %}</td>
+      <td class="{%= i > 2 ? 'text-right' : '' %}">
+        {%= i === 0 ? j + 1 :
+          i < 3 ? value :
+          !value ? '' :
+          i % 2 === 0 ? format_currency(value, frappe.defaults.get_default('currency')) :
+          value
+        %}
+      </td>
       {% } %}
     </tr>
     {% } %}
