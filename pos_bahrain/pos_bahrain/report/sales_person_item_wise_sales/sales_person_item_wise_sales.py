@@ -35,7 +35,7 @@ def _get_clauses(filters):
         "si.posting_date BETWEEN %(from_date)s AND %(to_date)s",
     ]
     if filters.get("salesman"):
-        clauses.append("salesman = %(salesman)s")
+        clauses.append("sii.salesman = %(salesman)s")
     return " AND ".join(clauses)
 
 
