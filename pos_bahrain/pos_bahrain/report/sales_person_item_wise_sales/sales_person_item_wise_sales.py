@@ -44,6 +44,7 @@ def _get_data(clauses, args, keys):
         """
             SELECT
                 sii.item_code AS item_code,
+                sii.item_name AS item_name,
                 SUM(sii.qty) AS qty,
                 SUM(sii.amount) AS gross,
                 sii.salesman_name AS salesman_name
