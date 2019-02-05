@@ -18,9 +18,9 @@ def execute(filters=None):
 
 def _get_columns():
     columns = [
-        {"key": "salesman", "label": _("Sales Person") + ":Link/User:120"},
-        {"key": "salesman_name", "label": _("Sales Person Name") + "::120"},
+        {"key": "salesman_name", "label": _("Sales Person") + "::120"},
         {"key": "item_code", "label": _("Item Code") + ":Link/Item:120"},
+        {"key": "item_name", "label": _("Item Name") + "::180"},
         {"key": "qty", "label": _("Returned Qty") + ":Float:90"},
         {"key": "rate", "label": _("Rate") + ":Currency:120"},
         {"key": "gross", "label": _("Gross") + ":Currency:120"},
@@ -46,11 +46,9 @@ def _get_data(clauses, args, keys):
                 sii.item_code AS item_code,
                 SUM(sii.qty) AS qty,
                 SUM(sii.amount) AS gross,
-                sii.salesman AS salesman,
-                u.full_name AS salesman_name
+                sii.salesman_name AS salesman_name
             FROM `tabSales Invoice Item` AS sii
             LEFT JOIN `tabSales Invoice` AS si ON sii.parent = si.name
-            LEFT JOIN `tabUser` AS u ON sii.salesman = u.name
             WHERE {clauses}
             GROUP BY sii.salesman, sii.item_code
         """.format(
