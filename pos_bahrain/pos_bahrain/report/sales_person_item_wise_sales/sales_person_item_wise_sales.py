@@ -50,7 +50,7 @@ def _get_data(clauses, args, keys):
             FROM `tabSales Invoice Item` AS sii
             LEFT JOIN `tabSales Invoice` AS si ON sii.parent = si.name
             WHERE {clauses}
-            GROUP BY sii.salesman, sii.item_code
+            GROUP BY sii.salesman_name, sii.item_code
         """.format(
             clauses=clauses
         ),
