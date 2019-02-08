@@ -1,8 +1,4 @@
 erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
-  init: function(wrapper) {
-    frappe.require('assets/frappe/js/lib/JsBarcode.all.min.js');
-    this._super(wrapper);
-  },
   onload: function() {
     this._super();
     this.batch_dialog = new frappe.ui.Dialog({
@@ -16,8 +12,9 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         },
       ],
     });
+    this.setinterval_to_sync_master_data(1800000);
   },
-  init_master_data: async function(r) {
+  init_master_data: async function(r, freeze = true) {
     this._super(r);
     try {
       const {
@@ -28,7 +25,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
           profile: this.pos_profile_data.name,
           company: this.doc.company,
         },
-        freeze: true,
+        freeze,
         freeze_message: __('Syncing Item details'),
       });
 
@@ -55,6 +52,21 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         ),
       });
     }
+  },
+  setinterval_to_sync_master_data: function(delay) {
+    setInterval(async () => {
+      const { message } = await frappe.call({ method: 'frappe.handler.ping' });
+      if (message) {
+        const r = await frappe.call({
+          method: 'erpnext.accounts.doctype.sales_invoice.pos.get_pos_data',
+        });
+        localStorage.setItem('doc', JSON.stringify(r.message.doc));
+        this.init_master_data(r, false);
+        this.load_data(false);
+        this.make_item_list();
+        this.set_missing_values();
+      }
+    }, delay);
   },
   set_opening_entry: async function() {
     const { message: pos_voucher } = await frappe.call({
@@ -121,14 +133,14 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     this.batch_dialog.get_close_btn().off('click');
     if (has_batch_no && !this.item_batch_no[item_code]) {
       (this.batch_no_details[item_code] || []).forEach(
-        ({ name, expiry_date }) => {
+        ({ name, expiry_date, qty }) => {
           this.batch_dialog
             .get_field('batch')
             .$input.append(
               $('<option />', { value: name }).text(
                 `${name} | ${
                   expiry_date ? frappe.datetime.str_to_user(expiry_date) : '--'
-                }`
+                } | ${qty}`
               )
             );
         }
@@ -299,9 +311,8 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   },
   get_exchange_rate: function(mop) {
     const { mode_of_payment } =
-      this.frm.doc.payments.find(
-        ({ idx, mode_of_payment }) =>
-          mop ? mop === mode_of_payment : cint(idx) === cint(this.idx)
+      this.frm.doc.payments.find(({ idx, mode_of_payment }) =>
+        mop ? mop === mode_of_payment : cint(idx) === cint(this.idx)
       ) || {};
     return (
       this.exchange_rates[mode_of_payment] || {

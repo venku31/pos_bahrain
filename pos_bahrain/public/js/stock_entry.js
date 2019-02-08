@@ -1,7 +1,7 @@
 // Copyright (c) 2018, 	9t9it and contributors
 // For license information, please see license.txt
 
-select_batch_and_serial_no = erpnext.stock.select_batch_and_serial_no;
+const select_batch_and_serial_no = erpnext.stock.select_batch_and_serial_no;
 
 erpnext.stock.select_batch_and_serial_no = (frm, item) => {
   if (item && item.has_batch_no && frm.doc.purpose === 'Material Receipt') {

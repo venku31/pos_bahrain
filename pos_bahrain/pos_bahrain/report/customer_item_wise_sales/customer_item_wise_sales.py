@@ -20,6 +20,7 @@ def _get_columns():
     columns = [
         {"key": "customer", "label": _("Customer") + ":Link/Customer:120"},
         {"key": "item_code", "label": _("Item Code") + ":Link/Item:120"},
+        {"key": "item_name", "label": _("Item Name") + "::180"},
         {"key": "qty", "label": _("Qty") + ":Float:90"},
         {"key": "rate", "label": _("Rate") + ":Currency:120"},
         {"key": "gross", "label": _("Gross") + ":Currency:120"},
@@ -44,6 +45,7 @@ def _get_data(clauses, args, keys):
             SELECT
                 si.customer AS customer,
                 sii.item_code AS item_code,
+                sii.item_name AS item_name,
                 SUM(sii.qty) AS qty,
                 SUM(sii.amount) AS gross
             FROM `tabSales Invoice Item` AS sii

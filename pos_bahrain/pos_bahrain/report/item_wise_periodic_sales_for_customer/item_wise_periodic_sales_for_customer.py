@@ -93,12 +93,13 @@ def _get_data(args, columns):
     keys = compose(list, partial(pluck, "key"))(columns)
     periods = filter(lambda x: x.get("start_date") and x.get("end_date"), columns)
 
-    set_period_columns = _set_period_columns(sales, periods)
+    make_data = compose(
+        partial(map, partial(get, keys)),
+        partial(filter, lambda x: x.get("total_qty") > 0),
+        partial(map, _set_period_columns(sales, periods)),
+    )
 
-    def make_row(item):
-        return compose(partial(get, keys), set_period_columns)(item)
-
-    return map(make_row, items)
+    return make_data(items)
 
 
 def _set_period_columns(sales, periods):
