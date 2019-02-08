@@ -117,14 +117,14 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     this.batch_dialog.get_close_btn().off('click');
     if (has_batch_no && !this.item_batch_no[item_code]) {
       (this.batch_no_details[item_code] || []).forEach(
-        ({ name, expiry_date }) => {
+        ({ name, expiry_date, qty }) => {
           this.batch_dialog
             .get_field('batch')
             .$input.append(
               $('<option />', { value: name }).text(
                 `${name} | ${
                   expiry_date ? frappe.datetime.str_to_user(expiry_date) : '--'
-                }`
+                } | ${qty}`
               )
             );
         }
