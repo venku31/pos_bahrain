@@ -1,8 +1,4 @@
 erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
-  init: function(wrapper) {
-    frappe.require('assets/frappe/js/lib/JsBarcode.all.min.js');
-    this._super(wrapper);
-  },
   onload: function() {
     this._super();
     this.batch_dialog = new frappe.ui.Dialog({
@@ -299,9 +295,8 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   },
   get_exchange_rate: function(mop) {
     const { mode_of_payment } =
-      this.frm.doc.payments.find(
-        ({ idx, mode_of_payment }) =>
-          mop ? mop === mode_of_payment : cint(idx) === cint(this.idx)
+      this.frm.doc.payments.find(({ idx, mode_of_payment }) =>
+        mop ? mop === mode_of_payment : cint(idx) === cint(this.idx)
       ) || {};
     return (
       this.exchange_rates[mode_of_payment] || {
