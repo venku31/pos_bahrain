@@ -22,9 +22,10 @@
   18. Item-Wise Sales Return.
   19. Simple Batch Expiry Report.
   20. Customer Sales Summary.
+  21. Generate Print format for Closing Voucher.
 
 ## Future Updates
-  1. Enhancing Closing Voucher - Generate Print format for Closing.
+  1. XXXXXXXXXXX
 
 
 #### License
