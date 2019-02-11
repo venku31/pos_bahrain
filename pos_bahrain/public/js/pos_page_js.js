@@ -53,6 +53,10 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       });
     }
   },
+  create_new: function() {
+    this._super();
+    this.is_return = false;
+  },
   setinterval_to_sync_master_data: function(delay) {
     setInterval(async () => {
       const { message } = await frappe.call({ method: 'frappe.handler.ping' });
@@ -211,6 +215,34 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       this.update_paid_amount_status(false);
     });
   },
+  set_item_details: function(item_code, field, value, remove_zero_qty_items) {
+    // this method is a copy of the original without the negative value validation
+    // and return invoice feature added.
+    this.remove_item = [];
+    (this.frm.doc.items || []).forEach(item => {
+      if (item.item_code === item_code) {
+        if (item.serial_no && field === 'qty') {
+          this.validate_serial_no_qty(item, item_code, field, value);
+        }
+        if (field === 'qty') {
+          item.qty = (this.is_return ? -1 : 1) * Math.abs(value);
+        } else {
+          item[field] = flt(value);
+        }
+        item.amount = flt(item.rate) * flt(item.qty);
+        if (item.qty === 0 && remove_zero_qty_items) {
+          this.remove_item.push(item.idx);
+        }
+        if (field === 'discount_percentage' && value === 0) {
+          item.rate = item.price_list_rate;
+        }
+      }
+    });
+    if (field === 'qty') {
+      this.remove_zero_qty_items_from_cart();
+    }
+    this.update_paid_amount_status(false);
+  },
   set_primary_action: function() {
     this._super();
     this.page.add_menu_item('POS Closing Voucher', async () => {
@@ -281,19 +313,63 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
                 }
                 return invoice_data;
         },
-	make_control: function() {
-		this.frm = {}
-		this.frm.doc = this.doc
-		this.set_transaction_defaults("Customer");
-		this.frm.doc["allow_user_to_edit_rate"] = this.pos_profile_data["allow_user_to_edit_rate"] ? true : false;
-		this.frm.doc["allow_user_to_edit_discount"] = this.pos_profile_data["allow_user_to_edit_discount"] ? true : false;
-		this.wrapper.html(frappe.render_template("pos_bahrain", this.frm.doc));
-		this.make_search();
-		this.make_customer();
-		this.make_list_customers();
-		this.bind_numeric_keypad();
+  add_to_cart: function() {
+    // this method is a copy of the original with the return invoice feature added.
+    this.customer_validate();
+    this.mandatory_batch_no();
+    this.validate_serial_no();
+    this.validate_warehouse();
+    let caught = false;
+    if (this.wrapper.find('.pos-bill-item').length > 0) {
+      (this.frm.doc['items'] || []).forEach(item => {
+        if (item.item_code === this.items[0].item_code) {
+          caught = true;
+          item.qty += this.is_return ? -1 : 1;
+          item.amount = flt(item.rate) * flt(item.qty);
+          if (this.item_serial_no[item.item_code]) {
+            item.serial_no += '\n' + this.item_serial_no[item.item_code][0];
+            item.warehouse = this.item_serial_no[item.item_code][1];
+          }
+          if (this.item_batch_no.length) {
+            item.batch_no = this.item_batch_no[item.item_code];
+          }
+        }
+      });
+    }
+    if (!caught) {
+      this.add_new_item_to_grid();
+    }
+    this.update_paid_amount_status(false);
+    this.wrapper.find('.item-cart-items').scrollTop(1000);
+  },
+  make_control: function() {
+    this._super();
+    this.make_return_control();
     this.bind_keyboard_shortcuts();
-	},
+  },
+  make_return_control: function() {
+    const a = this.wrapper
+      .find('.totals-area .net-total-area .cell:first-child')
+      .html(
+        `
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="is_return_check">
+        <label class="form-check-label" for="is_return_check">${__(
+          'Is Return'
+        )}</label>
+      </div>
+      `
+      )
+      .find('.form-check-input')
+      .on('change', e => {
+        this.frm.doc.is_return = e.target.checked ? 1 : 0;
+        this.is_return = e.target.checked;
+        (this.frm.doc.items || []).forEach(item => {
+          item.qty = (this.is_return ? -1 : 1) * Math.abs(item.qty);
+        });
+        this.update_paid_amount_status(false);
+      });
+  },
   bind_keyboard_shortcuts: function() {
     $(document).on('keydown', e => {
       if (this.numeric_keypad && e.keyCode === 120) {
