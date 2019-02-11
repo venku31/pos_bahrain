@@ -55,7 +55,9 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   },
   create_new: function() {
     this._super();
-    this.is_return = false;
+    this.wrapper
+      .find('.totals-area .net-total-area .cell:first-child .form-check-input')
+      .prop('checked', false);
   },
   setinterval_to_sync_master_data: function(delay) {
     setInterval(async () => {
@@ -225,7 +227,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
           this.validate_serial_no_qty(item, item_code, field, value);
         }
         if (field === 'qty') {
-          item.qty = (this.is_return ? -1 : 1) * Math.abs(value);
+          item.qty = (this.frm.doc.is_return ? -1 : 1) * Math.abs(value);
         } else {
           item[field] = flt(value);
         }
@@ -324,7 +326,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       (this.frm.doc['items'] || []).forEach(item => {
         if (item.item_code === this.items[0].item_code) {
           caught = true;
-          item.qty += this.is_return ? -1 : 1;
+          item.qty += this.frm.doc.is_return ? -1 : 1;
           item.amount = flt(item.rate) * flt(item.qty);
           if (this.item_serial_no[item.item_code]) {
             item.serial_no += '\n' + this.item_serial_no[item.item_code][0];
@@ -348,7 +350,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     this.bind_keyboard_shortcuts();
   },
   make_return_control: function() {
-    const a = this.wrapper
+    this.wrapper
       .find('.totals-area .net-total-area .cell:first-child')
       .html(
         `
@@ -363,9 +365,8 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       .find('.form-check-input')
       .on('change', e => {
         this.frm.doc.is_return = e.target.checked ? 1 : 0;
-        this.is_return = e.target.checked;
         (this.frm.doc.items || []).forEach(item => {
-          item.qty = (this.is_return ? -1 : 1) * Math.abs(item.qty);
+          item.qty = (this.frm.doc.is_return ? -1 : 1) * Math.abs(item.qty);
         });
         this.update_paid_amount_status(false);
       });
