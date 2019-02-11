@@ -35,7 +35,11 @@ def _get_clauses(filters):
         frappe.throw(_("Company is required to generate report"))
     invoice_type = {"Purchases": 0, "Returns": 1}
     clauses = concatv(
-        ["docstatus = 1", "posting_date BETWEEN %(from_date)s AND %(to_date)s"],
+        [
+            "docstatus = 1",
+            "company = %(company)s",
+            "posting_date BETWEEN %(from_date)s AND %(to_date)s",
+        ],
         ["supplier = %(supplier)s"] if filters.get("supplier") else [],
         ["is_return = {}".format(invoice_type[filters.get("invoice_type")])]
         if filters.get("invoice_type") in invoice_type
