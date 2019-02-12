@@ -9,25 +9,21 @@ from toolz import compose, pluck, get
 
 
 def execute(filters=None):
-    columns_with_keys = _get_columns(filters)
+    columns_with_keys = _get_columns()
     columns = compose(list, partial(pluck, "label"))(columns_with_keys)
     keys = compose(list, partial(pluck, "key"))(columns_with_keys)
     data = _get_data(_get_clauses(filters), filters, keys)
     return columns, data
 
 
-def _get_columns(filters):
-    columns = (
-        [
-            {"key": "item_code", "label": _("Item Code") + ":Link/Item:120"},
-            {"key": "item_name", "label": _("Item Name") + "::180"},
-        ]
-        if filters.get("salesman")
-        else [{"key": "salesman_name", "label": _("Sales Person") + "::120"}]
-    )
-    columns += [
-        {"key": "paid_qty", "label": _("Paid Qty") + ":Float:90"},
-        {"key": "free_qty", "label": _("Free Qty") + ":Float:90"},
+def _get_columns():
+    columns = [
+        {"key": "salesman_name", "label": _("Sales Person") + "::120"},
+        {"key": "item_code", "label": _("Item Code") + ":Link/Item:120"},
+        {"key": "item_name", "label": _("Item Name") + "::180"},
+        {"key": "main_qty", "label": _("Main Qty") + ":Float:90"},
+        {"key": "bonus_qty", "label": _("Bonus Qty") + ":Float:90"},
+        {"key": "rate", "label": _("Rate") + ":Currency:120"},
         {"key": "gross", "label": _("Gross") + ":Currency:120"},
     ]
     return columns
@@ -50,8 +46,9 @@ def _get_data(clauses, args, keys):
             SELECT
                 sii.item_code AS item_code,
                 sii.item_name AS item_name,
-                SUM(siim.qty) AS paid_qty,
-                SUM(siiz.qty) AS free_qty,
+                SUM(siim.qty) AS main_qty,
+                SUM(siiz.qty) AS bonus_qty,
+                AVG(sii.rate) AS rate,
                 SUM(sii.amount) AS gross,
                 sii.salesman_name AS salesman_name
             FROM `tabSales Invoice Item` AS sii
@@ -63,10 +60,9 @@ def _get_data(clauses, args, keys):
             ) AS siiz ON siiz.name = sii.name
             LEFT JOIN `tabSales Invoice` AS si ON sii.parent = si.name
             WHERE {clauses}
-            GROUP BY {group_by}
+            GROUP BY sii.salesman_name, sii.item_code
         """.format(
-            clauses=clauses,
-            group_by="sii.item_code" if args.get("salesman") else "sii.salesman_name",
+            clauses=clauses
         ),
         values=args,
         as_dict=1,
