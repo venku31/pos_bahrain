@@ -10,8 +10,7 @@ from toolz import compose, pluck, merge, groupby, concatv
 
 def execute(filters=None):
     columns = _get_columns(filters)
-    keys = compose(list, partial(pluck, "fieldname"))(columns)
-    data = _get_data(_get_clauses(filters), filters, keys)
+    data = _get_data(_get_clauses(filters), filters)
     return columns, data
 
 
@@ -70,7 +69,7 @@ def _get_clauses(filters):
     return " AND ".join(clauses)
 
 
-def _get_data(clauses, args, keys):
+def _get_data(clauses, args):
     items = frappe.db.sql(
         """
             SELECT
