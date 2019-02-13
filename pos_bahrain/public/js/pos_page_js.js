@@ -56,7 +56,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   create_new: function() {
     this._super();
     this.wrapper
-      .find('.pos-bill-wrapper .return-row #is_return_check')
+      .find('.totals-area .net-total-area .cell:first-child .form-check-input')
       .prop('checked', false);
   },
   setinterval_to_sync_master_data: function(delay) {
@@ -350,21 +350,19 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     this.bind_keyboard_shortcuts();
   },
   make_return_control: function() {
-    this.numeric_keypad
-      .parent()
-      .css('margin-top', 0)
-      .before(
-        `
-        <div class="return-row form-check text-right" style="margin-top: 30px">
-          <input class="form-check-input" type="checkbox" id="is_return_check">
-          <label class="form-check-label" for="is_return_check">${__(
-            'Is Return'
-          )}</label>
-        </div>
-        `
-      );
     this.wrapper
-      .find('.pos-bill-wrapper .return-row #is_return_check')
+      .find('.totals-area .net-total-area .cell:first-child')
+      .html(
+        `
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="is_return_check">
+        <label class="form-check-label" for="is_return_check">${__(
+          'Is Return'
+        )}</label>
+      </div>
+      `
+      )
+      .find('.form-check-input')
       .on('change', e => {
         this.frm.doc.is_return = e.target.checked ? 1 : 0;
         (this.frm.doc.items || []).forEach(item => {

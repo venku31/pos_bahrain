@@ -15,9 +15,17 @@
   11. POS to Fetch only those batch and Items which are in stock in the POS profile selected warehouse.
   12. Show Expiry Date while selecting Batch from drop down in Stock Entry (Material Receipt).
   13. Limiting reports to respected company.
+  14. Return from offline POS.
+  15. Simple Sales and Purchase Register Reports.
+  16. Customer Item-Wise Sales Report.
+  17. Item Consumption Report.
+  18. Item-Wise Sales Return.
+  19. Simple Batch Expiry Report.
+  20. Customer Sales Summary.
+  21. Generate Print format for Closing Voucher.
 
 ## Future Updates
-  1. Enhancing Closing Voucher - Generate Print format for Closing.
+  1. XXXXXXXXXXX
 
 
 #### License
