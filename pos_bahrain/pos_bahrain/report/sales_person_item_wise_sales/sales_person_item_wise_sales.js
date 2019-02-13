@@ -23,4 +23,14 @@ frappe.query_reports['Sales Person Item-wise Sales'] = {
       options: 'User',
     },
   ],
+  formatter: function(value, row, column = {}, data = {}, default_formatter) {
+    if (!data.parent) {
+      return $(`<span>${default_formatter(value, row, column, data)}</span>`)
+        .css('font-weight', 'bold')
+        .wrap('<p />')
+        .parent()
+        .html();
+    }
+    return default_formatter(value, row, column, data);
+  },
 };
