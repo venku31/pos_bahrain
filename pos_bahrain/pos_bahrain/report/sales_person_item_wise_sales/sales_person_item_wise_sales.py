@@ -5,26 +5,55 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from functools import partial
-from toolz import compose, pluck, get
+from toolz import compose, pluck, merge, groupby, concatv
 
 
 def execute(filters=None):
-    columns_with_keys = _get_columns()
-    columns = compose(list, partial(pluck, "label"))(columns_with_keys)
-    keys = compose(list, partial(pluck, "key"))(columns_with_keys)
-    data = _get_data(_get_clauses(filters), filters, keys)
+    columns = _get_columns(filters)
+    data = _get_data(_get_clauses(filters), filters)
     return columns, data
 
 
-def _get_columns():
+def _get_columns(filters):
     columns = [
-        {"key": "salesman_name", "label": _("Sales Person") + "::120"},
-        {"key": "item_code", "label": _("Item Code") + ":Link/Item:120"},
-        {"key": "item_name", "label": _("Item Name") + "::180"},
-        {"key": "main_qty", "label": _("Main Qty") + ":Float:90"},
-        {"key": "bonus_qty", "label": _("Bonus Qty") + ":Float:90"},
-        {"key": "rate", "label": _("Rate") + ":Currency:120"},
-        {"key": "gross", "label": _("Gross") + ":Currency:120"},
+        {
+            "fieldname": "salesman_name",
+            "fieldtype": "Data",
+            "label": _("Salesman Name"),
+            "width": 180,
+        },
+        {
+            "fieldname": "item_code",
+            "fieldtype": "Link",
+            "label": _("Item Code"),
+            "options": "Item",
+            "width": 120,
+        },
+        {
+            "fieldname": "item_name",
+            "fieldtype": "Data",
+            "label": _("Item Name"),
+            "width": 180,
+        },
+        {
+            "fieldname": "paid_qty",
+            "fieldtype": "Float",
+            "label": _("Paid Qty"),
+            "width": 90,
+        },
+        {
+            "fieldname": "free_qty",
+            "fieldtype": "Float",
+            "label": _("Free Qty"),
+            "width": 90,
+        },
+        {
+            "fieldname": "gross",
+            "fieldtype": "Currency",
+            "label": _("Gross"),
+            "options": "",
+            "width": 120,
+        },
     ]
     return columns
 
@@ -40,15 +69,14 @@ def _get_clauses(filters):
     return " AND ".join(clauses)
 
 
-def _get_data(clauses, args, keys):
+def _get_data(clauses, args):
     items = frappe.db.sql(
         """
             SELECT
                 sii.item_code AS item_code,
                 sii.item_name AS item_name,
-                SUM(siim.qty) AS main_qty,
-                SUM(siiz.qty) AS bonus_qty,
-                AVG(sii.rate) AS rate,
+                SUM(siim.qty) AS paid_qty,
+                SUM(siiz.qty) AS free_qty,
                 SUM(sii.amount) AS gross,
                 sii.salesman_name AS salesman_name
             FROM `tabSales Invoice Item` AS sii
@@ -68,4 +96,38 @@ def _get_data(clauses, args, keys):
         as_dict=1,
     )
 
-    return map(partial(get, keys), items)
+    return compose(list, _group)(items)
+
+
+def _group(items):
+    def sum_by(key):
+        return compose(sum, partial(map, lambda x: x or 0), partial(pluck, key))
+
+    def subtotal(salesman_name):
+        def fn(grouped_items):
+            return concatv(
+                [
+                    {
+                        "salesman_name": salesman_name,
+                        "paid_qty": sum_by("paid_qty")(grouped_items),
+                        "free_qty": sum_by("free_qty")(grouped_items),
+                        "gross": sum_by("gross")(grouped_items),
+                    }
+                ],
+                grouped_items,
+            )
+
+        return fn
+
+    def set_parent(salesman_name):
+        return partial(
+            map, lambda x: merge(x, {"parent": salesman_name, "salesman_name": None})
+        )
+
+    transformed = {
+        salesman_name: compose(subtotal(salesman_name), set_parent(salesman_name))(
+            grouped_items
+        )
+        for salesman_name, grouped_items in groupby("salesman_name", items).items()
+    }
+    return concatv(*transformed.values())
