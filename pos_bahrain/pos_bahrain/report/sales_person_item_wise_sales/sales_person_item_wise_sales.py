@@ -96,7 +96,7 @@ def _get_data(clauses, args):
         as_dict=1,
     )
 
-    return compose(list, _group)(items)
+    return _group(items)
 
 
 def _group(items):
@@ -130,4 +130,11 @@ def _group(items):
         )
         for salesman_name, grouped_items in groupby("salesman_name", items).items()
     }
-    return concatv(*transformed.values())
+    return compose(list, concatv)(*transformed.values()) + [
+        {
+            "salesman_name": _("Total"),
+            "paid_qty": sum_by("paid_qty")(items),
+            "free_qty": sum_by("free_qty")(items),
+            "gross": sum_by("gross")(items),
+        }
+    ]
