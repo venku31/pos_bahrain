@@ -12,7 +12,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         },
       ],
     });
-    this.setinterval_to_sync_master_data(1800000);
+    this.setinterval_to_sync_master_data(600000);
   },
   init_master_data: async function(r, freeze = true) {
     this._super(r);
@@ -267,54 +267,56 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       }
     });
   },
-	refresh_fields: function (update_paid_amount) {
-                this.apply_pricing_rule();
-                this.discount_amount_applied = false;
-                this._calculate_taxes_and_totals();
-                this.calculate_discount_amount();
-                this.show_items_in_item_cart();
-                this.set_taxes();
-                this.calculate_outstanding_amount(update_paid_amount);
-                this.set_totals();
-                this.update_total_qty();
-        },
-	update_total_qty: function() {
-                var me = this;
-                var qty_total = 0;
-                        $.each(this.frm.doc["items"] || [], function (i, d) {
-                                if (d.item_code) {
-                                        qty_total += d.qty;
-                                }
-                        });
-                this.frm.doc.qty_total = qty_total;
-                this.wrapper.find('.qty-total').text(this.frm.doc.qty_total);
-        },
-	create_invoice: function () {
-                var me = this;
-                var invoice_data = {};
-                function get_barcode_uri(text) {
-                  return JsBarcode(document.createElement('canvas'), text, {
-                    height: 40,
-                    displayValue: false,
-                  })._renderProperties.element.toDataURL();
-                }
-                this.si_docs = this.get_doc_from_localstorage();
-                if (this.frm.doc.offline_pos_name) {
-                        this.update_invoice();
-                } else {
-                        this.frm.doc.offline_pos_name = $.now();
-                        this.frm.doc.pos_name_barcode_uri = get_barcode_uri(this.frm.doc.offline_pos_name);
-                        this.frm.doc.posting_date = frappe.datetime.get_today();
-                        this.frm.doc.posting_time = frappe.datetime.now_time();
-                        this.frm.doc.pos_total_qty = this.frm.doc.qty_total;
-                        this.frm.doc.pos_profile = this.pos_profile_data['name'];
-                        invoice_data[this.frm.doc.offline_pos_name] = this.frm.doc;
-                        this.si_docs.push(invoice_data);
-                        this.update_localstorage();
-                        this.set_primary_action();
-                }
-                return invoice_data;
-        },
+  refresh_fields: function(update_paid_amount) {
+    this.apply_pricing_rule();
+    this.discount_amount_applied = false;
+    this._calculate_taxes_and_totals();
+    this.calculate_discount_amount();
+    this.show_items_in_item_cart();
+    this.set_taxes();
+    this.calculate_outstanding_amount(update_paid_amount);
+    this.set_totals();
+    this.update_total_qty();
+  },
+  update_total_qty: function() {
+    var me = this;
+    var qty_total = 0;
+    $.each(this.frm.doc['items'] || [], function(i, d) {
+      if (d.item_code) {
+        qty_total += d.qty;
+      }
+    });
+    this.frm.doc.qty_total = qty_total;
+    this.wrapper.find('.qty-total').text(this.frm.doc.qty_total);
+  },
+  create_invoice: function() {
+    var me = this;
+    var invoice_data = {};
+    function get_barcode_uri(text) {
+      return JsBarcode(document.createElement('canvas'), text, {
+        height: 40,
+        displayValue: false,
+      })._renderProperties.element.toDataURL();
+    }
+    this.si_docs = this.get_doc_from_localstorage();
+    if (this.frm.doc.offline_pos_name) {
+      this.update_invoice();
+    } else {
+      this.frm.doc.offline_pos_name = $.now();
+      this.frm.doc.pos_name_barcode_uri = get_barcode_uri(
+        this.frm.doc.offline_pos_name
+      );
+      this.frm.doc.posting_date = frappe.datetime.get_today();
+      this.frm.doc.posting_time = frappe.datetime.now_time();
+      this.frm.doc.pos_total_qty = this.frm.doc.qty_total;
+      this.frm.doc.pos_profile = this.pos_profile_data['name'];
+      invoice_data[this.frm.doc.offline_pos_name] = this.frm.doc;
+      this.si_docs.push(invoice_data);
+      this.update_localstorage();
+      this.set_primary_action();
+    }
+    return invoice_data;
+  },
   add_to_cart: function() {
     // this method is a copy of the original with the return invoice feature added.
     this.customer_validate();
