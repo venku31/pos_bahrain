@@ -34,6 +34,7 @@ frappe.ui.form.on('POS Closing Voucher', {
     });
     const returns_total = sum_by('grand_total', returns);
     frm.set_value('returns_total', -returns_total);
+    frm.set_value('returns_net_total', sum_by('net_total', returns));
     frm.set_value(
       'grand_total',
       sum_by('grand_total', invoices) + returns_total
