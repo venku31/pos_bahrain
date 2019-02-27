@@ -21,6 +21,9 @@ frappe.query_reports['Sales Person Item-wise Sales'] = {
       label: __('Sales Person'),
       fieldtype: 'Link',
       options: 'User',
+      default: frappe.user_roles.includes('Accounts User')
+        ? ''
+        : frappe.session.user,
     },
   ],
   formatter: function(value, row, column = {}, data = {}, default_formatter) {
