@@ -1,0 +1,1 @@
+pos_bahrain.patches.v0_0.set_salesman_in_sales_invoice_item
