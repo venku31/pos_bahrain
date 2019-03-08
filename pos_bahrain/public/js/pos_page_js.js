@@ -201,10 +201,8 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       ].find(({ uom }) => uom === e.target.value);
       if (uom && selected_item) {
         const rate =
-          flt(
-            this.price_list_data[this.item_code] * conversion_factor,
-            precision()
-          ) / flt(this.frm.doc.conversion_rate, precision());
+          (flt(this.price_list_data[this.item_code]) * flt(conversion_factor)) /
+          flt(this.frm.doc.conversion_rate);
         Object.assign(selected_item, {
           uom,
           conversion_factor,
@@ -487,12 +485,9 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     const { conversion_rate, currency } = this.get_exchange_rate();
     if (
       this.frm.doc.outstanding_amount > 0 &&
-      flt(this.selected_mode.val()) == 0.0
+      flt(this.selected_mode.val()) === 0.0
     ) {
-      this.payment_val = flt(
-        this.frm.doc.outstanding_amount / conversion_rate,
-        precision()
-      );
+      this.payment_val = flt(this.frm.doc.outstanding_amount / conversion_rate);
       this.selected_mode.val(format_currency(this.payment_val, currency));
       this.update_payment_amount();
     } else if (flt(this.selected_mode.val()) > 0) {
@@ -520,8 +515,8 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         conversion_rate: mop_conversion_rate,
         currency: mop_currency,
       } = this.get_exchange_rate();
-      const mop_amount = flt(this.selected_mode.val(), precision());
-      const amount = mop_amount * flt(mop_conversion_rate, precision());
+      const mop_amount = flt(this.selected_mode.val());
+      const amount = mop_amount * flt(mop_conversion_rate);
       Object.assign(selected_payment, {
         amount,
         mop_currency,
