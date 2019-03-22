@@ -15,45 +15,22 @@ def execute(filters=None):
 
 
 def _get_columns(filters):
+    def make_column(key, label, type="Float", options=None, width=90):
+        return {
+            "label": _(label),
+            "fieldname": key,
+            "fieldtype": type,
+            "options": options,
+            "width": width,
+        }
+
     columns = [
-        {
-            "fieldname": "salesman_name",
-            "fieldtype": "Data",
-            "label": _("Salesman Name"),
-            "width": 180,
-        },
-        {
-            "fieldname": "item_code",
-            "fieldtype": "Link",
-            "label": _("Item Code"),
-            "options": "Item",
-            "width": 120,
-        },
-        {
-            "fieldname": "item_name",
-            "fieldtype": "Data",
-            "label": _("Item Name"),
-            "width": 180,
-        },
-        {
-            "fieldname": "paid_qty",
-            "fieldtype": "Float",
-            "label": _("Paid Qty"),
-            "width": 90,
-        },
-        {
-            "fieldname": "free_qty",
-            "fieldtype": "Float",
-            "label": _("Free Qty"),
-            "width": 90,
-        },
-        {
-            "fieldname": "gross",
-            "fieldtype": "Currency",
-            "label": _("Gross"),
-            "options": "",
-            "width": 120,
-        },
+        make_column("salesman_name", "Salesman Name", type="Data", width=180),
+        make_column("item_code", "Item Code", type="Link", options="Item", width=120),
+        make_column("item_name", "Item Name", type="Data", width=180),
+        make_column("paid_qty", "Paid Qty"),
+        make_column("free_qty", "Free Qty"),
+        make_column("gross", "Gross", type="Currency", width=120),
     ]
     return columns
 

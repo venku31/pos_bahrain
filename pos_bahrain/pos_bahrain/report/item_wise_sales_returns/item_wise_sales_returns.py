@@ -5,27 +5,39 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from functools import partial
-from toolz import compose, merge, pluck, get
+from toolz import compose, merge, pluck, keyfilter
 
 
 def execute(filters=None):
-    columns_with_keys = _get_columns()
-    columns = compose(list, partial(pluck, "label"))(columns_with_keys)
-    keys = compose(list, partial(pluck, "key"))(columns_with_keys)
+    columns = _get_columns()
+    keys = _get_keys()
     data = _get_data(_get_clauses(filters), filters, keys)
     return columns, data
 
 
 def _get_columns():
+    def make_column(key, label, type="Currency", options=None, width=120):
+        return {
+            "label": _(label),
+            "fieldname": key,
+            "fieldtype": type,
+            "options": options,
+            "width": width,
+        }
+
     columns = [
-        {"key": "customer", "label": _("Customer") + ":Link/Customer:120"},
-        {"key": "item_code", "label": _("Item Code") + ":Link/Item:120"},
-        {"key": "item_name", "label": _("Item Name") + "::180"},
-        {"key": "qty", "label": _("Returned Qty") + ":Float:90"},
-        {"key": "rate", "label": _("Rate") + ":Currency:120"},
-        {"key": "gross", "label": _("Gross") + ":Currency:120"},
+        make_column("customer", "Customer", type="Link", options="Customer"),
+        make_column("item_code", "Item Code", type="Link", options="Item"),
+        make_column("item_name", "Item Name", type="Data", width=180),
+        make_column("qty", "Returned Qty", type="Float", width=90),
+        make_column("rate", "Rate"),
+        make_column("gross", "Gross"),
     ]
     return columns
+
+
+def _get_keys():
+    return compose(list, partial(pluck, "fieldname"), _get_columns)()
 
 
 def _get_clauses(filters):
@@ -62,6 +74,6 @@ def _get_data(clauses, args, keys):
     def add_rate(row):
         return merge(row, {"rate": row.gross / row.qty})
 
-    make_row = compose(partial(get, keys), add_rate)
+    make_row = compose(partial(keyfilter, lambda k: k in keys), add_rate)
 
     return map(make_row, items)

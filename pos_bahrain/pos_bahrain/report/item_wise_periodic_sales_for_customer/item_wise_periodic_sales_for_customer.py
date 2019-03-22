@@ -6,7 +6,18 @@ import frappe
 from frappe import _
 from frappe.utils import today
 from functools import partial, reduce
-from toolz import merge, pluck, get, compose, first, flip, groupby, excepts, concat
+from toolz import (
+    merge,
+    pluck,
+    get,
+    compose,
+    first,
+    flip,
+    groupby,
+    excepts,
+    concat,
+    keyfilter,
+)
 
 from pos_bahrain.pos_bahrain.report.item_consumption_report.helpers import (
     generate_intervals,
@@ -15,9 +26,8 @@ from pos_bahrain.pos_bahrain.report.item_consumption_report.helpers import (
 
 def execute(filters=None):
     args = _get_args(filters)
-    columns_with_keys = _get_columns(args)
-    columns = compose(list, partial(pluck, "label"))(columns_with_keys)
-    data = _get_data(args, columns_with_keys)
+    columns = _get_columns(args)
+    data = _get_data(args, columns)
     return columns, data
 
 
@@ -34,20 +44,35 @@ def _get_args(filters={}):
 
 
 def _get_columns(args):
+    def make_column(key, label, type="Currency", options=None, width=120):
+        return {
+            "label": _(label),
+            "fieldname": key,
+            "fieldtype": type,
+            "options": options,
+            "width": width,
+        }
+
     def add_interval_column(column):
         return [
             merge(
-                column, {"label": _("{} Qty".format(column.get("label"))) + ":Float:90"}
+                column,
+                make_column(
+                    column.get("key"),
+                    "{} Qty".format(column.get("label")),
+                    type="Float",
+                    width=90,
+                ),
             ),
-            {
-                "key": "{}_amount".format(column.get("key")),
-                "label": _("{} Amount".format(column.get("label"))) + ":Currency:120",
-            },
+            make_column(
+                "{}_amount".format(column.get("key")),
+                "{} Amount".format(column.get("label")),
+            ),
         ]
 
     columns = [
-        {"key": "item_code", "label": _("Item Code") + ":Link/Item:120"},
-        {"key": "item_name", "label": _("Item Name") + "::180"},
+        make_column("item_code", "Item Code", type="Link", options="Item"),
+        make_column("item_name", "Item Name", type="Data", width=180),
     ]
     intervals = compose(
         list, concat, partial(map, add_interval_column), generate_intervals
@@ -56,8 +81,8 @@ def _get_columns(args):
         columns
         + intervals(args.get("interval"), args.get("start_date"), args.get("end_date"))
         + [
-            {"key": "total_qty", "label": _("Total Qty") + ":Float:90"},
-            {"key": "total_amount", "label": _("Total Amount") + ":Currency:120"},
+            make_column("total_qty", "Total Qty", type="Float", width=90),
+            make_column("total_amount", "Total Amount"),
         ]
     )
 
@@ -90,11 +115,11 @@ def _get_data(args, columns):
         },
         as_dict=1,
     )
-    keys = compose(list, partial(pluck, "key"))(columns)
+    keys = compose(list, partial(pluck, "fieldname"))(columns)
     periods = filter(lambda x: x.get("start_date") and x.get("end_date"), columns)
 
     make_data = compose(
-        partial(map, partial(get, keys)),
+        partial(map, partial(keyfilter, lambda k: k in keys)),
         partial(filter, lambda x: x.get("total_qty") > 0),
         partial(map, _set_period_columns(sales, periods)),
     )

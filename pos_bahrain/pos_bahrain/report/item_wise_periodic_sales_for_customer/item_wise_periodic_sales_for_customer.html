@@ -1,5 +1,5 @@
 {%
-  if (report.columns.length > 12) {
+  if (columns.length > 12) {
     frappe.throw(__('Too many columns. Export the report and print it using a spreadsheet application.'));
   }
 %}
@@ -31,9 +31,9 @@
 <table class="table table-bordered">
   <thead>
     <tr>
-      {% for(var i = 0; i < report.columns.length; i++) { %}
+      {% for(var i = 0; i < columns.length; i++) { %}
       <th class="{%= i > 2 ? 'text-right' : '' %}">
-        {%= i === 0 ? 'Sr No' : report.columns[i].label %}
+        {%= i === 0 ? 'Sr No' : columns[i].label %}
       </th>
       {% } %}
     </tr>
@@ -41,8 +41,8 @@
   <tbody>
     {% for (var j = 0; j < data.length; j++) { %}
     <tr>
-      {% for(var i = 0; i < report.columns.length; i++) { %}
-      {% const value = data[j][report.columns[i].label] %}
+      {% for(var i = 0; i < columns.length; i++) { %}
+      {% const value = data[j][columns[i].fieldname] %}
       <td class="{%= i > 2 ? 'text-right' : '' %}">
         {%= i === 0 ? j + 1 :
           i < 3 ? value :

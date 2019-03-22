@@ -7,7 +7,7 @@ from frappe import _
 from frappe.utils import today
 from functools import partial, reduce
 import operator
-from toolz import merge, pluck, get, compose, first, flip, groupby, excepts
+from toolz import merge, pluck, get, compose, first, flip, groupby, excepts, keyfilter
 
 from pos_bahrain.pos_bahrain.report.item_consumption_report.helpers import (
     generate_intervals,
@@ -16,9 +16,8 @@ from pos_bahrain.pos_bahrain.report.item_consumption_report.helpers import (
 
 def execute(filters=None):
     args = _get_args(filters)
-    columns_with_keys = _get_columns(args)
-    columns = compose(list, partial(pluck, "label"))(columns_with_keys)
-    data = _get_data(args, columns_with_keys)
+    columns = _get_columns(args)
+    data = _get_data(args, columns)
     return columns, data
 
 
@@ -38,25 +37,36 @@ def _get_args(filters={}):
 
 
 def _get_columns(args):
+    def make_column(key, label, type="Float", options=None, width=90):
+        return {
+            "label": _(label),
+            "fieldname": key,
+            "fieldtype": type,
+            "options": options,
+            "width": width,
+        }
+
     columns = [
-        {"key": "item_code", "label": _("Item Code") + ":Link/Item:120"},
-        {"key": "brand", "label": _("Brand") + ":Link/Brand:120"},
-        {"key": "item_name", "label": _("Item Name") + "::200"},
-        {"key": "supplier", "label": _("Supplier") + ":Link/Supplier:120"},
-        {
-            "key": "price",
-            "label": args.get("price_list", "Standard Buying Price") + ":Currency:120",
-        },
-        {"key": "stock", "label": _("Available Stock") + ":Float:90"},
+        make_column("item_code", "Item Code", type="Link", options="Item", width=120),
+        make_column("brand", "Brand", type="Link", options="Brand", width=120),
+        make_column("item_name", "Item Name", type="Data", width=200),
+        make_column("supplier", "Supplier", type="Link", options="Supplier", width=120),
+        make_column(
+            "price",
+            args.get("price_list", "Standard Buying Price"),
+            type="Currency",
+            width=120,
+        ),
+        make_column("stock", "Available Stock"),
     ]
     intervals = compose(
-        partial(map, lambda x: merge(x, {"label": x.get("label") + ":Float:90"})),
+        partial(map, lambda x: merge(x, make_column(x.get("key"), x.get("label")))),
         generate_intervals,
     )
     return (
         columns
         + intervals(args.get("interval"), args.get("start_date"), args.get("end_date"))
-        + [{"key": "total_consumption", "label": _("Total Consumption") + ":Float:90"}]
+        + [make_column("total_consumption", "Total Consumption")]
     )
 
 
@@ -107,13 +117,12 @@ def _get_data(args, columns):
         },
         as_dict=1,
     )
-    keys = compose(list, partial(pluck, "key"))(columns)
+    keys = compose(list, partial(pluck, "fieldname"))(columns)
     periods = filter(lambda x: x.get("start_date") and x.get("end_date"), columns)
 
     set_consumption = _set_consumption(sles, periods)
 
-    def make_row(item):
-        return compose(partial(get, keys), set_consumption)(item)
+    make_row = compose(partial(keyfilter, lambda k: k in keys), set_consumption)
 
     return map(make_row, items)
 

@@ -5,29 +5,41 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from functools import partial
-from toolz import compose, pluck, get, concatv
+from toolz import compose, pluck, keyfilter, concatv
 
 
 def execute(filters=None):
-    columns_with_keys = _get_columns()
-    columns = compose(list, partial(pluck, "label"))(columns_with_keys)
-    keys = compose(list, partial(pluck, "key"))(columns_with_keys)
+    columns = _get_columns()
+    keys = _get_keys()
     data = _get_data(_get_clauses(filters), filters, keys)
     return columns, data
 
 
 def _get_columns():
+    def make_column(key, label, type="Currency", options=None, width=120):
+        return {
+            "label": _(label),
+            "fieldname": key,
+            "fieldtype": type,
+            "options": options,
+            "width": width,
+        }
+
     columns = [
-        {"key": "posting_date", "label": _("Date") + ":Date:90"},
-        {"key": "invoice", "label": _("Invoice No") + ":Link/Sales Invoice:120"},
-        {"key": "customer", "label": _("Customer") + ":Link/Customer:120"},
-        {"key": "total", "label": _("Total") + ":Currency:120"},
-        {"key": "discount", "label": _("Discount") + ":Currency:120"},
-        {"key": "net_total", "label": _("Net Total") + ":Currency:120"},
-        {"key": "tax", "label": _("Tax") + ":Currency:120"},
-        {"key": "grand_total", "label": _("Grand Total") + ":Currency:120"},
+        make_column("posting_date", "Date", type="Date", width=90),
+        make_column("invoice", "Invoice No", type="Link", options="Sales Invoice"),
+        make_column("customer", "Customer", type="Link", options="Customer"),
+        make_column("total", "Total"),
+        make_column("discount", "Discount"),
+        make_column("net_total", "Net Total"),
+        make_column("tax", "Tax"),
+        make_column("grand_total", "Grand Total"),
     ]
     return columns
+
+
+def _get_keys():
+    return compose(list, partial(pluck, "fieldname"), _get_columns)()
 
 
 def _get_clauses(filters):
@@ -68,4 +80,4 @@ def _get_data(clauses, args, keys):
         values=args,
         as_dict=1,
     )
-    return map(partial(get, keys), items)
+    return map(partial(keyfilter, lambda k: k in keys), items)
