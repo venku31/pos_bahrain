@@ -6,14 +6,14 @@ import frappe
 from frappe import _
 from frappe.utils import today, getdate
 from functools import partial
-from toolz import merge, pluck, get, compose
+from toolz import merge, pluck, keyfilter, compose
 
 
 def execute(filters=None):
     args = _get_args(filters)
-    columns_with_keys = _get_columns(args)
-    columns = compose(list, partial(pluck, "label"))(columns_with_keys)
-    data = _get_data(args, columns_with_keys)
+    columns = _get_columns(args)
+    keys = _get_keys(args)
+    data = _get_data(args, keys)
     return columns, data
 
 
@@ -37,22 +37,35 @@ def _get_args(filters={}):
 
 
 def _get_columns(args):
+    def make_column(key, label, type="Currency", options=None, width=120):
+        return {
+            "label": _(label),
+            "fieldname": key,
+            "fieldtype": type,
+            "options": options,
+            "width": width,
+        }
+
     columns = [
-        {"key": "supplier", "label": _("Supplier") + ":Link/Supplier:120"},
-        {"key": "brand", "label": _("Brand") + ":Link/Brand:120"},
-        {"key": "item_code", "label": _("Item Code") + ":Link/Item:120"},
-        {"key": "item_name", "label": _("Item Name") + "::200"},
-        {"key": "batch_no", "label": _("Batch") + ":Link/Batch:120"},
-        {"key": "expiry_date", "label": _("Expiry Date") + ":Date:90"},
-        {"key": "expiry_in_days", "label": _("Expiry in Days") + ":Int:90"},
-        {"key": "qty", "label": _("Quantity") + ":Float:90"},
-        {"key": "price1", "label": args.get("price_list1") + ":Currency:120"},
-        {"key": "price2", "label": args.get("price_list2") + ":Currency:120"},
+        make_column("supplier", "Supplier", type="Link", options="Supplier"),
+        make_column("brand", "Brand", type="Link", options="Brand"),
+        make_column("item_code", "Item Code", type="Link", options="Item"),
+        make_column("item_name", "Item Name", type="Data", width=200),
+        make_column("batch_no", "Batch", type="Link", options="Batch"),
+        make_column("expiry_date", "Expiry Date", type="Date", width=90),
+        make_column("expiry_in_days", "Expiry in Days", type="Int", width=90),
+        make_column("qty", "Quantity", type="Float", width=90),
+        make_column("price1", args.get("price_list1")),
+        make_column("price2", args.get("price_list2")),
     ]
     return columns
 
 
-def _get_data(args, columns):
+def _get_keys(args):
+    return compose(list, partial(pluck, "fieldname"), _get_columns)(args)
+
+
+def _get_data(args, keys):
     sles = frappe.db.sql(
         """
             SELECT
@@ -93,7 +106,6 @@ def _get_data(args, columns):
         expiry_in_days = (row.expiry_date - getdate()).days if row.expiry_date else None
         return merge(row, {"expiry_in_days": expiry_in_days})
 
-    keys = compose(list, partial(pluck, "key"))(columns)
-    make_row = compose(partial(get, keys), set_expiry)
+    make_row = compose(partial(keyfilter, lambda k: k in keys), set_expiry)
 
     return map(make_row, sles)
