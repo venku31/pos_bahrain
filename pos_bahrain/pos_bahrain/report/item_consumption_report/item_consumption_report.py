@@ -18,7 +18,16 @@ def execute(filters=None):
     args = _get_args(filters)
     columns = _get_columns(args)
     data = _get_data(args, columns)
-    return columns, data
+    return (
+        map(
+            partial(
+                keyfilter,
+                lambda k: k in ["label", "fieldname", "fieldtype", "options", "width"],
+            ),
+            columns,
+        ),
+        data,
+    )
 
 
 def _get_args(filters={}):
