@@ -80,6 +80,13 @@ def _get_columns(args):
 
 
 def _get_data(args, columns):
+    warehouse_conditions = (
+        "warehouse = %(warehouse)s"
+        if args.get("warehouse")
+        else (
+            "warehouse IN (SELECT name FROM `tabWarehouse` WHERE company = %(company)s)"
+        )
+    )
     items = frappe.db.sql(
         """
             SELECT
@@ -96,16 +103,20 @@ def _get_data(args, columns):
                 SELECT
                     item_code, SUM(actual_qty) AS actual_qty
                 FROM `tabBin`
-                WHERE warehouse IN (
-                    SELECT name FROM `tabWarehouse` WHERE company = %(company)s
-                )
+                WHERE {warehouse_conditions}
                 GROUP BY item_code
             ) AS b
                 ON b.item_code = i.item_code
             LEFT JOIN `tabItem Default` AS id
                 ON id.parent = i.name AND id.company = %(company)s
-        """,
-        values={"price_list": args.get("price_list"), "company": args.get("company")},
+        """.format(
+            warehouse_conditions=warehouse_conditions
+        ),
+        values={
+            "price_list": args.get("price_list"),
+            "company": args.get("company"),
+            "warehouse": args.get("warehouse"),
+        },
         as_dict=1,
     )
     sles = frappe.db.sql(
@@ -115,9 +126,11 @@ def _get_data(args, columns):
             WHERE docstatus < 2 AND
                 voucher_type = 'Sales Invoice' AND
                 company = %(company)s AND
-                warehouse = %(warehouse)s AND
+                {warehouse_conditions} AND
                 posting_date BETWEEN %(start_date)s AND %(end_date)s
-        """,
+        """.format(
+            warehouse_conditions=warehouse_conditions
+        ),
         values={
             "company": args.get("company"),
             "warehouse": args.get("warehouse"),
