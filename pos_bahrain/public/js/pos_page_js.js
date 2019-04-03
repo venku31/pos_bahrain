@@ -405,6 +405,10 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       this.dialog.$wrapper.remove();
     }
     this._super();
+    this.dialog.$body
+      .find('.write_off_amount')
+      .parent()
+      .addClass('hidden');
   },
   show_payment_details: function() {
     const multimode_payments = $(this.$body).find('.multimode-payments').html(`
