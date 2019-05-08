@@ -48,6 +48,7 @@ def _get_data(args, keys):
                 SUM(si.base_total) AS total,
                 SUM(si.base_net_total) AS net_total,
                 SUM(si.base_total_taxes_and_charges) AS tax_total,
+                SUM(si.base_change_amount) AS change_amount,
                 SUM(sr.base_net_total) AS returns_net_total
             FROM `tabSales Invoice` as s
             LEFT JOIN (
@@ -104,7 +105,8 @@ def _set_payments(payments):
     )(payments)
 
     def fn(row):
-        posting_date = row.get("posting_date")
-        return merge(row, payments_grouped[posting_date])
+        mop_payments = payments_grouped[row.get("posting_date")]
+        cash_amount = (row.get("change_amount") or 0) - (mop_payments.get("Cash") or 0)
+        return merge(row, mop_payments, {"Cash": cash_amount})
 
     return fn
