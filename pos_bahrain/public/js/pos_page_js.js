@@ -153,7 +153,14 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       );
       this.batch_dialog.get_field('batch').set_input();
       this.batch_dialog.set_primary_action(__('Submit'), () => {
-        this.item_batch_no[item_code] = this.batch_dialog.get_value('batch');
+        const batch_no = this.batch_dialog.get_value('batch');
+        const item = this.frm.doc.items.find(
+          item => item.item_code === item_code
+        );
+        if (item) {
+          item.batch_no = batch_no;
+        }
+        this.item_batch_no[item_code] = batch_no;
         this.batch_dialog.hide();
         this.set_focus();
       });
@@ -375,15 +382,29 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   },
   bind_keyboard_shortcuts: function() {
     $(document).on('keydown', e => {
-      if (this.numeric_keypad && e.keyCode === 120) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (this.dialog && this.dialog.is_visible) {
-          this.dialog.hide();
-        } else {
-          $(this.numeric_keypad)
-            .find('.pos-pay')
-            .trigger('click');
+      if (frappe.get_route_str() === 'pos') {
+        if (this.numeric_keypad && e.keyCode === 120) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (this.dialog && this.dialog.is_visible) {
+            this.dialog.hide();
+          } else {
+            $(this.numeric_keypad)
+              .find('.pos-pay')
+              .trigger('click');
+          }
+        } else if (
+          this.frm.doc.docstatus == 1 &&
+          e.ctrlKey &&
+          e.keyCode === 80
+        ) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.page.btn_secondary.trigger('click');
+        } else if (e.ctrlKey && e.keyCode === 66) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.page.btn_primary.trigger('click');
         }
       }
     });
