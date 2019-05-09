@@ -153,7 +153,14 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       );
       this.batch_dialog.get_field('batch').set_input();
       this.batch_dialog.set_primary_action(__('Submit'), () => {
-        this.item_batch_no[item_code] = this.batch_dialog.get_value('batch');
+        const batch_no = this.batch_dialog.get_value('batch');
+        const item = this.frm.doc.items.find(
+          item => item.item_code === item_code
+        );
+        if (item) {
+          item.batch_no = batch_no;
+        }
+        this.item_batch_no[item_code] = batch_no;
         this.batch_dialog.hide();
         this.set_focus();
       });
