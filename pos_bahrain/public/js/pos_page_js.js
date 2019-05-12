@@ -400,11 +400,20 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         ) {
           e.preventDefault();
           e.stopPropagation();
-          this.page.btn_secondary.trigger('click');
+          if (this.msgprint) {
+            this.msgprint.msg_area.find('.print_doc').click();
+          } else {
+            this.page.btn_secondary.trigger('click');
+          }
         } else if (e.ctrlKey && e.keyCode === 66) {
           e.preventDefault();
           e.stopPropagation();
-          this.page.btn_primary.trigger('click');
+          if (this.msgprint) {
+            console.log('new_doc');
+            this.msgprint.msg_area.find('.new_doc').click();
+          } else {
+            this.page.btn_primary.trigger('click');
+          }
         }
       }
     });
