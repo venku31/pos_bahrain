@@ -250,8 +250,12 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     }
     this.update_paid_amount_status(false);
   },
-  set_primary_action: function() {
+  make_menu_list: function() {
     this._super();
+    this.page.menu
+      .find('a.grey-link:contains("Cashier Closing")')
+      .parent()
+      .hide();
     this.page.add_menu_item('POS Closing Voucher', async () => {
       if (this.connection_status) {
         if (!this.pos_voucher) {
