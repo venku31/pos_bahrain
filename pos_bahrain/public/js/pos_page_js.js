@@ -18,7 +18,12 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     this._super(r);
     try {
       const {
-        message: { batch_no_details, uom_details, exchange_rates } = {},
+        message: {
+          batch_no_details,
+          uom_details,
+          exchange_rates,
+          do_not_allow_zero_payment,
+        } = {},
       } = await frappe.call({
         method: 'pos_bahrain.api.item.get_more_pos_data',
         args: {
@@ -42,6 +47,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       this.batch_no_details = batch_no_details;
       this.uom_details = uom_details;
       this.exchange_rates = exchange_rates;
+      this.do_not_allow_zero_payment = !!cint(do_not_allow_zero_payment);
       await this.set_opening_entry();
     } catch (e) {
       frappe.msgprint({
@@ -608,5 +614,28 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       });
     }
     this._super(update_paid_amount);
+  },
+  show_amounts: function() {
+    this._super();
+    if (this.do_not_allow_zero_payment) {
+      this.dialog
+        .get_primary_btn()
+        .toggleClass('disabled', this.frm.doc.paid_amount === 0);
+    }
+  },
+  set_payment_primary_action: function() {
+    this.dialog.set_primary_action(__('Submit'), () => {
+      if (this.do_not_allow_zero_payment) {
+        const paid_amount = this.frm.doc.payments.reduce(
+          (a, { amount = 0 }) => a + amount,
+          0
+        );
+        if (!paid_amount) {
+          return frappe.throw(__('Paid Amount cannot be zero'));
+        }
+      }
+      this.dialog.hide();
+      this.submit_invoice();
+    });
   },
 });
