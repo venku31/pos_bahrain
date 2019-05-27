@@ -9,35 +9,31 @@ def _groupby(key, list_of_dicts):
     from operator import itemgetter
 
     keywise = {}
-    for k, v in groupby(
-        sorted(list_of_dicts, key=itemgetter(key)),
-        itemgetter(key),
-    ):
+    for k, v in groupby(sorted(list_of_dicts, key=itemgetter(key)), itemgetter(key)):
         keywise[k] = list(v)
     return keywise
 
 
 @frappe.whitelist()
 def get_more_pos_data(profile, company):
-    pos_profile = frappe.get_doc('POS Profile', profile)
+    pos_profile = frappe.get_doc("POS Profile", profile)
     if not pos_profile:
-        return frappe.throw(
-            _('POS Profile: {} is not valid.'.format(profile))
-        )
+        return frappe.throw(_("POS Profile: {} is not valid.".format(profile)))
     warehouse = pos_profile.warehouse or frappe.db.get_value(
-        'Company', pos_profile.company, 'default_warehouse',
+        "Company", pos_profile.company, "default_warehouse"
+    )
+    do_not_allow_zero_payment = frappe.db.get_single_value(
+        "POS Bahrain Settings", "do_not_allow_zero_payment"
     )
     if not warehouse:
         return frappe.throw(
-            _(
-                'No valid Warehouse found. Please select warehouse in '
-                'POS Profile.'
-            )
+            _("No valid Warehouse found. Please select warehouse in " "POS Profile.")
         )
     return {
-        'batch_no_details': get_batch_no_details(warehouse),
-        'uom_details': get_uom_details(),
-        'exchange_rates': get_exchange_rates(),
+        "batch_no_details": get_batch_no_details(warehouse),
+        "uom_details": get_uom_details(),
+        "exchange_rates": get_exchange_rates(),
+        "do_not_allow_zero_payment": do_not_allow_zero_payment,
     }
 
 
@@ -59,13 +55,10 @@ def get_batch_no_details(warehouse):
             WHERE IFNULL(expiry_date, '4000-10-10') >= CURDATE()
             ORDER BY expiry_date
         """,
-        values={'warehouse': warehouse},
+        values={"warehouse": warehouse},
         as_dict=1,
     )
-    return _groupby(
-        'item',
-        filter(lambda x: x.get('qty'), batches)
-    )
+    return _groupby("item", filter(lambda x: x.get("qty"), batches))
 
 
 def get_uom_details():
@@ -77,9 +70,9 @@ def get_uom_details():
                 conversion_factor
             FROM `tabUOM Conversion Detail`
         """,
-        as_dict=1
+        as_dict=1,
     )
-    return _groupby('item_code', uoms)
+    return _groupby("item_code", uoms)
 
 
 def _merge_dicts(x, y):
@@ -90,6 +83,7 @@ def _merge_dicts(x, y):
 
 def get_exchange_rates():
     from erpnext.setup.utils import get_exchange_rate
+
     mops = frappe.db.sql(
         """
             SELECT
@@ -98,28 +92,33 @@ def get_exchange_rates():
             FROM `tabMode of Payment`
             WHERE in_alt_currency=1
         """,
-        as_dict=1
+        as_dict=1,
     )
-    return {mop.mode_of_payment: mop for mop in map(lambda x: _merge_dicts(
-        x,
-        {
-            'conversion_rate': get_exchange_rate(
-                x.currency,
-                frappe.defaults.get_user_default('currency'),
+    return {
+        mop.mode_of_payment: mop
+        for mop in map(
+            lambda x: _merge_dicts(
+                x,
+                {
+                    "conversion_rate": get_exchange_rate(
+                        x.currency, frappe.defaults.get_user_default("currency")
+                    )
+                },
             ),
-        }
-    ), mops)}
+            mops,
+        )
+    }
 
 
 @frappe.whitelist()
 def get_retail_price(item_code):
     retail_price_list = frappe.db.get_value(
-        'POS Bahrain Settings', None, 'retail_price_list',
+        "POS Bahrain Settings", None, "retail_price_list"
     )
     if retail_price_list:
-        price = frappe.db.exists('Item Price', {
-            'item_code': item_code, 'price_list': retail_price_list,
-        })
+        price = frappe.db.exists(
+            "Item Price", {"item_code": item_code, "price_list": retail_price_list}
+        )
         if price:
-            return frappe.db.get_value('Item Price', price, 'price_list_rate')
+            return frappe.db.get_value("Item Price", price, "price_list_rate")
     return None
