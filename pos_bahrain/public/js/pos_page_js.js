@@ -243,12 +243,31 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         if (field === 'discount_percentage' && value === 0) {
           item.rate = item.price_list_rate;
         }
+        if (field === 'rate') {
+          const discount_percentage =
+            (1.0 - flt(value) / flt(item.price_list_rate)) * 100.0;
+          if (discount_percentage > 0) {
+            item.discount_percentage = discount_percentage;
+          }
+        }
       }
     });
     if (field === 'qty') {
       this.remove_zero_qty_items_from_cart();
     }
     this.update_paid_amount_status(false);
+  },
+  show_items_in_item_cart: function() {
+    this._super();
+    this.wrapper
+      .find('.items')
+      .find('.pos-bill-item > .cell:nth-child(3)')
+      .each((i, el) => {
+        const value = el.innerText;
+        if (value !== '0') {
+          el.innerText = flt(value, precision('discount_percentage'));
+        }
+      });
   },
   make_menu_list: function() {
     this._super();
