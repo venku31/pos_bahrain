@@ -77,6 +77,11 @@ fixtures = [
                     "Sales Order Item-discount_percentage_on_retail",
                     "Purchase Invoice Item-retail_price",
                     "Purchase Order Item-retail_price",
+                    "Batch-pb_price_sec",
+                    "Batch-pb_price_based_on",
+                    "Batch-pb_price_col",
+                    "Batch-pb_rate",
+                    "Batch-pb_discount",
                 ],
             ]
         ],
