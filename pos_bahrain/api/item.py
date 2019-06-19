@@ -22,28 +22,31 @@ def get_more_pos_data(profile, company):
     warehouse = pos_profile.warehouse or frappe.db.get_value(
         "Company", pos_profile.company, "default_warehouse"
     )
-    do_not_allow_zero_payment = frappe.db.get_single_value(
-        "POS Bahrain Settings", "do_not_allow_zero_payment"
-    )
+    settings = frappe.get_single("POS Bahrain Settings")
     if not warehouse:
         return frappe.throw(
             _("No valid Warehouse found. Please select warehouse in " "POS Profile.")
         )
     return {
-        "batch_no_details": get_batch_no_details(warehouse),
+        "batch_no_details": get_batch_no_details(warehouse, settings.use_batch_price),
         "uom_details": get_uom_details(),
         "exchange_rates": get_exchange_rates(),
-        "do_not_allow_zero_payment": do_not_allow_zero_payment,
+        "do_not_allow_zero_payment": settings.do_not_allow_zero_payment,
+        "use_batch_price": settings.use_batch_price,
     }
 
 
-def get_batch_no_details(warehouse):
+def get_batch_no_details(warehouse, include_batch_price=0):
+    extra_fields = (
+        "pb_price_based_on, pb_rate, pb_discount," if include_batch_price else ""
+    )
+
     batches = frappe.db.sql(
         """
             SELECT
                 name,
                 item,
-                expiry_date,
+                expiry_date, {extra_fields}
                 (
                     SELECT SUM(actual_qty)
                     FROM `tabStock Ledger Entry`
@@ -54,7 +57,9 @@ def get_batch_no_details(warehouse):
             FROM `tabBatch` AS b
             WHERE IFNULL(expiry_date, '4000-10-10') >= CURDATE()
             ORDER BY expiry_date
-        """,
+        """.format(
+            extra_fields=extra_fields
+        ),
         values={"warehouse": warehouse},
         as_dict=1,
     )
