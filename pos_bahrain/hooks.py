@@ -21,6 +21,7 @@ app_license = "MIT"
 app_include_css = "/assets/css/jmi.min.css"
 app_include_js = [
     "/assets/js/jmi.min.js",
+    "/assets/js/pos_bahrain.min.js",
     "/assets/pos_bahrain/js/batch_quick_entry.js",
 ]
 
