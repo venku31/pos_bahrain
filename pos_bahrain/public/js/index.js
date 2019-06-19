@@ -1,4 +1,5 @@
 import * as scripts from './scripts';
+import * as addons from './addons';
 
 frappe.provide('pos_bahrain');
 
@@ -8,4 +9,4 @@ frappe.ui.form.on(
 );
 frappe.ui.form.on('Sales Order Item', scripts.sales_order.sales_order_item);
 
-pos_bahrain = { scripts };
+pos_bahrain = { scripts, addons };

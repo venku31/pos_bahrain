@@ -23,6 +23,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
           uom_details,
           exchange_rates,
           do_not_allow_zero_payment,
+          use_batch_price,
         } = {},
       } = await frappe.call({
         method: 'pos_bahrain.api.item.get_more_pos_data',
@@ -48,6 +49,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       this.uom_details = uom_details;
       this.exchange_rates = exchange_rates;
       this.do_not_allow_zero_payment = !!cint(do_not_allow_zero_payment);
+      this.use_batch_price = !!cint(use_batch_price);
       await this.set_opening_entry();
     } catch (e) {
       frappe.msgprint({
@@ -639,3 +641,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     });
   },
 });
+
+erpnext.pos.PointOfSale = pos_bahrain.addons.withBatchPrice(
+  erpnext.pos.PointOfSale
+);
