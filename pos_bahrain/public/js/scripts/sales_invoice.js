@@ -1,4 +1,4 @@
-async function set_rate_from_batch(frm, cdt, cdn) {
+export async function set_rate_from_batch(frm, cdt, cdn) {
   const { batch_no, conversion_factor = 1 } = frappe.get_doc(cdt, cdn) || {};
   if (!batch_no) {
     return;

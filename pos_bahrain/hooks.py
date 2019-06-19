@@ -83,6 +83,7 @@ fixtures = [
                     "Batch-pb_price_col",
                     "Batch-pb_rate",
                     "Batch-pb_discount",
+                    "Sales Order Item-batch_no",
                 ],
             ]
         ],
