@@ -1,5 +1,5 @@
-export default function withBatchPrice(PosClass) {
-  class PosClassExtended extends PosClass {
+export default function withBatchPrice(Pos) {
+  return class PosExtended extends Pos {
     async init_master_data(r, freeze) {
       const pos_data = await super.init_master_data(r, freeze);
       this.use_batch_price = !!cint(pos_data.use_batch_price);
@@ -50,6 +50,5 @@ export default function withBatchPrice(PosClass) {
         }
       });
     }
-  }
-  return PosClassExtended;
+  };
 }
