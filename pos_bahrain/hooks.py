@@ -84,6 +84,7 @@ fixtures = [
                     "Batch-pb_rate",
                     "Batch-pb_discount",
                     "Sales Order Item-batch_no",
+                    "Item Barcode-pb_uom",
                 ],
             ]
         ],
