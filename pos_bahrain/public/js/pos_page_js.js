@@ -17,15 +17,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   init_master_data: async function(r, freeze = true) {
     this._super(r);
     try {
-      const {
-        message: {
-          batch_no_details,
-          uom_details,
-          exchange_rates,
-          do_not_allow_zero_payment,
-          use_batch_price,
-        } = {},
-      } = await frappe.call({
+      const { message: pos_data = {} } = await frappe.call({
         method: 'pos_bahrain.api.item.get_more_pos_data',
         args: {
           profile: this.pos_profile_data.name,
@@ -34,6 +26,13 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         freeze,
         freeze_message: __('Syncing Item details'),
       });
+
+      const {
+        batch_no_details,
+        uom_details,
+        exchange_rates,
+        do_not_allow_zero_payment,
+      } = pos_data;
 
       if (!batch_no_details || !uom_details || !exchange_rates) {
         throw new Error();
@@ -49,8 +48,8 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       this.uom_details = uom_details;
       this.exchange_rates = exchange_rates;
       this.do_not_allow_zero_payment = !!cint(do_not_allow_zero_payment);
-      this.use_batch_price = !!cint(use_batch_price);
       await this.set_opening_entry();
+      return pos_data;
     } catch (e) {
       frappe.msgprint({
         indicator: 'orange',

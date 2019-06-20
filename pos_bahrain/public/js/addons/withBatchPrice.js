@@ -1,5 +1,10 @@
 export default function withBatchPrice(PosClass) {
   class PosClassExtended extends PosClass {
+    async init_master_data(r, freeze) {
+      const pos_data = await super.init_master_data(r, freeze);
+      this.use_batch_price = !!cint(pos_data.use_batch_price);
+      return pos_data;
+    }
     _set_item_price(item_code, batch_no) {
       const {
         pb_price_based_on: based_on,
