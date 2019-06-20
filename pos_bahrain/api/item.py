@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 
+from pos_bahrain.utils import key_by
+
 
 def _groupby(key, list_of_dicts):
     from itertools import groupby
@@ -29,10 +31,12 @@ def get_more_pos_data(profile, company):
         )
     return {
         "batch_no_details": get_batch_no_details(warehouse, settings.use_batch_price),
+        "barcode_details": _get_barcode_details() if settings.use_barcode_uom else None,
         "uom_details": get_uom_details(),
         "exchange_rates": get_exchange_rates(),
         "do_not_allow_zero_payment": settings.do_not_allow_zero_payment,
         "use_batch_price": settings.use_batch_price,
+        "use_barcode_uom": settings.use_barcode_uom,
     }
 
 
@@ -64,6 +68,17 @@ def get_batch_no_details(warehouse, include_batch_price=0):
         as_dict=1,
     )
     return _groupby("item", filter(lambda x: x.get("qty"), batches))
+
+
+def _get_barcode_details():
+    barcodes = frappe.db.sql(
+        """
+            SELECT barcode, parent AS item_code, pb_uom AS uom
+            FROM `tabItem Barcode` WHERE pb_uom IS NOT NULL
+        """,
+        as_dict=1,
+    )
+    return key_by("barcode", barcodes)
 
 
 def get_uom_details():

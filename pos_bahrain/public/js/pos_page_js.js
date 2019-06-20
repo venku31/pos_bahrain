@@ -641,6 +641,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   },
 });
 
-erpnext.pos.PointOfSale = pos_bahrain.addons.withBatchPrice(
-  erpnext.pos.PointOfSale
+erpnext.pos.PointOfSale = pos_bahrain.addons.withBarcodeUom(
+  pos_bahrain.addons.withBatchPrice(erpnext.pos.PointOfSale)
 );
