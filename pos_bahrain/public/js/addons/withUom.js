@@ -2,10 +2,6 @@ import first from 'lodash/first';
 import mapValues from 'lodash/mapValues';
 import keyBy from 'lodash/keyBy';
 
-function reduce_values_by(key, items) {
-  return mapValues(items, values => keyBy(values, key));
-}
-
 export default function withUom(Pos) {
   return class PosExtended extends Pos {
     async init_master_data(r, freeze) {
@@ -21,6 +17,30 @@ export default function withUom(Pos) {
       this.uom_details = uom_details;
       this.item_prices_by_uom = mapValues(item_prices, values =>
         keyBy(values, 'uom')
+      );
+
+      // `price_list_data` is a native property. it is reassigned here to correctly set
+      // the `price_list_rate` based on `stock_uom`
+      this.price_list_data = mapValues(
+        this.price_list_data,
+        (value, item_code) => {
+          const { stock_uom } =
+            this.item_data.find(x => x.item_code === item_code) || {};
+          if (!stock_uom) {
+            return value;
+          }
+          try {
+            const { price_list_rate } = this.item_prices_by_uom[item_code][
+              stock_uom
+            ];
+            return price_list_rate || value;
+          } catch (e) {
+            if (e instanceof TypeError) {
+              return value;
+            }
+            throw e;
+          }
+        }
       );
       return pos_data;
     }

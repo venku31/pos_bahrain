@@ -83,8 +83,9 @@ def _get_item_prices(price_list):
                 )) AS uom,
                 currency,
                 price_list_rate
-            FROM `tabItem Price`
+            FROM `tabItem Price` WHERE price_list = %(price_list)s
         """,
+        values={"price_list": price_list},
         as_dict=1,
     )
     return groupby("item_code", prices)
