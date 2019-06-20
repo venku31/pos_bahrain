@@ -22,6 +22,7 @@ def get_more_pos_data(profile, company):
     return {
         "batch_no_details": get_batch_no_details(warehouse, settings.use_batch_price),
         "barcode_details": _get_barcode_details() if settings.use_barcode_uom else None,
+        "item_prices": _get_item_prices(pos_profile.selling_price_list),
         "uom_details": get_uom_details(),
         "exchange_rates": get_exchange_rates(),
         "do_not_allow_zero_payment": settings.do_not_allow_zero_payment,
@@ -69,6 +70,24 @@ def _get_barcode_details():
         as_dict=1,
     )
     return {x.barcode: x for x in barcodes}
+
+
+def _get_item_prices(price_list):
+    prices = frappe.db.sql(
+        """
+            SELECT
+                item_code,
+                IFNULL(uom, (
+                    SELECT stock_uom FROM `tabItem`
+                    WHERE `tabItem`.name = item_code LIMIT 1
+                )) AS uom,
+                currency,
+                price_list_rate
+            FROM `tabItem Price`
+        """,
+        as_dict=1,
+    )
+    return groupby("item_code", prices)
 
 
 def get_uom_details():

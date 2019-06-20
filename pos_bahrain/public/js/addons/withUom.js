@@ -1,10 +1,16 @@
 import first from 'lodash/first';
+import mapValues from 'lodash/mapValues';
+import keyBy from 'lodash/keyBy';
+
+function reduce_values_by(key, items) {
+  return mapValues(items, values => keyBy(values, key));
+}
 
 export default function withUom(Pos) {
   return class PosExtended extends Pos {
     async init_master_data(r, freeze) {
       const pos_data = await super.init_master_data(r, freeze);
-      const { uom_details } = pos_data;
+      const { uom_details, item_prices } = pos_data;
       if (!uom_details) {
         frappe.msgprint({
           indicator: 'orange',
@@ -13,12 +19,33 @@ export default function withUom(Pos) {
         });
       }
       this.uom_details = uom_details;
+      this.item_prices_by_uom = mapValues(item_prices, values =>
+        keyBy(values, 'uom')
+      );
       return pos_data;
     }
     add_new_item_to_grid() {
       super.add_new_item_to_grid();
       const { stock_uom, conversion_factor = 1 } = first(this.items) || {};
       Object.assign(this.child, { uom: stock_uom, conversion_factor });
+    }
+    _set_item_price_from_uom(item_code, uom) {
+      const item = this.frm.doc.items.find(x => x.item_code === item_code);
+      const uom_details = this.uom_details[item_code].find(x => x.uom === uom);
+      if (item && uom_details) {
+        const { conversion_factor = 1 } = uom_details;
+        const {
+          price_list_rate = this.price_list_data[item_code],
+        } = this.item_prices_by_uom[item_code][uom];
+        Object.assign(item, {
+          uom,
+          conversion_factor,
+          rate: price_list_rate,
+          price_list_rate,
+          amount: flt(item.qty) * price_list_rate,
+        });
+        this.update_paid_amount_status(false);
+      }
     }
     render_selected_item() {
       super.render_selected_item();
@@ -42,24 +69,8 @@ export default function withUom(Pos) {
       });
       $select.on('change', e => {
         e.stopPropagation();
-        const { uom, conversion_factor = 1 } = this.uom_details[
-          this.item_code
-        ].find(({ uom }) => uom === e.target.value);
-        if (uom && selected_item) {
-          const rate =
-            (flt(this.price_list_data[this.item_code]) *
-              flt(conversion_factor)) /
-            flt(this.frm.doc.conversion_rate);
-          Object.assign(selected_item, {
-            uom,
-            conversion_factor,
-            rate,
-            price_list_rate: rate,
-            amount: flt(selected_item.qty) * rate,
-          });
-        }
+        this._set_item_price_from_uom(this.item_code, e.target.value);
         this.render_selected_item();
-        this.update_paid_amount_status(false);
       });
     }
   };
