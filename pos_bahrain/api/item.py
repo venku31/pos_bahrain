@@ -3,8 +3,6 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 
-from pos_bahrain.utils import key_by
-
 
 def _groupby(key, list_of_dicts):
     from itertools import groupby
@@ -78,7 +76,7 @@ def _get_barcode_details():
         """,
         as_dict=1,
     )
-    return key_by("barcode", barcodes)
+    return {x.barcode: x for x in barcodes}
 
 
 def get_uom_details():
