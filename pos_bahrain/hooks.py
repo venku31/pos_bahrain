@@ -163,6 +163,7 @@ doc_events = {
     "Sales Invoice": {"on_submit": "pos_bahrain.doc_events.sales_invoice.on_submit"},
 }
 
+boot_session = "pos_bahrain.doc_events.boot.boot_session"
 on_session_creation = "pos_bahrain.doc_events.set_user_defaults"
 
 # Scheduled Tasks

@@ -1,13 +1,9 @@
 export async function set_rate_from_batch(frm, cdt, cdn) {
-  const { batch_no, conversion_factor = 1 } = frappe.get_doc(cdt, cdn) || {};
-  if (!batch_no) {
+  if (!frappe.boot.pos_bahrain.use_batch_price) {
     return;
   }
-  const use_batch_price = await frappe.db.get_single_value(
-    'POS Bahrain Settings',
-    'use_batch_price'
-  );
-  if (!use_batch_price) {
+  const { batch_no, conversion_factor = 1 } = frappe.get_doc(cdt, cdn) || {};
+  if (!batch_no) {
     return;
   }
   const {
