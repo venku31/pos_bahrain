@@ -3,15 +3,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 
-
-def _groupby(key, list_of_dicts):
-    from itertools import groupby
-    from operator import itemgetter
-
-    keywise = {}
-    for k, v in groupby(sorted(list_of_dicts, key=itemgetter(key)), itemgetter(key)):
-        keywise[k] = list(v)
-    return keywise
+from toolz import groupby
 
 
 @frappe.whitelist()
@@ -65,7 +57,7 @@ def get_batch_no_details(warehouse, include_batch_price=0):
         values={"warehouse": warehouse},
         as_dict=1,
     )
-    return _groupby("item", filter(lambda x: x.get("qty"), batches))
+    return groupby("item", filter(lambda x: x.get("qty"), batches))
 
 
 def _get_barcode_details():
@@ -90,7 +82,7 @@ def get_uom_details():
         """,
         as_dict=1,
     )
-    return _groupby("item_code", uoms)
+    return groupby("item_code", uoms)
 
 
 def _merge_dicts(x, y):
