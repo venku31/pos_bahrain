@@ -75,7 +75,7 @@ export default function withUom(Pos) {
           <select type="text" class="form-control cell pos-item-uom" />
         </div>
       `).prependTo(this.wrapper.find('.pos-selected-item-action'));
-      const $select = this.wrapper.find('.pos-item-uom').off('change');
+      const $select = this.wrapper.find('.pos-item-uom');
       const selected_item = this.frm.doc.items.find(
         ({ item_code }) => this.item_code === item_code
       );

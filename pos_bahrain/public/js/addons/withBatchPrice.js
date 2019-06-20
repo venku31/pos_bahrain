@@ -23,7 +23,7 @@ export default function withBatchPrice(Pos) {
         } else if (based_on === 'Based on Discount') {
           item.discount_percentage = discount_percentage;
         } else {
-          item.rate = this.price_list_data[item_code] * item.conversion_factor;
+          item.rate = item.price_list_rate;
           item.discount_percentage = 0;
         }
         this.update_paid_amount_status(false);
