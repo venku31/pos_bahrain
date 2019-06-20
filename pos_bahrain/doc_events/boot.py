@@ -10,3 +10,4 @@ def boot_session(bootinfo):
     bootinfo.pos_bahrain = frappe._dict()
     settings = frappe.get_single("POS Bahrain Settings")
     bootinfo.pos_bahrain.use_batch_price = settings.use_batch_price
+    bootinfo.pos_bahrain.use_barcode_uom = settings.use_barcode_uom
