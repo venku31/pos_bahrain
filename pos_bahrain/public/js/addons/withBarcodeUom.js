@@ -19,11 +19,23 @@ export default function withBarcodeUom(Pos) {
     }
     _set_item_uom(item_code, uom, barcode = null) {
       const item = this.frm.doc.items.find(x => x.item_code === item_code);
-      if (item && uom) {
-        const { conversion_factor = 1 } = (
-          this.uom_details[item_code] || []
-        ).find(x => x.uom === uom);
-        Object.assign(item, { barcode, uom, conversion_factor });
+      const uom_details = (this.uom_details[item_code] || []).find(
+        x => x.uom === uom
+      );
+      if (item && uom_details) {
+        const { conversion_factor = 1 } = uom_details;
+        const {
+          price_list_rate = this.price_list_data[item_code],
+        } = this.item_prices_by_uom[item_code][uom];
+        Object.assign(item, {
+          barcode,
+          uom,
+          conversion_factor,
+          rate: price_list_rate,
+          price_list_rate,
+          amount: flt(item.qty) * price_list_rate,
+        });
+        this.update_paid_amount_status(false);
       }
     }
     add_to_cart() {
