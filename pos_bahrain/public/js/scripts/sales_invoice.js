@@ -24,8 +24,24 @@ export async function set_rate_from_batch(frm, cdt, cdn) {
   }
 }
 
+export async function set_uom(frm, cdt, cdn) {
+  if (!frappe.boot.pos_bahrain.use_barcode_uom) {
+    return;
+  }
+  const { barcode, stock_uom } = frappe.get_doc(cdt, cdn) || {};
+  if (!barcode) {
+    return;
+  }
+  const { message: uom } = await frappe.call({
+    method: 'pos_bahrain.api.item.get_uom_from',
+    args: { barcode },
+  });
+  frappe.model.set_value(cdt, cdn, { uom: uom || stock_uom });
+}
+
 const sales_invoice_item = {
   batch_no: set_rate_from_batch,
+  barcode: set_uom,
 };
 
 export default {

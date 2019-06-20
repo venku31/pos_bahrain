@@ -127,3 +127,10 @@ def get_retail_price(item_code):
         if price:
             return frappe.db.get_value("Item Price", price, "price_list_rate")
     return None
+
+
+@frappe.whitelist()
+def get_uom_from(barcode):
+    return frappe.db.get_value(
+        "Item Barcode", filters={"barcode": barcode}, fieldname="pb_uom"
+    )
