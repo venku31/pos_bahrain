@@ -85,6 +85,7 @@ fixtures = [
                     "Batch-pb_discount",
                     "Sales Order Item-batch_no",
                     "Item Barcode-pb_uom",
+                    "Purchase Receipt Item-pb_expiry_date",
                 ],
             ]
         ],
@@ -162,6 +163,9 @@ fixtures = [
 doc_events = {
     "Batch": {"autoname": "pos_bahrain.doc_events.batch.autoname"},
     "Sales Invoice": {"on_submit": "pos_bahrain.doc_events.sales_invoice.on_submit"},
+    "Purchase Receipt": {
+        "before_save": "pos_bahrain.doc_events.purchase_receipt.before_validate"
+    },
 }
 
 boot_session = "pos_bahrain.doc_events.boot.boot_session"
