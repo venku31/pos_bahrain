@@ -3,15 +3,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 
-
-def _groupby(key, list_of_dicts):
-    from itertools import groupby
-    from operator import itemgetter
-
-    keywise = {}
-    for k, v in groupby(sorted(list_of_dicts, key=itemgetter(key)), itemgetter(key)):
-        keywise[k] = list(v)
-    return keywise
+from toolz import groupby
 
 
 @frappe.whitelist()
@@ -22,28 +14,34 @@ def get_more_pos_data(profile, company):
     warehouse = pos_profile.warehouse or frappe.db.get_value(
         "Company", pos_profile.company, "default_warehouse"
     )
-    do_not_allow_zero_payment = frappe.db.get_single_value(
-        "POS Bahrain Settings", "do_not_allow_zero_payment"
-    )
+    settings = frappe.get_single("POS Bahrain Settings")
     if not warehouse:
         return frappe.throw(
             _("No valid Warehouse found. Please select warehouse in " "POS Profile.")
         )
     return {
-        "batch_no_details": get_batch_no_details(warehouse),
+        "batch_no_details": get_batch_no_details(warehouse, settings.use_batch_price),
+        "barcode_details": _get_barcode_details() if settings.use_barcode_uom else None,
+        "item_prices": _get_item_prices(pos_profile.selling_price_list),
         "uom_details": get_uom_details(),
         "exchange_rates": get_exchange_rates(),
-        "do_not_allow_zero_payment": do_not_allow_zero_payment,
+        "do_not_allow_zero_payment": settings.do_not_allow_zero_payment,
+        "use_batch_price": settings.use_batch_price,
+        "use_barcode_uom": settings.use_barcode_uom,
     }
 
 
-def get_batch_no_details(warehouse):
+def get_batch_no_details(warehouse, include_batch_price=0):
+    extra_fields = (
+        "pb_price_based_on, pb_rate, pb_discount," if include_batch_price else ""
+    )
+
     batches = frappe.db.sql(
         """
             SELECT
                 name,
                 item,
-                expiry_date,
+                expiry_date, {extra_fields}
                 (
                     SELECT SUM(actual_qty)
                     FROM `tabStock Ledger Entry`
@@ -54,11 +52,43 @@ def get_batch_no_details(warehouse):
             FROM `tabBatch` AS b
             WHERE IFNULL(expiry_date, '4000-10-10') >= CURDATE()
             ORDER BY expiry_date
-        """,
+        """.format(
+            extra_fields=extra_fields
+        ),
         values={"warehouse": warehouse},
         as_dict=1,
     )
-    return _groupby("item", filter(lambda x: x.get("qty"), batches))
+    return groupby("item", filter(lambda x: x.get("qty"), batches))
+
+
+def _get_barcode_details():
+    barcodes = frappe.db.sql(
+        """
+            SELECT barcode, parent AS item_code, pb_uom AS uom
+            FROM `tabItem Barcode` WHERE pb_uom IS NOT NULL
+        """,
+        as_dict=1,
+    )
+    return {x.barcode: x for x in barcodes}
+
+
+def _get_item_prices(price_list):
+    prices = frappe.db.sql(
+        """
+            SELECT
+                item_code,
+                IFNULL(uom, (
+                    SELECT stock_uom FROM `tabItem`
+                    WHERE `tabItem`.name = item_code LIMIT 1
+                )) AS uom,
+                currency,
+                price_list_rate
+            FROM `tabItem Price` WHERE price_list = %(price_list)s
+        """,
+        values={"price_list": price_list},
+        as_dict=1,
+    )
+    return groupby("item_code", prices)
 
 
 def get_uom_details():
@@ -72,7 +102,7 @@ def get_uom_details():
         """,
         as_dict=1,
     )
-    return _groupby("item_code", uoms)
+    return groupby("item_code", uoms)
 
 
 def _merge_dicts(x, y):
@@ -122,3 +152,10 @@ def get_retail_price(item_code):
         if price:
             return frappe.db.get_value("Item Price", price, "price_list_rate")
     return None
+
+
+@frappe.whitelist()
+def get_uom_from(barcode):
+    return frappe.db.get_value(
+        "Item Barcode", filters={"barcode": barcode}, fieldname="pb_uom"
+    )

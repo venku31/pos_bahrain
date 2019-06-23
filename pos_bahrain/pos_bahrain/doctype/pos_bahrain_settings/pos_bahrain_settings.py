@@ -3,8 +3,22 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
-import frappe
+from frappe.utils import cint
 from frappe.model.document import Document
+from frappe.custom.doctype.property_setter.property_setter import make_property_setter
+
 
 class POSBahrainSettings(Document):
-	pass
+    def on_update(self):
+        hide_batch_price = not cint(self.use_batch_price)
+        make_property_setter(
+            "Batch", "pb_price_sec", "hidden", hide_batch_price, "Check"
+        )
+        make_property_setter(
+            "Batch", "pb_price_sec", "print_hide", hide_batch_price, "Check"
+        )
+
+        hide_barcode_uom = not cint(self.use_barcode_uom)
+        make_property_setter(
+            "Item Barcode", "pb_uom", "hidden", hide_barcode_uom, "Check"
+        )

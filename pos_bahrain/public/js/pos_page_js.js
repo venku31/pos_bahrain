@@ -17,14 +17,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   init_master_data: async function(r, freeze = true) {
     this._super(r);
     try {
-      const {
-        message: {
-          batch_no_details,
-          uom_details,
-          exchange_rates,
-          do_not_allow_zero_payment,
-        } = {},
-      } = await frappe.call({
+      const { message: pos_data = {} } = await frappe.call({
         method: 'pos_bahrain.api.item.get_more_pos_data',
         args: {
           profile: this.pos_profile_data.name,
@@ -34,7 +27,13 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         freeze_message: __('Syncing Item details'),
       });
 
-      if (!batch_no_details || !uom_details || !exchange_rates) {
+      const {
+        batch_no_details,
+        exchange_rates,
+        do_not_allow_zero_payment,
+      } = pos_data;
+
+      if (!batch_no_details || !exchange_rates) {
         throw new Error();
       }
       this.batch_no_data = Object.keys(batch_no_details).reduce(
@@ -45,10 +44,10 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         {}
       );
       this.batch_no_details = batch_no_details;
-      this.uom_details = uom_details;
       this.exchange_rates = exchange_rates;
       this.do_not_allow_zero_payment = !!cint(do_not_allow_zero_payment);
       await this.set_opening_entry();
+      return pos_data;
     } catch (e) {
       frappe.msgprint({
         indicator: 'orange',
@@ -181,52 +180,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       this.batch_dialog.show();
       this.batch_dialog.$wrapper.find('.modal-backdrop').off('click');
     }
-  },
-  add_new_item_to_grid: function() {
-    this._super();
-    this.child.uom = this.items[0].stock_uom;
-    this.child.conversion_factor = 1;
-  },
-  render_selected_item: function() {
-    this._super();
-    $(`
-      <div class="pos-list-row">
-        <div class="cell">${__('UOM')}:</div>
-        <select type="text" class="form-control cell pos-item-uom" />
-      </div>
-    `).prependTo(this.wrapper.find('.pos-selected-item-action'));
-    const $select = this.wrapper.find('.pos-item-uom').off('change');
-    const selected_item = this.frm.doc.items.find(
-      ({ item_code }) => this.item_code === item_code
-    );
-    this.uom_details[this.item_code].forEach(({ uom }) => {
-      $('<option />', {
-        value: uom,
-        selected: selected_item && uom === selected_item.uom,
-      })
-        .text(`${uom}`)
-        .appendTo($select);
-    });
-    $select.on('change', e => {
-      e.stopPropagation();
-      const { uom, conversion_factor = 1 } = this.uom_details[
-        this.item_code
-      ].find(({ uom }) => uom === e.target.value);
-      if (uom && selected_item) {
-        const rate =
-          (flt(this.price_list_data[this.item_code]) * flt(conversion_factor)) /
-          flt(this.frm.doc.conversion_rate);
-        Object.assign(selected_item, {
-          uom,
-          conversion_factor,
-          rate,
-          price_list_rate: rate,
-          amount: flt(selected_item.qty) * rate,
-        });
-      }
-      this.render_selected_item();
-      this.update_paid_amount_status(false);
-    });
   },
   set_item_details: function(item_code, field, value, remove_zero_qty_items) {
     // this method is a copy of the original without the negative value validation
@@ -639,3 +592,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     });
   },
 });
+
+erpnext.pos.PointOfSale = pos_bahrain.addons.extend_pos(
+  erpnext.pos.PointOfSale
+);
