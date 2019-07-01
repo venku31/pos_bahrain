@@ -1,6 +1,7 @@
 import first from 'lodash/first';
 import mapValues from 'lodash/mapValues';
 import keyBy from 'lodash/keyBy';
+import get from 'lodash/get';
 
 export default function withUom(Pos) {
   return class PosExtended extends Pos {
@@ -29,17 +30,13 @@ export default function withUom(Pos) {
           if (!stock_uom) {
             return value;
           }
-          try {
-            const { price_list_rate } = this.item_prices_by_uom[item_code][
-              stock_uom
-            ];
-            return price_list_rate || value;
-          } catch (e) {
-            if (e instanceof TypeError) {
-              return value;
-            }
-            throw e;
-          }
+          return (
+            get(this.item_prices_by_uom, [
+              item_code,
+              stock_uom,
+              'price_list_rate',
+            ]) || value
+          );
         }
       );
       return pos_data;
@@ -54,9 +51,12 @@ export default function withUom(Pos) {
       const uom_details = this.uom_details[item_code].find(x => x.uom === uom);
       if (item && uom_details) {
         const { conversion_factor = 1 } = uom_details;
-        const {
-          price_list_rate = this.price_list_data[item_code],
-        } = this.item_prices_by_uom[item_code][uom];
+        const price_list_rate = get(
+          this.item_prices_by_uom,
+          [item_code, uom, 'price_list_rate'],
+          (get(this.price_list_data, item_code, 0) * flt(conversion_factor)) /
+            flt(this.frm.doc.conversion_rate)
+        );
         Object.assign(item, {
           uom,
           conversion_factor,
