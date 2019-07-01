@@ -10,12 +10,12 @@ export default function withBarcodeUom(Pos) {
       this.barcode = null;
       return pos_data;
     }
-    make_item_list() {
+    make_item_list(customer) {
       this.barcode =
         this.use_barcode_uom &&
         this.barcode_details &&
         this.barcode_details[this.search_item.$input.val()];
-      super.make_item_list();
+      super.make_item_list(customer);
     }
     _set_item_uom(item_code, uom, barcode = null) {
       const item = this.frm.doc.items.find(x => x.item_code === item_code);
@@ -24,9 +24,7 @@ export default function withBarcodeUom(Pos) {
       );
       if (item && uom_details) {
         const { conversion_factor = 1 } = uom_details;
-        const {
-          price_list_rate = this.price_list_data[item_code],
-        } = this.item_prices_by_uom[item_code][uom];
+        const price_list_rate = this.get_item_price(item_code, uom_details);
         Object.assign(item, {
           barcode,
           uom,
