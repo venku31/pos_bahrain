@@ -86,6 +86,8 @@ fixtures = [
                     "Sales Order Item-batch_no",
                     "Item Barcode-pb_uom",
                     "Purchase Receipt Item-pb_expiry_date",
+                    "Purchase Invoice Item-pb_expiry_date",
+                    "Stock Entry Detail-pb_expiry_date",
                 ],
             ]
         ],
@@ -164,6 +166,12 @@ doc_events = {
     "Sales Invoice": {"on_submit": "pos_bahrain.doc_events.sales_invoice.on_submit"},
     "Purchase Receipt": {
         "before_save": "pos_bahrain.doc_events.purchase_receipt.before_validate"
+    },
+    "Purchase Invoice": {
+        "before_save": "pos_bahrain.doc_events.purchase_invoice.before_validate"
+    },
+    "Stock Entry": {
+        "before_save": "pos_bahrain.doc_events.stock_entry.before_validate"
     },
 }
 

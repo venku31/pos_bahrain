@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 
 
-def before_validate(doc, method):
+def set_or_create_batch(doc, method):
     def set_existing_batch(item):
         if item.pb_expiry_date and not item.batch_no:
             has_batch_no, has_expiry_date = frappe.db.get_value(
@@ -20,7 +20,8 @@ def before_validate(doc, method):
                 item.batch_no = batch_no
 
     def create_new_batch(item):
-        if item.warehouse and item.pb_expiry_date and not item.batch_no:
+        warehouse = "t_warehouse" if doc.doctype == "Stock Entry" else "warehouse"
+        if item.get(warehouse) and item.pb_expiry_date and not item.batch_no:
             has_batch_no, create_new_batch, has_expiry_date = frappe.db.get_value(
                 "Item",
                 item.item_code,
@@ -49,3 +50,7 @@ def before_validate(doc, method):
         # also update `hooks.py` to use `before_validate` instead of the current
         # `before_save` method
         map(create_new_batch, doc.items)
+
+
+def before_validate(doc, method):
+    set_or_create_batch(doc, method)
