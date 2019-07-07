@@ -75,13 +75,15 @@ def _get_data(args, keys):
                 SUM(sle.actual_qty) AS qty,
                 i.item_name AS item_name,
                 i.brand AS brand,
-                i.default_supplier AS supplier,
+                id.default_supplier AS supplier,
                 b.expiry_date AS expiry_date,
                 p1.price_list_rate AS price1,
                 p2.price_list_rate AS price2
             FROM `tabStock Ledger Entry` AS sle
             LEFT JOIN `tabItem` AS i ON
                 i.item_code = sle.item_code
+            LEFT JOIN `tabItem Default` AS id ON
+                id.parent = i.name
             LEFT JOIN `tabBatch` AS b ON
                 b.batch_id = sle.batch_no
             LEFT JOIN `tabItem Price` AS p1 ON
