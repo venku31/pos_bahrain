@@ -34,8 +34,8 @@ def set_or_create_batch(doc, method):
                         "item": item.item_code,
                         "expiry_date": item.pb_expiry_date,
                         "supplier": doc.supplier,
-                        "reference_doctype": doc.doctype,
-                        "reference_name": doc.name,
+                        # "reference_doctype": doc.doctype,
+                        # "reference_name": doc.name,
                     }
                 ).insert()
                 item.batch_no = batch.name
@@ -54,3 +54,20 @@ def set_or_create_batch(doc, method):
 
 def before_validate(doc, method):
     set_or_create_batch(doc, method)
+
+
+def set_batch_references(doc, method):
+    # this method will not be necessaery when upstream 'before_validate' comes into play
+    def set_fields(item):
+        if item.batch_no:
+            batch = frappe.get_doc("Batch", item.batch_no)
+            if not batch.reference_doctype and not batch.reference_name:
+                frappe.db.set_value(
+                    "Batch", item.batch_no, "reference_doctype", doc.doctype
+                )
+                frappe.db.set_value("Batch", item.batch_no, "reference_name", doc.name)
+
+    manage_batch = frappe.db.get_single_value("POS Bahrain Settings", "manage_batch")
+
+    if manage_batch:
+        map(set_fields, doc.items)

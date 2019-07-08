@@ -165,13 +165,16 @@ fixtures = [
 doc_events = {
     "Sales Invoice": {"on_submit": "pos_bahrain.doc_events.sales_invoice.on_submit"},
     "Purchase Receipt": {
-        "before_save": "pos_bahrain.doc_events.purchase_receipt.before_validate"
+        "before_save": "pos_bahrain.doc_events.purchase_receipt.before_validate",
+        "on_submit": "pos_bahrain.doc_events.purchase_receipt.set_batch_references",
     },
     "Purchase Invoice": {
-        "before_save": "pos_bahrain.doc_events.purchase_invoice.before_validate"
+        "before_save": "pos_bahrain.doc_events.purchase_invoice.before_validate",
+        "on_submit": "pos_bahrain.doc_events.purchase_receipt.set_batch_references",
     },
     "Stock Entry": {
-        "before_save": "pos_bahrain.doc_events.stock_entry.before_validate"
+        "before_save": "pos_bahrain.doc_events.stock_entry.before_validate",
+        "on_submit": "pos_bahrain.doc_events.purchase_receipt.set_batch_references",
     },
 }
 
