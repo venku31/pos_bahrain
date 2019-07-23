@@ -7,7 +7,7 @@ from frappe import _
 from functools import partial
 from toolz import compose, pluck, merge
 
-from optic_store.utils import pick
+from pos_bahrain.utils import pick
 
 
 def execute(filters=None):
