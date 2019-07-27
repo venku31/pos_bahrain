@@ -32,6 +32,8 @@ def _get_columns(filters):
         make_column("net_total"),
         make_column("tax_total"),
         make_column("returns_net_total", "Returns Net"),
+        make_column("returns_grand_total", "Returns Grand"),
+        make_column("net_total_after_returns", "Net Total with Returns"),
     ]
     mops = pluck("name", frappe.get_all("Mode of Payment"))
     return columns + map(lambda x: make_column(x, x), mops)
@@ -54,7 +56,8 @@ def _get_data(clauses, values, keys):
                 SUM(si.base_net_total) AS net_total,
                 SUM(si.base_total_taxes_and_charges) AS tax_total,
                 SUM(si.base_change_amount) AS change_amount,
-                SUM(sr.base_net_total) AS returns_net_total
+                SUM(sr.base_net_total) AS returns_net_total,
+                SUM(sr.base_grand_total) AS returns_grand_total
             FROM `tabSales Invoice` as s
             LEFT JOIN (
                 SELECT * FROM `tabSales Invoice` WHERE is_return = 0
@@ -87,10 +90,21 @@ def _get_data(clauses, values, keys):
         as_dict=1,
     )
 
+    def add_net_with_returns(row_dict):
+        row = frappe._dict(row_dict)
+        return merge(
+            row_dict,
+            {
+                "net_total_after_returns": (row.net_total or 0)
+                + (row.returns_grand_total or 0)
+            },
+        )
+
     make_row = compose(
         partial(valmap, lambda x: x or None),
         partial(keyfilter, lambda k: k in keys),
         _set_payments(payments),
+        add_net_with_returns,
     )
 
     return map(make_row, items)
