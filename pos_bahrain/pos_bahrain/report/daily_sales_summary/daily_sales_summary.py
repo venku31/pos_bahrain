@@ -4,21 +4,22 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from functools import partial, reduce
+from functools import partial
 from toolz import compose, pluck, keyfilter, valmap, groupby, merge
 
 
 def execute(filters=None):
-    columns = _get_columns()
+    columns = _get_columns(filters)
     keys = compose(list, partial(pluck, "fieldname"))(columns)
-    data = _get_data(filters, keys)
+    clauses, values = _get_filters(filters)
+    data = _get_data(clauses, values, keys)
     return columns, data
 
 
-def _get_columns():
-    def make_column(key, label, type="Currency", options=None, width=120):
+def _get_columns(filters):
+    def make_column(key, label=None, type="Currency", options=None, width=120):
         return {
-            "label": _(label),
+            "label": _(label or key.replace("_", " ").title()),
             "fieldname": key,
             "fieldtype": type,
             "options": options,
@@ -27,20 +28,24 @@ def _get_columns():
 
     columns = [
         make_column("posting_date", "Date", type="Date", width=90),
-        make_column("total", "Total"),
-        make_column("net_total", "Net Total"),
-        make_column("tax_total", "Tax Total"),
+        make_column("total"),
+        make_column("net_total"),
+        make_column("tax_total"),
         make_column("returns_net_total", "Returns Net"),
     ]
     mops = pluck("name", frappe.get_all("Mode of Payment"))
     return columns + map(lambda x: make_column(x, x), mops)
 
 
-def _get_data(args, keys):
-    clauses = """
-        s.docstatus = 1 AND
-        s.posting_date BETWEEN %(from_date)s AND %(to_date)s
-    """
+def _get_filters(filters):
+    clauses = [
+        "s.docstatus = 1",
+        "s.posting_date BETWEEN %(from_date)s AND %(to_date)s",
+    ]
+    return " AND ".join(clauses), filters
+
+
+def _get_data(clauses, values, keys):
     items = frappe.db.sql(
         """
             SELECT
@@ -62,7 +67,7 @@ def _get_data(args, keys):
         """.format(
             clauses=clauses
         ),
-        values=args,
+        values=values,
         as_dict=1,
     )
     payments = frappe.db.sql(
@@ -78,7 +83,7 @@ def _get_data(args, keys):
         """.format(
             clauses=clauses
         ),
-        values=args,
+        values=values,
         as_dict=1,
     )
 
