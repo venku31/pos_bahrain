@@ -37,5 +37,12 @@ frappe.query_reports['Item Consumption Report'] = {
       options: 'Warehouse',
       get_query: { filters: { is_group: 0 } },
     },
+    {
+      fieldname: 'item_group',
+      label: __('Item Group'),
+      fieldtype: 'Link',
+      options: 'Item Group',
+      get_query: { filters: { is_group: 0 } },
+    },
   ],
 };

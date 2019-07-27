@@ -7,7 +7,18 @@ from frappe import _
 from frappe.utils import today
 from functools import partial, reduce
 import operator
-from toolz import merge, pluck, get, compose, first, flip, groupby, excepts, keyfilter
+from toolz import (
+    merge,
+    pluck,
+    get,
+    compose,
+    first,
+    flip,
+    groupby,
+    excepts,
+    keyfilter,
+    concatv,
+)
 
 from pos_bahrain.pos_bahrain.report.item_consumption_report.helpers import (
     generate_intervals,
@@ -25,6 +36,9 @@ def _get_filters(filters):
     if not filters.get("company"):
         frappe.throw(_("Company is required to generate report"))
 
+    clauses = concatv(
+        ["TRUE"], ["i.item_group = %(item_group)s"] if filters.item_group else []
+    )
     warehouse_clauses = (
         ["warehouse = %(warehouse)s"]
         if filters.warehouse
@@ -44,6 +58,7 @@ def _get_filters(filters):
     )
     return (
         {
+            "clauses": " AND ".join(clauses),
             "warehouse_clauses": " AND ".join(warehouse_clauses),
         },
         values,
@@ -63,6 +78,7 @@ def _get_columns(filters):
     columns = [
         make_column("item_code", type="Link", options="Item", width=120),
         make_column("brand", type="Link", options="Brand", width=120),
+        make_column("item_group", type="Link", options="Item Group", width=120),
         make_column("item_name", type="Data", width=200),
         make_column("supplier", type="Link", options="Supplier", width=120),
         make_column(
@@ -93,6 +109,7 @@ def _get_data(clauses, values, columns):
                 i.item_code AS item_code,
                 i.brand AS brand,
                 i.item_name AS item_name,
+                i.item_group AS item_group,
                 id.default_supplier AS supplier,
                 p.price_list_rate AS price,
                 b.actual_qty AS stock
