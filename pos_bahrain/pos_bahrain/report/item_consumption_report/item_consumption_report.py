@@ -7,7 +7,18 @@ from frappe import _
 from frappe.utils import today
 from functools import partial, reduce
 import operator
-from toolz import merge, pluck, get, compose, first, flip, groupby, excepts, keyfilter
+from toolz import (
+    merge,
+    pluck,
+    get,
+    compose,
+    first,
+    flip,
+    groupby,
+    excepts,
+    keyfilter,
+    concatv,
+)
 
 from pos_bahrain.pos_bahrain.report.item_consumption_report.helpers import (
     generate_intervals,
@@ -15,40 +26,49 @@ from pos_bahrain.pos_bahrain.report.item_consumption_report.helpers import (
 
 
 def execute(filters=None):
-    args = _get_args(filters)
-    columns = _get_columns(args)
-    data = _get_data(args, columns)
-    return (
-        map(
-            partial(
-                keyfilter,
-                lambda k: k in ["label", "fieldname", "fieldtype", "options", "width"],
-            ),
-            columns,
-        ),
-        data,
-    )
+    clauses, values = _get_filters(filters)
+    columns = _get_columns(values)
+    data = _get_data(clauses, values, columns)
+    return columns, data
 
 
-def _get_args(filters={}):
+def _get_filters(filters):
     if not filters.get("company"):
         frappe.throw(_("Company is required to generate report"))
-    return merge(
+
+    clauses = concatv(
+        ["TRUE"], ["i.item_group = %(item_group)s"] if filters.item_group else []
+    )
+    warehouse_clauses = (
+        ["warehouse = %(warehouse)s"]
+        if filters.warehouse
+        else [
+            "warehouse IN (SELECT name FROM `tabWarehouse` WHERE company = %(company)s)"
+        ]
+    )
+    values = merge(
         filters,
         {
             "price_list": frappe.db.get_value(
                 "Buying Settings", None, "buying_price_list"
             ),
-            "start_date": filters.get("start_date") or today(),
-            "end_date": filters.get("end_date") or today(),
+            "start_date": filters.start_date or today(),
+            "end_date": filters.end_date or today(),
         },
+    )
+    return (
+        {
+            "clauses": " AND ".join(clauses),
+            "warehouse_clauses": " AND ".join(warehouse_clauses),
+        },
+        values,
     )
 
 
-def _get_columns(args):
-    def make_column(key, label, type="Float", options=None, width=90):
+def _get_columns(filters):
+    def make_column(key, label=None, type="Float", options=None, width=90):
         return {
-            "label": _(label),
+            "label": _(label or key.replace("_", " ").title()),
             "fieldname": key,
             "fieldtype": type,
             "options": options,
@@ -56,13 +76,14 @@ def _get_columns(args):
         }
 
     columns = [
-        make_column("item_code", "Item Code", type="Link", options="Item", width=120),
-        make_column("brand", "Brand", type="Link", options="Brand", width=120),
-        make_column("item_name", "Item Name", type="Data", width=200),
-        make_column("supplier", "Supplier", type="Link", options="Supplier", width=120),
+        make_column("item_code", type="Link", options="Item", width=120),
+        make_column("brand", type="Link", options="Brand", width=120),
+        make_column("item_group", type="Link", options="Item Group", width=120),
+        make_column("item_name", type="Data", width=200),
+        make_column("supplier", type="Link", options="Supplier", width=120),
         make_column(
             "price",
-            args.get("price_list", "Standard Buying Price"),
+            filters.get("price_list", "Standard Buying Price"),
             type="Currency",
             width=120,
         ),
@@ -74,25 +95,21 @@ def _get_columns(args):
     )
     return (
         columns
-        + intervals(args.get("interval"), args.get("start_date"), args.get("end_date"))
-        + [make_column("total_consumption", "Total Consumption")]
-    )
-
-
-def _get_data(args, columns):
-    warehouse_conditions = (
-        "warehouse = %(warehouse)s"
-        if args.get("warehouse")
-        else (
-            "warehouse IN (SELECT name FROM `tabWarehouse` WHERE company = %(company)s)"
+        + intervals(
+            filters.get("interval"), filters.get("start_date"), filters.get("end_date")
         )
+        + [make_column("total_consumption")]
     )
+
+
+def _get_data(clauses, values, columns):
     items = frappe.db.sql(
         """
             SELECT
                 i.item_code AS item_code,
                 i.brand AS brand,
                 i.item_name AS item_name,
+                i.item_group AS item_group,
                 id.default_supplier AS supplier,
                 p.price_list_rate AS price,
                 b.actual_qty AS stock
@@ -103,20 +120,17 @@ def _get_data(args, columns):
                 SELECT
                     item_code, SUM(actual_qty) AS actual_qty
                 FROM `tabBin`
-                WHERE {warehouse_conditions}
+                WHERE {warehouse_clauses}
                 GROUP BY item_code
             ) AS b
                 ON b.item_code = i.item_code
             LEFT JOIN `tabItem Default` AS id
                 ON id.parent = i.name AND id.company = %(company)s
+            WHERE {clauses}
         """.format(
-            warehouse_conditions=warehouse_conditions
+            **clauses
         ),
-        values={
-            "price_list": args.get("price_list"),
-            "company": args.get("company"),
-            "warehouse": args.get("warehouse"),
-        },
+        values=values,
         as_dict=1,
     )
     sles = frappe.db.sql(
@@ -126,17 +140,12 @@ def _get_data(args, columns):
             WHERE docstatus < 2 AND
                 voucher_type = 'Sales Invoice' AND
                 company = %(company)s AND
-                {warehouse_conditions} AND
+                {warehouse_clauses} AND
                 posting_date BETWEEN %(start_date)s AND %(end_date)s
         """.format(
-            warehouse_conditions=warehouse_conditions
+            **clauses
         ),
-        values={
-            "company": args.get("company"),
-            "warehouse": args.get("warehouse"),
-            "start_date": args.get("start_date"),
-            "end_date": args.get("end_date"),
-        },
+        values=values,
         as_dict=1,
     )
     keys = compose(list, partial(pluck, "fieldname"))(columns)

@@ -81,6 +81,7 @@ def _get_item_prices(price_list):
                     SELECT stock_uom FROM `tabItem`
                     WHERE `tabItem`.name = item_code LIMIT 1
                 )) AS uom,
+                customer,
                 currency,
                 price_list_rate
             FROM `tabItem Price` WHERE price_list = %(price_list)s
