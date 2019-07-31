@@ -46,7 +46,8 @@ def _get_columns(company):
 	columns.extend([
 		make_column("debit", "Cash In ({0})".format(currency), type="Float"),
 		make_column("credit", "Cash Out ({0})".format(currency), type="Float"),
-		make_column("balance", "Balance ({0})".format(currency), type="Float")
+		make_column("balance", "Balance ({0})".format(currency), type="Float"),
+		make_column("remarks", "Remarks", width=180)
 	])
 
 	return columns
@@ -61,11 +62,13 @@ def _get_data(company):
 				voucher_type,
 				voucher_no,
 				debit,
-				credit
+				credit,
+				remarks
 			FROM `tabGL Entry`
 			WHERE 
 				voucher_type IN ('Sales Invoice', 'Purchase Invoice', 'Payment Entry', 'Journal Entry')
 			AND company=%(company)s AND account=%(account)s
+			ORDER BY posting_date ASC
 		""",
 		values={'company': company, 'account': cash_account},
 		as_dict=True
