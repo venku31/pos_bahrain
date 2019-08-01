@@ -14,7 +14,7 @@ def execute(filters=None):
 	company = get_default_company()
 
 	columns = _get_columns(company)
-	data = _get_data(company)
+	data = _get_data(company, filters)
 
 	return columns, data
 
@@ -53,8 +53,16 @@ def _get_columns(company):
 	return columns
 
 
-def _get_data(company):
+def _get_data(company, filters):
 	cash_account = frappe.db.get_value('Company', company, 'default_cash_account')
+
+	values = {
+		'from_date': filters.get('from_date'),
+		'to_date': filters.get('to_date'),
+		'company': company,
+		'account': cash_account
+	}
+
 	result = frappe.db.sql(
 		"""
 			SELECT
@@ -64,30 +72,86 @@ def _get_data(company):
 				debit,
 				credit,
 				remarks
-			FROM `tabGL Entry`
-			WHERE 
-				voucher_type IN ('Sales Invoice', 'Purchase Invoice', 'Payment Entry', 'Journal Entry')
-			AND company=%(company)s AND account=%(account)s
+			FROM `tabGL Entry` {clause}
+			AND company = %(company)s AND account = %(account)s
+			AND posting_date >= %(from_date)s AND posting_date <= %(to_date)s
 			ORDER BY posting_date ASC
-		""",
-		values={'company': company, 'account': cash_account},
+		""".format(clause=_get_clause()),
+		values=values,
 		as_dict=True
 	)
 
-	result = set_balance(result)
+	opening = _get_opening(company, filters)
+	result = _set_balance(opening + result)
+	closing = _get_closing(result)
 
-	return result
+	return result + closing
 
 
-def set_balance(data):
+def _set_balance(data):
 	data_with_balances = []
 
 	balance = 0.00
 	for row in data:
-		balance = balance + (row.debit - row.credit)
+		row_balance = row.get('debit') - row.get('credit')
+		balance = balance + row_balance
 		data_with_balances.append(
 			merge(row, {'balance': balance})
 		)
 
 	return data_with_balances
 
+
+def _get_opening(company, filters):
+	cash_account = frappe.db.get_value('Company', company, 'default_cash_account')
+
+	values = {
+		'from_date': filters.get('from_date'),
+		'company': company,
+		'account': cash_account
+	}
+
+	result = frappe.db.sql(
+		"""
+			SELECT 
+				COALESCE(SUM(debit), 0) AS debit,
+				COALESCE(SUM(credit), 0) AS credit
+			FROM `tabGL Entry` {clause}
+			AND company = %(company)s AND account = %(account)s
+			AND posting_date < %(from_date)s
+		""".format(clause=_get_clause()),
+		values=values,
+		as_dict=True
+	)
+
+	result[0]['voucher_no'] = "'Opening'"
+
+	return result
+
+
+def _get_closing(data):
+	closing = {
+		'voucher_no': "'Closing'",
+		'debit': 0.00,
+		'credit': 0.00,
+		'balance': 0.00
+	}
+
+	def calculate(_, row):
+		_['debit'] = _['debit'] + row.get('debit')
+		_['credit'] = _['credit'] + row.get('credit')
+		_['balance'] = row.get('balance')# total balance is last row's balance
+		return _
+
+	return [
+		reduce(calculate, data, closing)
+	]
+
+
+def _get_clause():
+	voucher_type_clause = """
+		WHERE voucher_type 
+		IN ('Sales Invoice', 'Purchase Invoice', 'Payment Entry', 'Journal Entry')
+	"""
+
+	return voucher_type_clause
