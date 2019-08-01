@@ -28,7 +28,6 @@ def _get_columns():
 		make_column("posting_time", "Time", type="Time"),
 		make_column("cash", type="Float"),
 		make_column("card", type="Float"),
-		make_column("change", type="Float"),
 		make_column("total", type="Float")
 	]
 
@@ -65,13 +64,12 @@ def _sum_invoice_payments(invoice_payments):
 	data = []
 
 	def make_change_total(row):
-		cash = row.get('cash')
+		cash = row.get('cash') - row.get('change')
 		card = row.get('card')
-		change = row.get('change')
 
-		row['total'] = sum([cash, card, -change])
+		row['total'] = sum([cash, card])
 
-		for col in ['cash', 'card', 'change', 'total']:
+		for col in ['cash', 'card', 'total']:
 			row[col] = round(row.get(col), 3)
 
 		return row
