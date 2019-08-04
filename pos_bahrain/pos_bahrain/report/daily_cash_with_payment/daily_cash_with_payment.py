@@ -67,6 +67,7 @@ def _sum_invoice_payments(invoice_payments):
 		cash = row.get('cash') - row.get('change')
 		card = row.get('card')
 
+		row['cash'] = cash
 		row['total'] = sum([cash, card])
 
 		for col in ['cash', 'card', 'total']:
