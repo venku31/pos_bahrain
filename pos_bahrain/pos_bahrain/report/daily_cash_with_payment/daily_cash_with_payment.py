@@ -4,15 +4,20 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from toolz import groupby
+from functools import partial
+from toolz import groupby, pluck
 
 
 def execute(filters=None):
-	columns, data = _get_columns(), _get_data(_get_clauses(), filters)
+	mop = _get_mop()
+
+	columns = _get_columns(mop)
+	data = _get_data(_get_clauses(), filters, mop)
+
 	return columns, data
 
 
-def _get_columns():
+def _get_columns(mop):
 	def make_column(key, label=None, type="Data", options=None, width=120):
 		return {
 			"label": _(label or key.replace("_", " ").title()),
@@ -22,17 +27,27 @@ def _get_columns():
 			"width": width
 		}
 
-	return [
+	columns = [
 		make_column("invoice", type="Link", options="Sales Invoice"),
 		make_column("posting_date", "Date", type="Date"),
 		make_column("posting_time", "Time", type="Time"),
-		make_column("cash", type="Float"),
-		make_column("card", type="Float"),
-		make_column("total", type="Float")
 	]
 
+	def make_mop_column(row):
+		return make_column(
+			row.replace(" ", "_").lower(),
+			type="Float"
+		)
 
-def _get_data(clauses, values):
+	columns.extend(
+		list(map(make_mop_column, mop))
+		+ [make_column("total", type="Float")]
+	)
+
+	return columns
+
+
+def _get_data(clauses, values, mop):
 	result = frappe.db.sql(
 		"""
 			SELECT
@@ -54,32 +69,38 @@ def _get_data(clauses, values):
 	)
 
 	result = _sum_invoice_payments(
-		groupby('invoice', result)
+		groupby('invoice', result),
+		mop
 	)
 
 	return result
 
 
-def _sum_invoice_payments(invoice_payments):
+def _sum_invoice_payments(invoice_payments, mop):
 	data = []
 
+	mop_cols = list(
+		map(lambda x: x.replace(" ", "_").lower(), mop)
+	)
+
 	def make_change_total(row):
-		cash = row.get('cash') - row.get('change')
-		card = row.get('card')
+		row['cash'] = row.get('cash') - row.get('change')
+		row['total'] = sum([
+			row[mop_col] for mop_col in mop_cols
+		])
 
-		row['cash'] = cash
-		row['total'] = sum([cash, card])
-
-		for col in ['cash', 'card', 'total']:
-			row[col] = round(row.get(col), 3)
+		for mop_col in (mop_cols + ['total']):
+			row[mop_col] = round(row.get(mop_col), 3)
 
 		return row
 
+	make_payment_row = partial(_make_payment_row, mop)
+
 	for key, payments in invoice_payments.iteritems():
 		invoice_payment_row = reduce(
-			_make_payment_row,
+			make_payment_row,
 			payments,
-			_new_invoice_payment()
+			_new_invoice_payment(mop_cols)
 		)
 
 		data.append(
@@ -97,14 +118,15 @@ def _get_clauses():
 	return " AND ".join(clauses)
 
 
-def _make_payment_row(_, row):
+def _make_payment_row(mop_cols, _, row):
 	mop = row.get('mode_of_payment')
 	amount = row.get('amount')
 
-	if mop == 'Cash':
-		_['cash'] = _['cash'] + amount
-	elif mop == 'Credit Card':
-		_['card'] = _['card'] + amount
+	for mop_col in mop_cols:
+		mop_key = mop_col.replace(" ", "_").lower()
+		if mop == mop_col:
+			_[mop_key] = _[mop_key] + amount
+			break
 
 	if not _.get('invoice'):
 		_['invoice'] = row.get('invoice')
@@ -118,13 +140,25 @@ def _make_payment_row(_, row):
 	return _
 
 
-def _new_invoice_payment():
-	return {
+def _get_mop():
+	mop = frappe.get_all('POS Bahrain Settings MOP', fields=['mode_of_payment'])
+
+	if not mop:
+		frappe.throw(_('Please set Report MOP under POS Bahrain Settings'))
+
+	return list(pluck('mode_of_payment', mop))
+
+
+def _new_invoice_payment(mop_cols):
+	invoice_payment = {
 		'invoice': None,
 		'posting_date': None,
 		'posting_time': None,
 		'change': None,
-		'cash': 0.00,
-		'card': 0.00,
 		'total': 0.00
 	}
+
+	for mop_col in mop_cols:
+		invoice_payment[mop_col] = 0.00
+
+	return invoice_payment
