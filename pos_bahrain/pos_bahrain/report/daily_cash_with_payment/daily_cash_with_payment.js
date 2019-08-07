@@ -18,5 +18,10 @@ frappe.query_reports["Daily Cash with Payment"] = {
 		  reqd: 1,
 		  default: frappe.datetime.get_today(),
 		},
+		{
+			fieldname: 'summary_view',
+			label: __('Summary View'),
+			fieldtype: 'Check'
+		},
 	]
 }

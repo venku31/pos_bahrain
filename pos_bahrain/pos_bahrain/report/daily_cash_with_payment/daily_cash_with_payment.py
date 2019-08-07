@@ -11,13 +11,16 @@ from toolz import groupby, pluck
 def execute(filters=None):
 	mop = _get_mop()
 
-	columns = _get_columns(mop)
+	columns = _get_columns(mop, filters)
 	data = _get_data(_get_clauses(), filters, mop)
 
 	return columns, data
 
 
-def _get_columns(mop):
+def _get_columns(mop, filters):
+	summary_view = filters.get('summary_view')
+	columns = []
+
 	def make_column(key, label=None, type="Data", options=None, width=120):
 		return {
 			"label": _(label or key.replace("_", " ").title()),
@@ -27,11 +30,17 @@ def _get_columns(mop):
 			"width": width
 		}
 
-	columns = [
-		make_column("invoice", type="Link", options="Sales Invoice"),
-		make_column("posting_date", "Date", type="Date"),
-		make_column("posting_time", "Time", type="Time"),
-	]
+	if not summary_view:
+		columns.append(
+			make_column("invoice", type="Link", options="Sales Invoice")
+		)
+
+	columns.append(make_column("posting_date", "Date", type="Date"))
+
+	if not summary_view:
+		columns.append(
+			make_column("posting_time", "Time", type="Time")
+		)
 
 	def make_mop_column(row):
 		return make_column(
@@ -47,7 +56,7 @@ def _get_columns(mop):
 	return columns
 
 
-def _get_data(clauses, values, mop):
+def _get_data(clauses, filters, mop):
 	result = frappe.db.sql(
 		"""
 			SELECT
@@ -64,7 +73,7 @@ def _get_data(clauses, values, mop):
 		""".format(
 			clauses=clauses
 		),
-		values=values,
+		values=filters,
 		as_dict=1
 	)
 
@@ -73,7 +82,38 @@ def _get_data(clauses, values, mop):
 		mop
 	)
 
+	if filters.get('summary_view'):
+		result = _summarize_payments(
+			groupby('posting_date', result),
+			mop
+		)
+
 	return result
+
+
+def _summarize_payments(result, mop):
+	summary = []
+
+	mop_cols = [
+		mop_col.replace(" ", "_").lower()
+		for mop_col in mop
+	]
+
+	def make_summary_row(_, row):
+		for col in mop_cols:
+			_[col] = _[col] + row[col]
+
+		_['posting_time'] = None
+		_['invoice'] = None
+
+		return _
+
+	for key, payments in result.iteritems():
+		summary.append(
+			reduce(make_summary_row, payments)
+		)
+
+	return summary
 
 
 def _sum_invoice_payments(invoice_payments, mop):
