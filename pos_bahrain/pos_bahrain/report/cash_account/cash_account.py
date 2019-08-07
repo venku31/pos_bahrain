@@ -7,19 +7,22 @@ import frappe
 from frappe import _
 from erpnext import get_company_currency, get_default_company
 
-from toolz import merge
+from toolz import merge, groupby
 
 
 def execute(filters=None):
 	company = get_default_company()
 
-	columns = _get_columns(company)
+	columns = _get_columns(company, filters)
 	data = _get_data(company, filters)
 
 	return columns, data
 
 
-def _get_columns(company):
+def _get_columns(company, filters):
+	summary_view = filters.get('summary_view')
+	columns = []
+
 	def make_column(key, label=None, type="Data", options=None, width=120):
 		return {
 			"label": _(label or key.replace("_", " ").title()),
@@ -31,9 +34,16 @@ def _get_columns(company):
 
 	currency = get_company_currency(company)
 
-	columns = [
-		make_column("posting_date", "Date", type="Date"),
-		make_column("voucher_type", "Document Type"),
+	columns.append(
+		make_column("posting_date", "Date", type="Date")
+	)
+
+	if not summary_view:
+		columns.append(
+			make_column("voucher_type", "Document Type")
+		)
+
+	columns.append(
 		make_column(
 			"voucher_no",
 			"Document No",
@@ -41,19 +51,24 @@ def _get_columns(company):
 			"voucher_type",
 			180
 		),
-	]
+	)
 
 	columns.extend([
 		make_column("debit", "Cash In ({0})".format(currency), type="Float"),
 		make_column("credit", "Cash Out ({0})".format(currency), type="Float"),
-		make_column("balance", "Balance ({0})".format(currency), type="Float"),
-		make_column("remarks", "Remarks", width=180)
+		make_column("balance", "Balance ({0})".format(currency), type="Float")
 	])
+
+	if not summary_view:
+		columns.append(
+			make_column("remarks", "Remarks", width=180)
+		)
 
 	return columns
 
 
 def _get_data(company, filters):
+	summary_view = filters.get('summary_view')
 	cash_account = frappe.db.get_value('Company', company, 'default_cash_account')
 
 	values = {
@@ -81,11 +96,35 @@ def _get_data(company, filters):
 		as_dict=True
 	)
 
+	if summary_view:
+		result = _summarize_account(
+			groupby('posting_date', result)
+		)
+
 	opening = _get_opening(company, filters)
 	result = _set_balance(opening + result)
 	closing = _get_closing(result)
 
 	return result + closing
+
+
+def _summarize_account(data):
+	summarized_data = []
+
+	def make_summary_row(_, row):
+		_['debit'] = _['debit'] + row['debit']
+		_['credit'] = _['credit'] + row['credit']
+		return _
+
+	for key, accounts in data.items():
+		summary_row = reduce(make_summary_row, accounts)
+		summary_row['voucher_type'] = None
+		summary_row['remarks'] = None
+		summary_row['voucher_no'] = "'Day Total'"
+
+		summarized_data.append(summary_row)
+
+	return summarized_data
 
 
 def _set_balance(data):
