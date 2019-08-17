@@ -6,9 +6,8 @@ from __future__ import unicode_literals
 import frappe
 from frappe.utils import now, flt, cint
 from frappe.model.document import Document
-from operator import neg
 from functools import partial
-from toolz import merge, compose, unique, pluck, get, excepts, first
+from toolz import merge, compose, pluck, excepts, first
 
 from pos_bahrain.utils import pick, sum_by
 
@@ -51,7 +50,7 @@ class POSClosingVoucher(Document):
         self.set_report_details()
         get_default_collected = compose(
             lambda x: x.collected_amount if x else 0,
-            excepts(StopIteration, first, None),
+            excepts(StopIteration, first, lambda x: None),
             partial(filter, lambda x: cint(x.is_default) == 1),
         )
         self.closing_amount = self.opening_amount + get_default_collected(self.payments)
