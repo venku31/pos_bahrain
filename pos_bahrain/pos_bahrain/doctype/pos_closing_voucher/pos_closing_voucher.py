@@ -51,7 +51,7 @@ class POSClosingVoucher(Document):
         self.set_report_details()
         get_default_collected = compose(
             lambda x: x.collected_amount if x else 0,
-            excepts(StopIteration, first, None),
+            excepts(StopIteration, first, lambda x: None),
             partial(filter, lambda x: cint(x.is_default) == 1),
         )
         self.closing_amount = self.opening_amount + get_default_collected(self.payments)
