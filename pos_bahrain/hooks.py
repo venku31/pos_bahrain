@@ -88,6 +88,7 @@ fixtures = [
                     "Purchase Receipt Item-pb_expiry_date",
                     "Purchase Invoice Item-pb_expiry_date",
                     "Stock Entry Detail-pb_expiry_date",
+                    "Journal Entry-pb_is_cheque",
                 ],
             ]
         ],
