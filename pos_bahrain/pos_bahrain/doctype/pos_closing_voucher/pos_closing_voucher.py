@@ -6,9 +6,8 @@ from __future__ import unicode_literals
 import frappe
 from frappe.utils import now, flt, cint
 from frappe.model.document import Document
-from operator import neg
 from functools import partial
-from toolz import merge, compose, unique, pluck, get, excepts, first
+from toolz import merge, compose, pluck, excepts, first
 
 from pos_bahrain.utils import pick, sum_by
 
