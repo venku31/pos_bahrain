@@ -84,12 +84,13 @@ def _get_data(company, filters):
 				posting_date,
 				voucher_type,
 				voucher_no,
-				debit,
-				credit,
+				sum(debit) as debit,
+				sum(credit) as credit,
 				remarks
 			FROM `tabGL Entry` {clause}
 			AND company = %(company)s AND account = %(account)s
 			AND posting_date >= %(from_date)s AND posting_date <= %(to_date)s
+			GROUP BY voucher_no
 			ORDER BY posting_date ASC
 		""".format(clause=_get_clause()),
 		values=values,
