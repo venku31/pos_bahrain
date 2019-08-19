@@ -19,6 +19,13 @@ frappe.query_reports["Daily Cash with Payment"] = {
 		  default: frappe.datetime.get_today(),
 		},
 		{
+			fieldname: 'pos_profile',
+			label: __('POS Profile'),
+			fieldtype: 'Link',
+			options: 'POS Profile',
+			reqd: 1
+		},
+		{
 			fieldname: 'summary_view',
 			label: __('Summary View'),
 			fieldtype: 'Check'

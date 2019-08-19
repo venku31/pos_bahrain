@@ -153,6 +153,7 @@ def _sum_invoice_payments(invoice_payments, mop):
 def _get_clauses():
 	clauses = [
 		"si.docstatus = 1",
+		"si.pos_profile = %(pos_profile)s",
 		"si.posting_date BETWEEN %(from_date)s AND %(to_date)s"
 	]
 	return " AND ".join(clauses)
