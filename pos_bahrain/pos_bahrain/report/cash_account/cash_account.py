@@ -97,6 +97,8 @@ def _get_data(company, filters):
 		as_dict=True
 	)
 
+	_calculate_invoice_in_out(result)
+
 	if summary_view:
 		result = _summarize_account(
 			groupby('posting_date', result)
@@ -107,6 +109,14 @@ def _get_data(company, filters):
 	closing = _get_closing(result)
 
 	return result + closing
+
+
+def _calculate_invoice_in_out(data):
+	for row in data:
+		if row.get('voucher_type') == "Sales Invoice":
+			row['debit'] = row['debit'] - row['credit']
+			row['credit'] = 0.00
+
 
 
 def _summarize_account(data):
