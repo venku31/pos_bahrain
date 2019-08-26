@@ -3,6 +3,7 @@ import mapValues from 'lodash/mapValues';
 import keyBy from 'lodash/keyBy';
 import get from 'lodash/get';
 
+// depends on withIdx
 export default function withUom(Pos) {
   return class PosExtended extends Pos {
     async init_master_data(r, freeze) {
