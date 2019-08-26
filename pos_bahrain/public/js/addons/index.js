@@ -5,6 +5,7 @@ import withBatchPrice from './withBatchPrice';
 import withBarcodeUom from './withBarcodeUom';
 import withCustomerWiseItemPrice from './withCustomerWiseItemPrice';
 import withStockValidator from './withStockValidator';
+import withPaymentValidator from './withPaymentValidator';
 
 // the order of the hocs is important. `withUom` should always run before all
 // other hocs
@@ -12,6 +13,7 @@ export const extend_pos = flowRight([
   withBarcodeUom,
   withBatchPrice,
   withCustomerWiseItemPrice,
+  withPaymentValidator,
   withStockValidator,
   withUom,
 ]);
