@@ -10,11 +10,13 @@ import withMorePaymentActions from './withMorePaymentActions';
 import withBatchField from './withBatchField';
 import withIdx from './withIdx';
 import withStockQty from './withStockQty';
+import withGetChildItemByIdx from './withGetChildItemByIdx';
 
 // the order of the hocs is important. `withUom` should always run before all
 // other hocs
 export const extend_pos = flowRight([
   withMorePaymentActions,
+  withGetChildItemByIdx,
   withIdx,
   withBarcodeUom,
   withBatchPrice,

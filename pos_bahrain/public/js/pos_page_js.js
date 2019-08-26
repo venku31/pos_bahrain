@@ -175,9 +175,12 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   set_item_details: function(item_code, field, value, remove_zero_qty_items) {
     // this method is a copy of the original without the negative value validation
     // and return invoice feature added.
+    const idx = this.wrapper.find('.pos-bill-item.active').data('idx');
+
     this.remove_item = [];
-    (this.frm.doc.items || []).forEach(item => {
-      if (item.item_code === item_code) {
+
+    (this.frm.doc.items || []).forEach((item, id) => {
+      if (item.item_code === item_code && id === idx) {
         if (item.serial_no && field === 'qty') {
           this.validate_serial_no_qty(item, item_code, field, value);
         }
