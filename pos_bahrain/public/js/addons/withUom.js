@@ -44,7 +44,7 @@ export default function withUom(Pos) {
     }
     add_new_item_to_grid() {
       super.add_new_item_to_grid();
-      const { stock_uom } = first(this.items) || {};
+      const { stock_uom } = this.child;
       Object.assign(this.child, { uom: stock_uom, conversion_factor: 1 });
     }
     get_item_price(item_code, uom_details) {
