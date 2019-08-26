@@ -76,7 +76,7 @@ export default function withUom(Pos) {
       );
     }
     _set_item_price_from_uom(item_code, uom) {
-      const item = this.frm.doc.items.find(x => x.item_code === item_code);
+      const item = this._get_active_item_ref_from_doc();
       const uom_details = this.uom_details[item_code].find(x => x.uom === uom);
       if (item && uom_details) {
         const { conversion_factor = 1 } = uom_details;
@@ -91,6 +91,11 @@ export default function withUom(Pos) {
         this.update_paid_amount_status(false);
       }
     }
+    _get_active_item_ref_from_doc() {
+      return this.frm.doc.items[
+        this.wrapper.find('.pos-bill-item.active').data('idx')
+      ];
+    }
     render_selected_item() {
       super.render_selected_item();
       $(`
@@ -100,9 +105,7 @@ export default function withUom(Pos) {
         </div>
       `).prependTo(this.wrapper.find('.pos-selected-item-action'));
       const $select = this.wrapper.find('.pos-item-uom');
-      const selected_item = this.frm.doc.items.find(
-        ({ item_code }) => this.item_code === item_code
-      );
+      const selected_item = this._get_active_item_ref_from_doc();
       this.uom_details[this.item_code].forEach(({ uom }) => {
         $('<option />', {
           value: uom,
