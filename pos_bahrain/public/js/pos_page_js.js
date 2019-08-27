@@ -1,17 +1,6 @@
 erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   onload: function() {
     this._super();
-    this.batch_dialog = new frappe.ui.Dialog({
-      title: __('Select Batch No'),
-      fields: [
-        {
-          fieldname: 'batch',
-          fieldtype: 'Select',
-          label: __('Batch No'),
-          reqd: 1,
-        },
-      ],
-    });
     this.setinterval_to_sync_master_data(600000);
   },
   init_master_data: async function(r, freeze = true) {
@@ -27,19 +16,11 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         freeze_message: __('Syncing Item details'),
       });
 
-      const { batch_no_details, exchange_rates } = pos_data;
+      const { exchange_rates } = pos_data;
 
-      if (!batch_no_details || !exchange_rates) {
+      if (!exchange_rates) {
         throw new Error();
       }
-      this.batch_no_data = Object.keys(batch_no_details).reduce(
-        (a, x) =>
-          Object.assign(a, {
-            [x]: batch_no_details[x].map(({ name }) => name),
-          }),
-        {}
-      );
-      this.batch_no_details = batch_no_details;
       this.exchange_rates = exchange_rates;
       await this.set_opening_entry();
       return pos_data;
@@ -130,46 +111,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
           dialog.$wrapper.remove();
         }
       });
-    }
-  },
-  mandatory_batch_no: function() {
-    const { has_batch_no, item_code } = this.items[0];
-    this.batch_dialog.get_field('batch').$input.empty();
-    this.batch_dialog.get_primary_btn().off('click');
-    this.batch_dialog.get_close_btn().off('click');
-    if (has_batch_no && !this.item_batch_no[item_code]) {
-      (this.batch_no_details[item_code] || []).forEach(
-        ({ name, expiry_date, qty }) => {
-          this.batch_dialog
-            .get_field('batch')
-            .$input.append(
-              $('<option />', { value: name }).text(
-                `${name} | ${
-                  expiry_date ? frappe.datetime.str_to_user(expiry_date) : '--'
-                } | ${qty}`
-              )
-            );
-        }
-      );
-      this.batch_dialog.get_field('batch').set_input();
-      this.batch_dialog.set_primary_action(__('Submit'), () => {
-        const batch_no = this.batch_dialog.get_value('batch');
-        this.items[0].batch_no = batch_no;
-        this.item_batch_no[item_code] = batch_no;
-        this.batch_callback();
-        this.batch_dialog.hide();
-        this.set_focus();
-      });
-      this.batch_dialog.get_close_btn().on('click', () => {
-        this.item_code = item_code;
-        this.render_selected_item();
-        this.remove_selected_item();
-        this.wrapper.find('.selected-item').empty();
-        this.item_code = null;
-        this.set_focus();
-      });
-      this.batch_dialog.show();
-      this.batch_dialog.$wrapper.find('.modal-backdrop').off('click');
     }
   },
   set_item_details: function(item_code, field, value, remove_zero_qty_items) {
