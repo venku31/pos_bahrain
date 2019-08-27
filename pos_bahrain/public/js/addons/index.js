@@ -19,8 +19,8 @@ import withAsyncAddToCart from './withAsyncAddToCart';
 export const extend_pos = flowRight([
   withMorePaymentActions,
   withGetChildItemByIdx,
-  withBarcodeUom,
   withBatchPrice,
+  withBarcodeUom,
   withCustomerWiseItemPrice,
   withPaymentValidator,
   withStockValidator,

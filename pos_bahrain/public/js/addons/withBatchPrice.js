@@ -9,7 +9,7 @@ export default function withBatchPrice(Pos) {
       return pos_data;
     }
     _apply_batch_price(item) {
-      if (item && item.batch_no) {
+      if (this.use_batch_price && item && item.batch_no) {
         const {
           pb_price_based_on: based_on,
           pb_rate: rate,
@@ -32,6 +32,7 @@ export default function withBatchPrice(Pos) {
     async add_to_cart() {
       const item = await super.add_to_cart();
       this._apply_batch_price(item);
+      return item;
     }
     render_selected_item() {
       super.render_selected_item();
