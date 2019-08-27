@@ -17,7 +17,6 @@ import withGetChildItemByIdx from './withGetChildItemByIdx';
 export const extend_pos = flowRight([
   withMorePaymentActions,
   withGetChildItemByIdx,
-  withIdx,
   withBarcodeUom,
   withBatchPrice,
   withCustomerWiseItemPrice,
@@ -26,4 +25,5 @@ export const extend_pos = flowRight([
   withStockQty,
   withBatchField,
   withUom,
+  withIdx,
 ]);

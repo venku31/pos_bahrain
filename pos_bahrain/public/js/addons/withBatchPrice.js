@@ -41,9 +41,7 @@ export default function withBatchPrice(Pos) {
     }
     render_selected_item() {
       super.render_selected_item();
-      const { item_code, batch_no } =
-        this.frm.doc.items.find(item => this.item_code === item.item_code) ||
-        {};
+      const { item_code, batch_no } = this.child_doc || {};
       this.wrapper.find('.pos-item-uom').on('change', () => {
         if (item_code && batch_no) {
           this._set_item_price(item_code, batch_no);
