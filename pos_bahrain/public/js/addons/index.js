@@ -12,8 +12,8 @@ import withIdx from './withIdx';
 import withStockQty from './withStockQty';
 import withGetChildItemByIdx from './withGetChildItemByIdx';
 
-// the order of the hocs is important. `withUom` should always run before all
-// other hocs
+// the order of the hocs is important. `withIdx` > `withUom` should always run before
+// all other hocs
 export const extend_pos = flowRight([
   withMorePaymentActions,
   withGetChildItemByIdx,

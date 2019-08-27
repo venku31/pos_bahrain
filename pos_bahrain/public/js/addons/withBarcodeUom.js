@@ -1,5 +1,6 @@
 import first from 'lodash/first';
 
+// depends on withUom
 export default function withBarcodeUom(Pos) {
   return class PosExtended extends Pos {
     async init_master_data(r, freeze) {

@@ -2,6 +2,7 @@ import mapValues from 'lodash/mapValues';
 import groupBy from 'lodash/groupBy';
 import get from 'lodash/get';
 
+// depends on withUom
 export default function withCustomerWiseItemPrice(Pos) {
   return class PosExtended extends Pos {
     async init_master_data(r, freeze) {
