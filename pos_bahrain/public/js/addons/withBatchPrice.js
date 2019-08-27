@@ -1,3 +1,6 @@
+import first from 'lodash/first';
+
+// depends on withAsyncAddToCart
 export default function withBatchPrice(Pos) {
   return class PosExtended extends Pos {
     async init_master_data(r, freeze) {
@@ -5,19 +8,16 @@ export default function withBatchPrice(Pos) {
       this.use_batch_price = !!cint(pos_data.use_batch_price);
       return pos_data;
     }
-    _set_item_price(item_code, batch_no) {
-      const {
-        pb_price_based_on: based_on,
-        pb_rate: rate,
-        pb_discount: discount_percentage,
-      } =
-        this.batch_no_details[item_code].find(
-          ({ name }) => name === batch_no
-        ) || {};
-      const item = this.frm.doc.items.find(
-        item => item.item_code === item_code
-      );
-      if (item) {
+    _apply_batch_price(item) {
+      if (item && item.batch_no) {
+        const {
+          pb_price_based_on: based_on,
+          pb_rate: rate,
+          pb_discount: discount_percentage,
+        } =
+          this.batch_no_details[item.item_code].find(
+            ({ name }) => name === item.batch_no
+          ) || {};
         if (based_on === 'Based on Rate') {
           item.rate = rate * item.conversion_factor;
         } else if (based_on === 'Based on Discount') {
@@ -29,23 +29,16 @@ export default function withBatchPrice(Pos) {
         this.update_paid_amount_status(false);
       }
     }
-    mandatory_batch_no() {
-      super.mandatory_batch_no();
-      this.batch_dialog.get_primary_btn().on('click', () => {
-        if (this.use_batch_price) {
-          const { item_code } = this.items[0];
-          const batch_no = this.batch_dialog.get_value('batch');
-          this._set_item_price(item_code, batch_no);
-        }
-      });
+    async add_to_cart() {
+      const item = await super.add_to_cart();
+      this._apply_batch_price(item);
     }
     render_selected_item() {
       super.render_selected_item();
-      const { item_code, batch_no } = this.child_doc || {};
-      this.wrapper.find('.pos-item-uom').on('change', () => {
-        if (item_code && batch_no) {
-          this._set_item_price(item_code, batch_no);
-        }
+      ['.pos-item-uom', '.pos-item-batch'].forEach(className => {
+        this.wrapper.find(className).on('change', () => {
+          this._apply_batch_price(first(this.child_doc));
+        });
       });
     }
   };
