@@ -18,14 +18,14 @@ export default function withBarcodeUom(Pos) {
         this.barcode_details[this.search_item.$input.val()];
       super.make_item_list(customer);
     }
-    _set_item_uom(item_code, uom, barcode = null) {
-      const item = this.frm.doc.items.find(x => x.item_code === item_code);
-      const uom_details = (this.uom_details[item_code] || []).find(
-        x => x.uom === uom
-      );
-      if (item && uom_details) {
-        const { conversion_factor = 1 } = uom_details;
-        const price_list_rate = this.get_item_price(item_code, uom_details);
+    _apply_barcode_uom(item) {
+      if (this.use_barcode_uom && this.barcode) {
+        const { item_code } = item;
+        console.log(item);
+        const { uom, barcode } = this.barcode;
+        const { conversion_factor = 1 } =
+          (this.uom_details[item_code] || []).find(x => x.uom === uom) || {};
+        const price_list_rate = this.get_item_price({ item_code, uom });
         Object.assign(item, {
           barcode,
           uom,
@@ -37,18 +37,10 @@ export default function withBarcodeUom(Pos) {
         this.update_paid_amount_status(false);
       }
     }
-    add_to_cart() {
-      super.add_to_cart();
-      if (this.use_barcode_uom) {
-        if (this.barcode) {
-          const { item_code, uom, barcode } = this.barcode;
-          this._set_item_uom(item_code, uom, barcode);
-          this.barcode = null;
-        } else {
-          const { item_code, stock_uom: uom } = first(this.items) || {};
-          this._set_item_uom(item_code, uom);
-        }
-      }
+    async add_to_cart() {
+      const item = await super.add_to_cart();
+      this._apply_barcode_uom(item);
+      return item;
     }
   };
 }
