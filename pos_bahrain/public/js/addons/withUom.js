@@ -93,9 +93,7 @@ export default function withUom(Pos) {
       }
     }
     _get_active_item_ref_from_doc() {
-      return this.frm.doc.items[
-        this.wrapper.find('.pos-bill-item.active').data('idx')
-      ];
+      return this.frm.doc.items[this.selected_cart_idx];
     }
     render_selected_item() {
       super.render_selected_item();
