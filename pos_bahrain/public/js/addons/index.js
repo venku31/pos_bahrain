@@ -11,6 +11,8 @@ import withBatchField from './withBatchField';
 import withIdx from './withIdx';
 import withStockQty from './withStockQty';
 import withGetChildItemByIdx from './withGetChildItemByIdx';
+import withExtendedBatchSelector from './withExtendedBatchSelector';
+import withAsyncAddToCart from './withAsyncAddToCart';
 
 // the order of the hocs is important. `withIdx` > `withUom` should always run before
 // all other hocs
@@ -24,6 +26,8 @@ export const extend_pos = flowRight([
   withStockValidator,
   withStockQty,
   withBatchField,
+  withAsyncAddToCart,
+  withExtendedBatchSelector,
   withUom,
   withIdx,
 ]);

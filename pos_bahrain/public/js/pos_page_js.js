@@ -239,45 +239,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     }
     return invoice_data;
   },
-  add_to_cart: function() {
-    let caught = false;
-    const validate_item = () => {
-      (this.frm.doc['items'] || []).forEach(item => {
-        if (item.item_code === this.items[0].item_code && item.batch_no === this.items[0].batch_no) {
-          caught = true;
-          item.qty += this.frm.doc.is_return ? -1 : 1;
-          item.amount = flt(item.rate) * flt(item.qty);
-          if (this.item_serial_no[item.item_code]) {
-            item.serial_no += '\n' + this.item_serial_no[item.item_code][0];
-            item.warehouse = this.item_serial_no[item.item_code][1];
-          }
-          if (this.item_batch_no.length) {
-            item.batch_no = this.item_batch_no[item.item_code];
-          }
-        }
-      });
-      if (!caught) {
-        this.add_new_item_to_grid();
-      }
-      this.update_paid_amount_status(false);
-      this.wrapper.find('.item-cart-items').scrollTop(1000);
-    };
-
-    // this method is a copy of the original with the return invoice feature added.
-    this.customer_validate();
-    this.mandatory_batch_no();
-    this.validate_serial_no();
-    this.validate_warehouse();
-
-    const { has_batch_no } = this.items[0];
-    if (!has_batch_no) {
-      validate_item();
-    } else {
-      this.batch_callback = () => {
-        validate_item();
-      }
-    }
-  },
   make_control: function() {
     this._super();
     this.make_return_control();
