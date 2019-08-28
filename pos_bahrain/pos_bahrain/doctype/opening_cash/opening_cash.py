@@ -9,14 +9,20 @@ from frappe.model.document import Document
 
 class OpeningCash(Document):
     def validate(self):
-        opening_voucher = frappe.db.sql("""
-          SELECT name FROM `tabOpening Cash` 
+        opening_voucher = frappe.db.sql(
+            """
+          SELECT name FROM `tabOpening Cash`
           WHERE date=%s AND pos_profile=%s AND docstatus=1
-          """, (self.date, self.pos_profile))
+          """,
+            (self.date, self.pos_profile),
+        )
         if opening_voucher:
-            pos_closing_voucher = frappe.db.sql("""
-              SELECT name FROM `tabPOS Closing Voucher` 
+            pos_closing_voucher = frappe.db.sql(
+                """
+              SELECT name FROM `tabPOS Closing Voucher`
               WHERE period_start_date=%s AND pos_profile=%s AND docstatus=1
-              """, (self.date, self.pos_profile))
+              """,
+                (self.date, self.pos_profile),
+            )
         if not pos_closing_voucher:
             frappe.throw("POS Closing Voucher is not submitted yet")
