@@ -21,7 +21,6 @@ export default function withBarcodeUom(Pos) {
     _apply_barcode_uom(item) {
       if (this.use_barcode_uom && this.barcode) {
         const { item_code } = item;
-        console.log(item);
         const { uom, barcode } = this.barcode;
         const { conversion_factor = 1 } =
           (this.uom_details[item_code] || []).find(x => x.uom === uom) || {};
