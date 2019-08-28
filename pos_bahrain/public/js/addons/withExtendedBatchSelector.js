@@ -44,9 +44,13 @@ export default function withExtendedBatchSelector(Pos) {
     mandatory_batch_no() {
       return new Promise(resolve => {
         const { has_batch_no, item_code } = this.items[0];
-        if (!has_batch_no) {
-          return resolve();
+
+        // do not open selector but resolve with batch_no set by the get_items method
+        // from search_item input field
+        if (!has_batch_no || this.item_batch_no[item_code]) {
+          return resolve(this.item_batch_no[item_code]);
         }
+
         this.batch_dialog.get_field('batch').$input.empty();
         this.batch_dialog.get_primary_btn().off('click');
         this.batch_dialog.get_close_btn().off('click');
