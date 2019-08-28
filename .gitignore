@@ -5,3 +5,5 @@
 tags
 pos_bahrain/docs/current
 __pycache__/
+node_modules
+yarn.lock
