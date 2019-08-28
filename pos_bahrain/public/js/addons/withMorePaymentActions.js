@@ -4,7 +4,7 @@ export default function withMorePaymentActions(Pos) {
     make_payment() {
       super.make_payment();
       $(
-        `<button type="button" class="btn btn-info btn-sm">Submit & Pay</button>`
+        `<button type="button" class="btn btn-info btn-sm">Submit & Print</button>`
       )
         .click(() => {
           this._validate_payment();
