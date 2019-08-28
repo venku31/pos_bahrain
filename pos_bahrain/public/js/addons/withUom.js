@@ -47,8 +47,9 @@ export default function withUom(Pos) {
       const { stock_uom } = this.child;
       Object.assign(this.child, { uom: stock_uom, conversion_factor: 1 });
     }
-    get_item_price(item_code, uom_details) {
-      const { uom, conversion_factor = 1 } = uom_details;
+    get_item_price({ item_code, uom }) {
+      const { conversion_factor = 1 } =
+        (this.uom_details[item_code] || []).find(x => x.uom === uom) || {};
 
       const customer_wise = get(this.customer_wise_price_list, [
         this.frm.doc.customer,
@@ -80,7 +81,7 @@ export default function withUom(Pos) {
       const uom_details = this.uom_details[item_code].find(x => x.uom === uom);
       if (item && uom_details) {
         const { conversion_factor = 1 } = uom_details;
-        const price_list_rate = this.get_item_price(item_code, uom_details);
+        const price_list_rate = this.get_item_price({ item_code, uom });
         Object.assign(item, {
           uom,
           conversion_factor,
@@ -92,9 +93,7 @@ export default function withUom(Pos) {
       }
     }
     _get_active_item_ref_from_doc() {
-      return this.frm.doc.items[
-        this.wrapper.find('.pos-bill-item.active').data('idx')
-      ];
+      return this.frm.doc.items[this.selected_cart_idx];
     }
     render_selected_item() {
       super.render_selected_item();
