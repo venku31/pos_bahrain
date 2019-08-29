@@ -9,6 +9,7 @@ export default function withAsyncAddToCart(Pos) {
       this._add_or_update_cart();
       return this._get_matched_items_in_cart({
         item_code: this.items[0].item_code,
+        uom: this.items[0].stock_uom,
         batch_no,
       });
     }
