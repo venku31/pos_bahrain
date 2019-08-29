@@ -20,9 +20,9 @@ export default function withAsyncAddToCart(Pos) {
       );
     }
     _add_or_update_cart() {
-      const { item_code } = this.items[0];
+      const { item_code, stock_uom } = this.items[0];
       const batch_no = this.item_batch_no[item_code];
-      const item = this._get_matched_items_in_cart({ item_code, batch_no });
+      const item = this._get_matched_items_in_cart({ item_code, batch_no, uom: stock_uom });
       if (item) {
         item.qty += this.frm.doc.is_return ? -1 : 1;
         item.amount = flt(item.rate) * flt(item.qty);
