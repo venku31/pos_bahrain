@@ -8,7 +8,8 @@ export default function withStockQty(Pos) {
             const me = this;
             $.each(this.frm.doc.items || [], function(i, item) {
                const bin_qty = me.bin_data[item.item_code][item.warehouse];
-               me.bin_data[item.item_code][item.warehouse] = bin_qty - item.qty;
+               const qty = item.qty * item.conversion_factor;
+               me.bin_data[item.item_code][item.warehouse] = bin_qty - qty;
             });
             this.items = this.get_items();
             this.make_item_list();
