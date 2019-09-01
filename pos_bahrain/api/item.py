@@ -161,3 +161,12 @@ def get_uom_from(barcode):
     return frappe.db.get_value(
         "Item Barcode", filters={"barcode": barcode}, fieldname="pb_uom"
     )
+
+
+@frappe.whitelist()
+def get_custom_item_cart_fields():
+    return frappe.get_all(
+        'POS Bahrain Settings Cart Fields',
+        fields=['item_field', 'label'],
+        order_by='idx'
+    )
