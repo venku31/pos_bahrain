@@ -40,7 +40,17 @@ export default function withCustomItemCart(Pos) {
 
             if (!use_custom_item_cart) {
                 super.show_items_in_item_cart();
+                return;
             }
+
+            // from erpnext POS
+            const $items = this.wrapper.find(".items").empty();
+            const $no_items_message = this.wrapper.find(".no-items-message");
+            $no_items_message.toggle(this.frm.doc.items.length === 0);
+
+            $.each(this.frm.doc.items || [], (i, item) => {
+                this._render_pos_list_row($items, item);
+            });
         }
         _render_custom_item_cart_fields($header) {
             const { item_cart_fields } = this;
@@ -49,6 +59,30 @@ export default function withCustomItemCart(Pos) {
                     <span class="cell">${__(field.label)}</span>
                 `);
             })
+        }
+        _render_pos_list_row($items, item) {
+            const { item_cart_fields } = this;
+            const pos_list_row_field = item_cart_fields.map(field => {
+                const value = item[field.item_field];
+                return `
+                    <div class="cell">
+                        ${this._format_value(value, field.fieldtype)}
+                    </div>
+                `;
+            });
+
+            $items.append(`
+                <div class="pos-list-row pos-bill-item" data-item-code="${item.item_code}">
+                    ${pos_list_row_field.join("\n")}
+                </div>
+            `);
+        }
+        _format_value(value, fieldtype) {
+            if (fieldtype === "Currency") {
+                return format_currency(value);
+            } else {
+                return value;
+            }
         }
     };
 }

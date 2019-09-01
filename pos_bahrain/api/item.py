@@ -167,6 +167,6 @@ def get_uom_from(barcode):
 def get_custom_item_cart_fields():
     return frappe.get_all(
         'POS Bahrain Settings Cart Fields',
-        fields=['item_field', 'label'],
+        fields=['item_field', 'label', 'fieldtype'],
         order_by='idx'
     )
