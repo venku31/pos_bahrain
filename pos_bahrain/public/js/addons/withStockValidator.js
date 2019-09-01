@@ -17,26 +17,28 @@ export default function withStockValidator(Pos) {
             });
         }
         _validate_batch_qty(item) {
-            const { item_code, batch_no, qty } = item;
+            const { item_code, batch_no, qty, conversion_factor } = item;
 
             if (!(batch_no in this.batch_qty)) {
                 const batch = this._get_batch(item_code, batch_no);
                 this.batch_qty[batch_no] = batch[0].qty;
             }
 
-            this.batch_qty[batch_no] = this.batch_qty[batch_no] - qty;
+            const selected_qty = qty * conversion_factor;
+            this.batch_qty[batch_no] = this.batch_qty[batch_no] - selected_qty;
             if (this.batch_qty[batch_no] < 0) {
                 frappe.throw(__("Qty is greater than the batch qty."));
             }
         }
         _validate_non_batch_qty(item) {
-            const { item_code, actual_qty, qty } = item;
+            const { item_code, actual_qty, qty, conversion_factor } = item;
 
             if (!(item_code in this.items_qty)) {
                 this.items_qty[item_code] = actual_qty;
             }
 
-            this.items_qty[item_code] = this.items_qty[item_code] - qty;
+            const selected_qty = qty * conversion_factor;
+            this.items_qty[item_code] = this.items_qty[item_code] - selected_qty;
             if (this.items_qty[item_code] < 0) {
                 frappe.throw(__("Qty is greater than the actual qty."));
             }
