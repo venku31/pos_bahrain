@@ -14,10 +14,12 @@ import withGetChildItemByIdx from './withGetChildItemByIdx';
 import withExtendedBatchSelector from './withExtendedBatchSelector';
 import withAsyncAddToCart from './withAsyncAddToCart';
 import withCustomItemCart from './withCustomItemCart';
+import withKeyboardShortcuts from './withKeyboardShortcuts';
 
 // the order of the hocs is important. `withIdx` > `withUom` should always run before
 // all other hocs
 export const extend_pos = flowRight([
+  withKeyboardShortcuts,
   withMorePaymentActions,
   withGetChildItemByIdx,
   withBatchPrice,
