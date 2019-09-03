@@ -28,7 +28,8 @@ def get_more_pos_data(profile, company):
         "do_not_allow_zero_payment": settings.do_not_allow_zero_payment,
         "use_batch_price": settings.use_batch_price,
         "use_barcode_uom": settings.use_barcode_uom,
-        "use_custom_item_cart": settings.use_custom_item_cart
+        "use_custom_item_cart": settings.use_custom_item_cart,
+        "use_stock_validator": settings.use_stock_validator
     }
 
 

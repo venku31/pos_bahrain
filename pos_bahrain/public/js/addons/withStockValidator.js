@@ -1,8 +1,17 @@
 export default function withStockValidator(Pos) {
     return class PosExtended extends Pos {
+        async init_master_data(r, freeze) {
+            const pos_data = await super.init_master_data(r, freeze);
+            const { use_stock_validator } = pos_data;
+            this.use_stock_validator = !!cint(use_stock_validator);
+            return pos_data;
+        }
         validate() {
             super.validate();
-            this._validate_qty();
+
+            if (this.use_stock_validator) {
+                this._validate_qty();
+            }
         }
         _validate_qty() {
             this.items_qty = {};
