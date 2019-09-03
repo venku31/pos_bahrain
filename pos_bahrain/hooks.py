@@ -185,6 +185,11 @@ on_session_creation = "pos_bahrain.doc_events.set_user_defaults"
 # Scheduled Tasks
 # ---------------
 
+scheduler_events = {
+    "daily": [
+        "pos_bahrain.scheduler_events.daily.send_email_to_manager"
+    ]
+}
 # scheduler_events = {
 # 	"all": [
 # 		"pos_bahrain.tasks.all"
