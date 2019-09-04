@@ -20,13 +20,13 @@ export default function withCustomItemCart(Pos) {
                 }
 
                 this.item_cart_fields = item_cart_fields;
-                this.make_control(); // for async
+                this.make_discount_field(); // for async
             }
 
             return pos_data;
         }
-        make_control() {
-            super.make_control();
+        make_discount_field() {
+            super.make_discount_field();
 
             const { use_custom_item_cart } = this;
 
