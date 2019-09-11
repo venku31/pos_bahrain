@@ -17,15 +17,15 @@ export default function withStockValidator(Pos) {
             this.items_qty = {};
             this.batch_qty = {};
 
-            this.frm.doc.items.forEach(item => {
+            this.frm.doc.items.forEach((item, index) => {
                 if (item.batch_no) {
-                    this._validate_batch_qty(item);
+                    this._validate_batch_qty(item, index);
                 } else {
-                    this._validate_non_batch_qty(item);
+                    this._validate_non_batch_qty(item, index);
                 }
             });
         }
-        _validate_batch_qty(item) {
+        _validate_batch_qty(item, index) {
             const { item_code, batch_no, qty, conversion_factor } = item;
 
             if (!(batch_no in this.batch_qty)) {
@@ -34,12 +34,16 @@ export default function withStockValidator(Pos) {
             }
 
             const selected_qty = qty * conversion_factor;
-            this.batch_qty[batch_no] = this.batch_qty[batch_no] - selected_qty;
-            if (this.batch_qty[batch_no] < 0) {
-                frappe.throw(__("Qty is greater than the batch qty."));
+            const new_qty = this.batch_qty[batch_no] - selected_qty;
+            if (new_qty < 0) {
+                frappe.throw(
+                    __(`Row ${index + 1} with ${item.item_code} has only ${this.batch_qty[batch_no]} ${item.stock_uom} in batch ${batch_no}. Please select another batch which has ${selected_qty} ${item.uom} in the warehouse.`)
+                );
             }
+
+            this.batch_qty[batch_no] = new_qty;
         }
-        _validate_non_batch_qty(item) {
+        _validate_non_batch_qty(item, index) {
             const { item_code, actual_qty, qty, conversion_factor } = item;
 
             if (!(item_code in this.items_qty)) {
@@ -49,7 +53,9 @@ export default function withStockValidator(Pos) {
             const selected_qty = qty * conversion_factor;
             this.items_qty[item_code] = this.items_qty[item_code] - selected_qty;
             if (this.items_qty[item_code] < 0) {
-                frappe.throw(__("Qty is greater than the actual qty."));
+                frappe.throw(
+                    __(`Row ${index + 1} with ${item.item_code} has only ${item.actual_qty}.`)
+                );
             }
         }
         _get_batch(item, batch_no) {
