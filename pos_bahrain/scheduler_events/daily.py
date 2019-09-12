@@ -1,5 +1,6 @@
 import frappe
 from frappe import _
+from frappe.utils.data import add_days
 from frappe.utils.pdf import get_pdf
 
 
@@ -18,10 +19,12 @@ def send_email_to_manager():
     if not manager_email:
         frappe.throw(_('Manager email not set. Set it at POS Bahrain Settings.'))
 
+    yesterday_date = add_days(frappe.utils.nowdate(), -1)
+
     filters = {
         'company': frappe.defaults.get_user_default("company"),
-        'from_date': frappe.utils.nowdate(),
-        'to_date': frappe.utils.nowdate(),
+        'from_date': yesterday_date,
+        'to_date': yesterday_date,
         'group_by': 'Invoice'
     }
 
