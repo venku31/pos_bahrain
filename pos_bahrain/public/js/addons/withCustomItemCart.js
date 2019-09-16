@@ -21,6 +21,7 @@ export default function withCustomItemCart(Pos) {
 
                 this.item_cart_fields = item_cart_fields;
                 this.make_discount_field(); // for async
+                this._make_styles();
             }
 
             return pos_data;
@@ -83,6 +84,13 @@ export default function withCustomItemCart(Pos) {
             } else {
                 return value;
             }
+        }
+        _make_styles() {
+            $('head').append(`
+                <style type="text/css">
+                    body[data-route="pos"] .pos-list-row .cell { overflow-wrap: break-word; }
+                </style>
+            `);
         }
     };
 }
