@@ -57,7 +57,7 @@ export default function withCustomItemCart(Pos) {
             const { item_cart_fields } = this;
             item_cart_fields.forEach(field => {
                 $header.append(`
-                    <span class="cell">${__(field.label)}</span>
+                    <span class="cell" id="${field.item_field}">${__(field.label)}</span>
                 `);
             })
         }
@@ -66,7 +66,7 @@ export default function withCustomItemCart(Pos) {
             const pos_list_row_field = item_cart_fields.map(field => {
                 const value = item[field.item_field];
                 return `
-                    <div class="cell">
+                    <div class="cell" id="${field.item_field}">
                         ${this._format_value(value, field.fieldtype)}
                     </div>
                 `;
@@ -86,11 +86,23 @@ export default function withCustomItemCart(Pos) {
             }
         }
         _make_styles() {
+            const col_styles = this._make_col_styles().join("\n");
             $('head').append(`
                 <style type="text/css">
                     body[data-route="pos"] .pos-list-row .cell { overflow-wrap: break-word; }
+                    ${col_styles}
                 </style>
             `);
+        }
+        _make_col_styles() {
+            const { item_cart_fields } = this;
+            const styles = [];
+            item_cart_fields.forEach(field => {
+                if (field.width > 0) {
+                    styles.push(`.cell#${field.item_field} { width: ${field.width}%; }`);
+                }
+            });
+            return styles;
         }
     };
 }
