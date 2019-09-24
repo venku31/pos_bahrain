@@ -171,3 +171,14 @@ def get_custom_item_cart_fields():
         fields=['item_field', 'label', 'fieldtype', 'width'],
         order_by='idx'
     )
+
+
+@frappe.whitelist()
+def fetch_item_from_supplier_part_no(supplier_part_no):
+    item = frappe.get_all(
+        'Item Supplier',
+        fields=['parent AS name'],
+        filters=[['supplier_part_no', '=', supplier_part_no]],
+        limit_page_length=1
+    )
+    return item[0] if item else None
