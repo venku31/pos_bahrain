@@ -44,6 +44,7 @@ doctype_js = {
     "Sales Order": "public/js/alternate_discount.js",
     "Purchase Invoice": "public/js/set_retail_price.js",
     "Purchase Order": "public/js/set_retail_price.js",
+    "Payment Entry": "public/js/payment_entry.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -90,6 +91,7 @@ fixtures = [
                     "Stock Entry Detail-pb_expiry_date",
                     "Journal Entry-pb_is_cheque",
                     "Purchase Invoice-pb_fetch_item_from_supplier_part_no",
+                    "Payment Entry Reference-pb_invoice_date"
                 ],
             ]
         ],
