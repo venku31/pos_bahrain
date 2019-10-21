@@ -1,3 +1,8 @@
+function handle_onload(frm) {
+  handle_price_list_fields(frm);
+  handle_daily_email(frm);
+}
+
 function handle_price_list_fields(frm) {
   const { discount_on_retail } = frm.doc;
   frm.toggle_reqd(
@@ -6,7 +11,17 @@ function handle_price_list_fields(frm) {
   );
 }
 
+function handle_daily_email(frm) {
+  const { use_daily_email } = frm.doc;
+  frm.set_df_property(
+    'manager_email',
+    'disabled',
+    !use_daily_email
+  );
+}
+
 export default {
-  onload: handle_price_list_fields,
+  onload: handle_onload,
   discount_on_retail: handle_price_list_fields,
+  use_daily_email: handle_daily_email,
 };

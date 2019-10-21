@@ -28,6 +28,8 @@ def get_more_pos_data(profile, company):
         "do_not_allow_zero_payment": settings.do_not_allow_zero_payment,
         "use_batch_price": settings.use_batch_price,
         "use_barcode_uom": settings.use_barcode_uom,
+        "use_custom_item_cart": settings.use_custom_item_cart,
+        "use_stock_validator": settings.use_stock_validator
     }
 
 
@@ -160,3 +162,23 @@ def get_uom_from(barcode):
     return frappe.db.get_value(
         "Item Barcode", filters={"barcode": barcode}, fieldname="pb_uom"
     )
+
+
+@frappe.whitelist()
+def get_custom_item_cart_fields():
+    return frappe.get_all(
+        'POS Bahrain Settings Cart Fields',
+        fields=['item_field', 'label', 'fieldtype', 'width'],
+        order_by='idx'
+    )
+
+
+@frappe.whitelist()
+def fetch_item_from_supplier_part_no(supplier_part_no):
+    item = frappe.get_all(
+        'Item Supplier',
+        fields=['parent AS name'],
+        filters=[['supplier_part_no', '=', supplier_part_no]],
+        limit_page_length=1
+    )
+    return item[0] if item else None

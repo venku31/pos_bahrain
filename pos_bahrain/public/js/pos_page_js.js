@@ -1,17 +1,6 @@
 erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   onload: function() {
     this._super();
-    this.batch_dialog = new frappe.ui.Dialog({
-      title: __('Select Batch No'),
-      fields: [
-        {
-          fieldname: 'batch',
-          fieldtype: 'Select',
-          label: __('Batch No'),
-          reqd: 1,
-        },
-      ],
-    });
     this.setinterval_to_sync_master_data(600000);
   },
   init_master_data: async function(r, freeze = true) {
@@ -27,25 +16,12 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         freeze_message: __('Syncing Item details'),
       });
 
-      const {
-        batch_no_details,
-        exchange_rates,
-        do_not_allow_zero_payment,
-      } = pos_data;
+      const { exchange_rates } = pos_data;
 
-      if (!batch_no_details || !exchange_rates) {
+      if (!exchange_rates) {
         throw new Error();
       }
-      this.batch_no_data = Object.keys(batch_no_details).reduce(
-        (a, x) =>
-          Object.assign(a, {
-            [x]: batch_no_details[x].map(({ name }) => name),
-          }),
-        {}
-      );
-      this.batch_no_details = batch_no_details;
       this.exchange_rates = exchange_rates;
-      this.do_not_allow_zero_payment = !!cint(do_not_allow_zero_payment);
       await this.set_opening_entry();
       return pos_data;
     } catch (e) {
@@ -137,52 +113,15 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       });
     }
   },
-  mandatory_batch_no: function() {
-    const { has_batch_no, item_code } = this.items[0];
-    this.batch_dialog.get_field('batch').$input.empty();
-    this.batch_dialog.get_primary_btn().off('click');
-    this.batch_dialog.get_close_btn().off('click');
-    if (has_batch_no && !this.item_batch_no[item_code]) {
-      (this.batch_no_details[item_code] || []).forEach(
-        ({ name, expiry_date, qty }) => {
-          this.batch_dialog
-            .get_field('batch')
-            .$input.append(
-              $('<option />', { value: name }).text(
-                `${name} | ${
-                  expiry_date ? frappe.datetime.str_to_user(expiry_date) : '--'
-                } | ${qty}`
-              )
-            );
-        }
-      );
-      this.batch_dialog.get_field('batch').set_input();
-      this.batch_dialog.set_primary_action(__('Submit'), () => {
-        const batch_no = this.batch_dialog.get_value('batch');
-        this.items[0].batch_no = batch_no;
-        this.item_batch_no[item_code] = batch_no;
-        this.batch_callback();
-        this.batch_dialog.hide();
-        this.set_focus();
-      });
-      this.batch_dialog.get_close_btn().on('click', () => {
-        this.item_code = item_code;
-        this.render_selected_item();
-        this.remove_selected_item();
-        this.wrapper.find('.selected-item').empty();
-        this.item_code = null;
-        this.set_focus();
-      });
-      this.batch_dialog.show();
-      this.batch_dialog.$wrapper.find('.modal-backdrop').off('click');
-    }
-  },
   set_item_details: function(item_code, field, value, remove_zero_qty_items) {
     // this method is a copy of the original without the negative value validation
     // and return invoice feature added.
+    const idx = this.wrapper.find('.pos-bill-item.active').data('idx');
+
     this.remove_item = [];
-    (this.frm.doc.items || []).forEach(item => {
-      if (item.item_code === item_code) {
+
+    (this.frm.doc.items || []).forEach((item, id) => {
+      if (item.item_code === item_code && id === idx) {
         if (item.serial_no && field === 'qty') {
           this.validate_serial_no_qty(item, item_code, field, value);
         }
@@ -300,49 +239,9 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     }
     return invoice_data;
   },
-  add_to_cart: function() {
-    let caught = false;
-    const validate_item = () => {
-      (this.frm.doc['items'] || []).forEach(item => {
-        if (item.item_code === this.items[0].item_code && item.batch_no === this.items[0].batch_no) {
-          caught = true;
-          item.qty += this.frm.doc.is_return ? -1 : 1;
-          item.amount = flt(item.rate) * flt(item.qty);
-          if (this.item_serial_no[item.item_code]) {
-            item.serial_no += '\n' + this.item_serial_no[item.item_code][0];
-            item.warehouse = this.item_serial_no[item.item_code][1];
-          }
-          if (this.item_batch_no.length) {
-            item.batch_no = this.item_batch_no[item.item_code];
-          }
-        }
-      });
-      if (!caught) {
-        this.add_new_item_to_grid();
-      }
-      this.update_paid_amount_status(false);
-      this.wrapper.find('.item-cart-items').scrollTop(1000);
-    };
-
-    // this method is a copy of the original with the return invoice feature added.
-    this.customer_validate();
-    this.mandatory_batch_no();
-    this.validate_serial_no();
-    this.validate_warehouse();
-
-    const { has_batch_no } = this.items[0];
-    if (!has_batch_no) {
-      validate_item();
-    } else {
-      this.batch_callback = () => {
-        validate_item();
-      }
-    }
-  },
   make_control: function() {
     this._super();
     this.make_return_control();
-    this.bind_keyboard_shortcuts();
   },
   make_return_control: function() {
     this.numeric_keypad
@@ -367,44 +266,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         });
         this.update_paid_amount_status(false);
       });
-  },
-  bind_keyboard_shortcuts: function() {
-    $(document).on('keydown', e => {
-      if (frappe.get_route_str() === 'pos') {
-        if (this.numeric_keypad && e.keyCode === 120) {
-          e.preventDefault();
-          e.stopPropagation();
-          if (this.dialog && this.dialog.is_visible) {
-            this.dialog.hide();
-          } else {
-            $(this.numeric_keypad)
-              .find('.pos-pay')
-              .trigger('click');
-          }
-        } else if (
-          this.frm.doc.docstatus == 1 &&
-          e.ctrlKey &&
-          e.keyCode === 80
-        ) {
-          e.preventDefault();
-          e.stopPropagation();
-          if (this.msgprint) {
-            this.msgprint.msg_area.find('.print_doc').click();
-          } else {
-            this.page.btn_secondary.trigger('click');
-          }
-        } else if (e.ctrlKey && e.keyCode === 66) {
-          e.preventDefault();
-          e.stopPropagation();
-          if (this.msgprint) {
-            console.log('new_doc');
-            this.msgprint.msg_area.find('.new_doc').click();
-          } else {
-            this.page.btn_primary.trigger('click');
-          }
-        }
-      }
-    });
   },
   get_exchange_rate: function(mop) {
     const { mode_of_payment } =
@@ -573,29 +434,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       });
     }
     this._super(update_paid_amount);
-  },
-  show_amounts: function() {
-    this._super();
-    if (this.do_not_allow_zero_payment) {
-      this.dialog
-        .get_primary_btn()
-        .toggleClass('disabled', this.frm.doc.paid_amount === 0);
-    }
-  },
-  set_payment_primary_action: function() {
-    this.dialog.set_primary_action(__('Submit'), () => {
-      if (this.do_not_allow_zero_payment) {
-        const paid_amount = this.frm.doc.payments.reduce(
-          (a, { amount = 0 }) => a + amount,
-          0
-        );
-        if (!paid_amount) {
-          return frappe.throw(__('Paid Amount cannot be zero'));
-        }
-      }
-      this.dialog.hide();
-      this.submit_invoice();
-    });
   },
 });
 

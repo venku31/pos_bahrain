@@ -2,6 +2,7 @@ import mapValues from 'lodash/mapValues';
 import groupBy from 'lodash/groupBy';
 import get from 'lodash/get';
 
+// depends on withUom
 export default function withCustomerWiseItemPrice(Pos) {
   return class PosExtended extends Pos {
     async init_master_data(r, freeze) {
@@ -12,19 +13,18 @@ export default function withCustomerWiseItemPrice(Pos) {
       );
       return pos_data;
     }
-    get_item_price(item_code, uom_details) {
+    get_item_price({ item_code, uom }) {
       const customer_prices = get(this.item_prices_by_customer, [
         item_code,
         this.frm.doc.customer,
       ]);
       if (customer_prices && customer_prices.length > 0) {
-        const { uom, conversion_factor = 1 } = uom_details;
         const customer_wise = customer_prices.find(price => price.uom === uom);
         if (customer_wise) {
           return customer_wise.price_list_rate;
         }
       }
-      return super.get_item_price(item_code, uom_details);
+      return super.get_item_price({ item_code, uom });
     }
   };
 }

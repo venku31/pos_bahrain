@@ -44,6 +44,7 @@ doctype_js = {
     "Sales Order": "public/js/alternate_discount.js",
     "Purchase Invoice": "public/js/set_retail_price.js",
     "Purchase Order": "public/js/set_retail_price.js",
+    "Payment Entry": "public/js/payment_entry.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -89,6 +90,8 @@ fixtures = [
                     "Purchase Invoice Item-pb_expiry_date",
                     "Stock Entry Detail-pb_expiry_date",
                     "Journal Entry-pb_is_cheque",
+                    "Purchase Invoice-pb_fetch_item_from_supplier_part_no",
+                    "Payment Entry Reference-pb_invoice_date"
                 ],
             ]
         ],
@@ -185,6 +188,11 @@ on_session_creation = "pos_bahrain.doc_events.set_user_defaults"
 # Scheduled Tasks
 # ---------------
 
+scheduler_events = {
+    "daily": [
+        "pos_bahrain.scheduler_events.daily.send_email_to_manager"
+    ]
+}
 # scheduler_events = {
 # 	"all": [
 # 		"pos_bahrain.tasks.all"
