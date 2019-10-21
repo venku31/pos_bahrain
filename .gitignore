@@ -5,3 +5,8 @@
 tags
 pos_bahrain/docs/current
 __pycache__/
+
+# Bench runtime
+node_modules/
+pos_bahrain/public/node_modules
+yarn.lock
