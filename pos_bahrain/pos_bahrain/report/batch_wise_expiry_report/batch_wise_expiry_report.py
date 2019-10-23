@@ -37,9 +37,9 @@ def _get_args(filters={}):
 
 
 def _get_columns(args):
-    def make_column(key, label=None, type="Currency", options=None, width=120):
+    def make_column(key, label, type="Currency", options=None, width=120):
         return {
-            "label": _(label or key.replace("_", " ").title()),
+            "label": _(label),
             "fieldname": key,
             "fieldtype": type,
             "options": options,
@@ -47,12 +47,12 @@ def _get_columns(args):
         }
 
     columns = [
-        make_column("supplier", type="Link", options="Supplier"),
-        make_column("brand", type="Link", options="Brand"),
-        make_column("item_code", type="Link", options="Item"),
-        make_column("item_name", type="Data", width=200),
+        make_column("supplier", "Supplier", type="Link", options="Supplier"),
+        make_column("brand", "Brand", type="Link", options="Brand"),
+        make_column("item_code", "Item Code", type="Link", options="Item"),
+        make_column("item_name", "Item Name", type="Data", width=200),
         make_column("batch_no", "Batch", type="Link", options="Batch"),
-        make_column("expiry_date", type="Date", width=90),
+        make_column("expiry_date", "Expiry Date", type="Date", width=90),
         make_column("expiry_in_days", "Expiry in Days", type="Int", width=90),
         make_column("qty", "Quantity", type="Float", width=90),
         make_column("price1", args.get("price_list1")),
@@ -110,12 +110,4 @@ def _get_data(args, keys):
 
     make_row = compose(partial(keyfilter, lambda k: k in keys), set_expiry)
 
-    filter_rows = compose(
-        list,
-        partial(
-            filter, lambda x: True if not args.get("hide_zero_stock") else x.get("qty")
-        ),
-        partial(map, make_row),
-    )
-
-    return filter_rows(sles)
+    return map(make_row, sles)

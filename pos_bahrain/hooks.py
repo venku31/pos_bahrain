@@ -62,7 +62,6 @@ fixtures = [
                     "Mode of Payment-currency_section",
                     "Mode of Payment-in_alt_currency",
                     "Mode of Payment-alt_currency",
-                    "POS Profile-pb_max_discount",
                     "Sales Invoice Payment-pos_section",
                     "Sales Invoice Payment-mop_currency",
                     "Sales Invoice Payment-cb11",
