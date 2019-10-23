@@ -18,5 +18,10 @@ frappe.query_reports['Batch-wise Expiry Report'] = {
       fieldtype: 'Date',
       default: frappe.datetime.get_today(),
     },
+    {
+      fieldname: 'hide_zero_stock',
+      label: __('Hide Zero Stock'),
+      fieldtype: 'Check',
+    },
   ],
 };
