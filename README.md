@@ -23,6 +23,7 @@
   19. Simple Batch Expiry Report.
   20. Customer Sales Summary.
   21. Generate Print format for Closing Voucher.
+  22. Restrict Max discount allowed on Offline POS
 
 ## Future Updates
   1. XXXXXXXXXXX
