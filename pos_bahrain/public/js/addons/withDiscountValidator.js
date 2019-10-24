@@ -5,8 +5,11 @@ export default function withDiscountValidator(Pos) {
       const { pb_max_discount: max_discount } = this.pos_profile_data;
       if (max_discount) {
         this.frm.doc.items.forEach(
-          ({ net_amount = 0, price_list_rate, idx }) => {
-            const discount = (1 - net_amount / price_list_rate) * 100;
+          ({ item_code, uom, net_amount = 0, qty, idx }) => {
+            const net_rate = net_amount / qty;
+            const price = this.get_item_price({ item_code, uom });
+
+            const discount = (1 - net_rate / price) * 100;
             if (discount > max_discount) {
               frappe.throw(
                 __(
