@@ -5,7 +5,6 @@ export default function withAsyncAddToCart(Pos) {
       this.customer_validate();
 
       const { has_batch_no } = this.items[0];
-
       const batch_no = await this.mandatory_batch_no();
       if (has_batch_no && !batch_no) {
         return;
