@@ -1,5 +1,5 @@
 from functools import partial
-from toolz import keyfilter, compose, curry
+from toolz import keyfilter, compose, curry, reduceby, merge
 from pymysql.err import ProgrammingError
 
 
@@ -20,3 +20,11 @@ def with_report_error_check(data_fn):
             return []
 
     return fn
+
+
+def key_by(key, items):
+    return reduceby(key, lambda a, x: merge(a, x), items, {})
+
+
+mapf = compose(list, map)
+filterf = compose(list, filter)
