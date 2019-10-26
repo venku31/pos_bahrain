@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from functools import partial
+from functools import partial, reduce
 from toolz import groupby, pluck
 
 
@@ -66,7 +66,7 @@ def _get_data(clauses, filters, mop):
 				si.change_amount AS change_amount,
 				sip.mode_of_payment AS mode_of_payment,
 				sip.amount AS amount
-			FROM `tabSales Invoice` AS si 
+			FROM `tabSales Invoice` AS si
 			RIGHT JOIN `tabSales Invoice Payment` AS sip ON
 				sip.parent = si.name
 			WHERE {clauses}
@@ -108,7 +108,7 @@ def _summarize_payments(result, mop):
 
 		return _
 
-	for key, payments in result.iteritems():
+	for key, payments in result.items():
 		summary.append(
 			reduce(make_summary_row, payments)
 		)
@@ -136,7 +136,7 @@ def _sum_invoice_payments(invoice_payments, mop):
 
 	make_payment_row = partial(_make_payment_row, mop)
 
-	for key, payments in invoice_payments.iteritems():
+	for key, payments in invoice_payments.items():
 		invoice_payment_row = reduce(
 			make_payment_row,
 			payments,
