@@ -2,8 +2,28 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
+from frappe.utils import today
+from functools import partial
+from toolz import groupby, merge, valmap, compose, get, excepts, first
 
-from toolz import groupby
+
+@frappe.whitelist()
+def get_pos_data():
+    from erpnext.accounts.doctype.sales_invoice.pos import get_pos_data
+
+    get_price = compose(
+        partial(get, "price_list_rate", default=0),
+        excepts(StopIteration, first, lambda __: {}),
+    )
+
+    get_price_list_data = compose(partial(valmap, get_price), _get_default_item_prices)
+
+    data = get_pos_data()
+
+    return merge(
+        data,
+        {"price_list_data": get_price_list_data(data.get("doc").selling_price_list)},
+    )
 
 
 @frappe.whitelist()
@@ -89,6 +109,28 @@ def _get_item_prices(price_list):
             FROM `tabItem Price` WHERE price_list = %(price_list)s
         """,
         values={"price_list": price_list},
+        as_dict=1,
+    )
+    return groupby("item_code", prices)
+
+
+def _get_default_item_prices(price_list):
+    prices = frappe.db.sql(
+        """
+            SELECT
+                ip.item_code AS item_code,
+                ip.price_list_rate AS price_list_rate
+            FROM `tabItem Price` AS ip
+            LEFT JOIN `tabItem` AS i on i.name = ip.item_code
+            WHERE ip.price_list = %(price_list)s AND
+                IFNULL(ip.customer, '') = '' AND
+                IFNULL(ip.uom, '') IN ('', i.stock_uom) AND
+                IFNULL(ip.min_qty, 0) <= 1 AND
+                %(transaction_date)s BETWEEN
+                    IFNULL(ip.valid_from, '2000-01-01') AND
+                    IFNULL(ip.valid_upto, '2500-12-31')
+        """,
+        values={"price_list": price_list, "transaction_date": today()},
         as_dict=1,
     )
     return groupby("item_code", prices)
