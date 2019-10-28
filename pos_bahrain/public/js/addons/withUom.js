@@ -21,25 +21,6 @@ export default function withUom(Pos) {
         keyBy(values, 'uom')
       );
 
-      // `price_list_data` is a native property. it is reassigned here to correctly set
-      // the `price_list_rate` based on `stock_uom`
-      this.price_list_data = mapValues(
-        this.price_list_data,
-        (value, item_code) => {
-          const { stock_uom } =
-            this.item_data.find(x => x.item_code === item_code) || {};
-          if (!stock_uom) {
-            return value;
-          }
-          return (
-            get(this.item_prices_by_uom, [
-              item_code,
-              stock_uom,
-              'price_list_rate',
-            ]) || value
-          );
-        }
-      );
       return pos_data;
     }
     add_new_item_to_grid() {
