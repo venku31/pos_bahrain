@@ -30,6 +30,7 @@ export default function withCustomerWiseItemPrice(Pos) {
         this.customer_wise_price_list,
         customer_wise_price_list
       );
+      this.make_item_list(this.default_customer);
       return pos_data;
     }
     get_item_price({ item_code, uom }) {
