@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import today
+from frappe.desk.reportview import get_filters_cond
 from functools import partial
 from toolz import groupby, merge, valmap, compose, get, excepts, first
 
@@ -226,3 +227,27 @@ def fetch_item_from_supplier_part_no(supplier_part_no):
         limit_page_length=1
     )
     return item[0] if item else None
+
+
+@frappe.whitelist()
+def query_uom(doctype, txt, searchfield, start, page_len, filters):
+    return frappe.db.sql(
+        """
+            SELECT uom
+            FROM `tabUOM Conversion Detail`
+            WHERE uom LIKE %(txt)s {fcond}
+            ORDER BY
+                IF(LOCATE(%(_txt)s, uom), LOCATE(%(_txt)s, uom), 99999)
+            LIMIT %(start)s, %(page_len)s
+        """.format(
+            fcond=get_filters_cond(
+                "UOM Conversion Detail", {"parent": filters.get("item_code")}, []
+            )
+        ),
+        values={
+            "txt": "%%%s%%" % txt,
+            "_txt": txt.replace("%", ""),
+            "start": start,
+            "page_len": page_len,
+        },
+    )
