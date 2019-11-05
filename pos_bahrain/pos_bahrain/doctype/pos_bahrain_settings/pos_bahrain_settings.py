@@ -27,3 +27,10 @@ class POSBahrainSettings(Document):
         make_property_setter(
             "Sales Invoice", "pb_sales_employee", "hidden", hide_sales_employee, "Check"
         )
+        make_property_setter(
+            "Sales Invoice",
+            "pb_sales_employee",
+            "reqd",
+            not hide_sales_employee,
+            "Check",
+        )
