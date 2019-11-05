@@ -49,7 +49,11 @@ def get_more_pos_data(profile, company):
         "use_batch_price": settings.use_batch_price,
         "use_barcode_uom": settings.use_barcode_uom,
         "use_custom_item_cart": settings.use_custom_item_cart,
-        "use_stock_validator": settings.use_stock_validator
+        "use_stock_validator": settings.use_stock_validator,
+        "use_sales_employee": settings.show_sales_employee,
+        "sales_employee_details": _get_employees()
+        if settings.show_sales_employee
+        else None,
     }
 
 
@@ -126,6 +130,12 @@ def _get_default_item_prices(price_list):
         as_dict=1,
     )
     return groupby("item_code", prices)
+
+
+def _get_employees():
+    return frappe.get_all(
+        "Employee", filters={"status": "Active"}, fields=["name", "employee_name"]
+    )
 
 
 def get_uom_details():
