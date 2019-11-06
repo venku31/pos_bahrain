@@ -1,4 +1,4 @@
-import { set_rate_from_batch, set_uom } from './sales_invoice';
+import { set_rate_from_batch, set_uom, set_uom_query } from './sales_invoice';
 
 const sales_order_item = {
   batch_no: set_rate_from_batch,
@@ -7,4 +7,5 @@ const sales_order_item = {
 
 export default {
   sales_order_item,
+  setup: set_uom_query,
 };

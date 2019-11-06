@@ -3,10 +3,25 @@ import * as addons from './addons';
 
 frappe.provide('pos_bahrain');
 
+frappe.ui.form.on('Sales Invoice', scripts.sales_invoice);
 frappe.ui.form.on(
   'Sales Invoice Item',
   scripts.sales_invoice.sales_invoice_item
 );
+
+frappe.ui.form.on('Sales Order', scripts.sales_order);
 frappe.ui.form.on('Sales Order Item', scripts.sales_order.sales_order_item);
+
+frappe.ui.form.on('Delivery Note', scripts.delivery_note);
+
+frappe.ui.form.on('Purchase Invoice', scripts.purchase_invoice);
+
+frappe.ui.form.on('Purchase Order', scripts.purchase_order);
+
+frappe.ui.form.on('Purchase Receipt', scripts.purchase_receipt);
+
+frappe.ui.form.on('Material Request', scripts.material_request);
+
+frappe.ui.form.on('Stock Entry', scripts.stock_entry);
 
 pos_bahrain = { scripts, addons };

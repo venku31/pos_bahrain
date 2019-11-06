@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import today
+from frappe.desk.reportview import get_filters_cond
 from functools import partial
 from toolz import groupby, merge, valmap, compose, get, excepts, first
 
@@ -49,7 +50,11 @@ def get_more_pos_data(profile, company):
         "use_batch_price": settings.use_batch_price,
         "use_barcode_uom": settings.use_barcode_uom,
         "use_custom_item_cart": settings.use_custom_item_cart,
-        "use_stock_validator": settings.use_stock_validator
+        "use_stock_validator": settings.use_stock_validator,
+        "use_sales_employee": settings.show_sales_employee,
+        "sales_employee_details": _get_employees()
+        if settings.show_sales_employee
+        else None,
     }
 
 
@@ -126,6 +131,12 @@ def _get_default_item_prices(price_list):
         as_dict=1,
     )
     return groupby("item_code", prices)
+
+
+def _get_employees():
+    return frappe.get_all(
+        "Employee", filters={"status": "Active"}, fields=["name", "employee_name"]
+    )
 
 
 def get_uom_details():
@@ -216,3 +227,27 @@ def fetch_item_from_supplier_part_no(supplier_part_no):
         limit_page_length=1
     )
     return item[0] if item else None
+
+
+@frappe.whitelist()
+def query_uom(doctype, txt, searchfield, start, page_len, filters):
+    return frappe.db.sql(
+        """
+            SELECT uom
+            FROM `tabUOM Conversion Detail`
+            WHERE uom LIKE %(txt)s {fcond}
+            ORDER BY
+                IF(LOCATE(%(_txt)s, uom), LOCATE(%(_txt)s, uom), 99999)
+            LIMIT %(start)s, %(page_len)s
+        """.format(
+            fcond=get_filters_cond(
+                "UOM Conversion Detail", {"parent": filters.get("item_code")}, []
+            )
+        ),
+        values={
+            "txt": "%%%s%%" % txt,
+            "_txt": txt.replace("%", ""),
+            "start": start,
+            "page_len": page_len,
+        },
+    )

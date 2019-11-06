@@ -70,6 +70,8 @@ fixtures = [
                     "Sales Invoice Payment-mop_amount",
                     "Batch-naming_series",
                     "Company-default_warehouse",
+                    "Sales Invoice-pb_sales_employee",
+                    "Sales Invoice-pb_sales_employee_name",
                     "Sales Invoice-discount_on_retail_price",
                     "Sales Invoice Item-other_prices_section",
                     "Sales Invoice Item-retail_price",
