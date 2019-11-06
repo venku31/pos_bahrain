@@ -5,7 +5,9 @@ from frappe import _
 from frappe.utils import today
 from frappe.desk.reportview import get_filters_cond
 from functools import partial
-from toolz import groupby, merge, valmap, compose, get, excepts, first
+from toolz import groupby, merge, valmap, compose, get, excepts, first, pluck
+
+from pos_bahrain.utils import key_by
 
 
 @frappe.whitelist()
@@ -19,11 +21,24 @@ def get_pos_data():
 
     get_price_list_data = compose(partial(valmap, get_price), _get_default_item_prices)
 
+    def add_discounts(items):
+        item_codes = compose(list, partial(pluck, "name"))(items)
+        max_discounts_by_item = compose(partial(key_by, "name"), frappe.db.sql)(
+            """
+                SELECT name, max_discount FROM `tabItem`
+                WHERE item_code IN %(item_codes)s
+            """,
+            values={"item_codes": item_codes},
+            as_dict=1,
+        )
+        return [merge(x, max_discounts_by_item.get(x.get("name")), {}) for x in items]
+
     data = get_pos_data()
 
     return merge(
         data,
         {"price_list_data": get_price_list_data(data.get("doc").selling_price_list)},
+        {"items": add_discounts(data.get("items"))},
     )
 
 
