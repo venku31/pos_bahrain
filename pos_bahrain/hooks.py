@@ -44,7 +44,6 @@ doctype_js = {
     "Sales Order": "public/js/alternate_discount.js",
     "Purchase Invoice": "public/js/set_retail_price.js",
     "Purchase Order": "public/js/set_retail_price.js",
-    "Payment Entry": "public/js/payment_entry.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -94,7 +93,7 @@ fixtures = [
                     "Stock Entry Detail-pb_expiry_date",
                     "Journal Entry-pb_is_cheque",
                     "Purchase Invoice-pb_fetch_item_from_supplier_part_no",
-                    "Payment Entry Reference-pb_invoice_date"
+                    "Payment Entry Reference-pb_invoice_date",
                 ],
             ]
         ],
@@ -178,6 +177,9 @@ doc_events = {
     "Purchase Invoice": {
         "before_save": "pos_bahrain.doc_events.purchase_invoice.before_validate",
         "on_submit": "pos_bahrain.doc_events.purchase_receipt.set_batch_references",
+    },
+    "Payment Entry": {
+        "before_save": "pos_bahrain.doc_events.payment_entry.before_save"
     },
     "Stock Entry": {
         "before_save": "pos_bahrain.doc_events.stock_entry.before_validate",
