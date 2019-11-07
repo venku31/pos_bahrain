@@ -35,7 +35,7 @@ class POSClosingVoucher(Document):
         )
         if existing:
             frappe.throw(
-                "Another POS Closing Voucher already exists during this time " "frame."
+                "Another POS Closing Voucher already exists during this time frame."
             )
 
     def before_insert(self):
@@ -138,8 +138,6 @@ class POSClosingVoucher(Document):
         self.taxes = []
         for tax in taxes:
             self.append("taxes", make_tax(tax))
-        print(sales)
-        print(self.invoices)
 
 
 def _get_clauses():
