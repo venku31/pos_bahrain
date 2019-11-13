@@ -22,7 +22,6 @@ class POSClosingVoucher(Document):
                     name != %(name)s AND
                     company = %(company)s AND
                     pos_profile = %(pos_profile)s AND
-                    user = %(user)s AND
                     period_from <= %(period_to)s AND
                     period_to >= %(period_from)s
             """,
@@ -30,14 +29,13 @@ class POSClosingVoucher(Document):
                 "name": self.name,
                 "company": self.company,
                 "pos_profile": self.pos_profile,
-                "user": self.user,
                 "period_from": self.period_from or now(),
                 "period_to": self.period_to or now(),
             },
         )
         if existing:
             frappe.throw(
-                "Another POS Closing Voucher already exists during this time " "frame."
+                "Another POS Closing Voucher already exists during this time frame."
             )
 
     def before_insert(self):
@@ -140,53 +138,54 @@ class POSClosingVoucher(Document):
         self.taxes = []
         for tax in taxes:
             self.append("taxes", make_tax(tax))
-        print(sales)
-        print(self.invoices)
+
+
+def _get_clauses():
+    clauses = [
+        "si.docstatus = 1",
+        "si.is_pos = 1",
+        "si.pos_profile = %(pos_profile)s",
+        "si.company = %(company)s",
+        "TIMESTAMP(si.posting_date, si.posting_time) BETWEEN %(period_from)s AND %(period_to)s",  # noqa
+    ]
+    return " AND ".join(clauses)
 
 
 def _get_invoices(args):
     sales = frappe.db.sql(
         """
             SELECT
-                name,
-                pos_total_qty,
-                base_grand_total AS grand_total,
-                base_net_total AS net_total,
-                base_discount_amount AS discount_amount,
-                outstanding_amount,
-                paid_amount,
-                change_amount
-            FROM `tabSales Invoice`
-            WHERE docstatus = 1 AND
-                is_pos = 1 AND
-                is_return != 1 AND
-                pos_profile = %(pos_profile)s AND
-                company = %(company)s AND
-                owner = %(user)s AND
-                TIMESTAMP(posting_date, posting_time) >= %(period_from)s AND
-                TIMESTAMP(posting_date, posting_time) <= %(period_to)s
-        """,
+                si.name AS name,
+                si.pos_total_qty AS pos_total_qty,
+                si.base_grand_total AS grand_total,
+                si.base_net_total AS net_total,
+                si.base_discount_amount AS discount_amount,
+                si.outstanding_amount AS outstanding_amount,
+                si.paid_amount AS paid_amount,
+                si.change_amount AS change_amount
+            FROM `tabSales Invoice` AS si
+            WHERE {clauses} AND is_return != 1
+        """.format(
+            clauses=_get_clauses()
+        ),
         values=args,
         as_dict=1,
     )
     returns = frappe.db.sql(
         """
             SELECT
-                name,
-                pos_total_qty,
-                base_grand_total AS grand_total,
-                base_net_total AS net_total,
-                base_discount_amount AS discount_amount,
-                paid_amount,
-                change_amount
-            FROM `tabSales Invoice`
-            WHERE docstatus = 1 AND
-                is_return = 1 AND
-                company = %(company)s AND
-                owner = %(user)s AND
-                TIMESTAMP(posting_date, posting_time) >= %(period_from)s AND
-                TIMESTAMP(posting_date, posting_time) <= %(period_to)s
-        """,
+                si.name AS name,
+                si.pos_total_qty AS pos_total_qty,
+                si.base_grand_total AS grand_total,
+                si.base_net_total AS net_total,
+                si.base_discount_amount AS discount_amount,
+                si.paid_amount AS paid_amount,
+                si.change_amount AS change_amount
+            FROM `tabSales Invoice` As si
+            WHERE {clauses} AND is_return = 1
+        """.format(
+            clauses=_get_clauses()
+        ),
         values=args,
         as_dict=1,
     )
@@ -206,14 +205,11 @@ def _get_payments(args):
             FROM `tabSales Invoice Payment` AS sip
             LEFT JOIN `tabSales Invoice` AS si ON
                 sip.parent = si.name
-            WHERE si.docstatus = 1 AND
-                si.is_pos = 1 AND
-                si.company = %(company)s AND
-                si.owner = %(user)s AND
-                TIMESTAMP(si.posting_date, si.posting_time)
-                    BETWEEN %(period_from)s AND %(period_to)s
+            WHERE {clauses}
             GROUP BY sip.mode_of_payment
-        """,
+        """.format(
+            clauses=_get_clauses()
+        ),
         values=args,
         as_dict=1,
     )
@@ -254,14 +250,11 @@ def _get_taxes(args):
             FROM `tabSales Taxes and Charges` AS stc
             LEFT JOIN `tabSales Invoice` AS si ON
                 stc.parent = si.name
-            WHERE si.docstatus = 1 AND
-                si.is_pos = 1 AND
-                si.company = %(company)s AND
-                si.owner = %(user)s AND
-                TIMESTAMP(si.posting_date, si.posting_time)
-                    BETWEEN %(period_from)s AND %(period_to)s
+            WHERE {clauses}
             GROUP BY stc.rate
-        """,
+        """.format(
+            clauses=_get_clauses()
+        ),
         values=args,
         as_dict=1,
     )

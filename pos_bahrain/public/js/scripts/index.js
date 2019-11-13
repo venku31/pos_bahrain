@@ -6,4 +6,5 @@ export { default as purchase_order } from './purchase_order';
 export { default as purchase_receipt } from './purchase_receipt';
 export { default as material_request } from './material_request';
 export { default as stock_entry } from './stock_entry';
+export { default as payment_entry } from './payment_entry';
 export { default as pos_bahrain_settings } from './pos_bahrain_settings';

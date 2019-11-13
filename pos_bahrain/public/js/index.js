@@ -24,4 +24,9 @@ frappe.ui.form.on('Material Request', scripts.material_request);
 
 frappe.ui.form.on('Stock Entry', scripts.stock_entry);
 
+frappe.ui.form.on(
+  'Payment Entry Reference',
+  scripts.payment_entry.payment_entry_reference
+);
+
 pos_bahrain = { scripts, addons };
