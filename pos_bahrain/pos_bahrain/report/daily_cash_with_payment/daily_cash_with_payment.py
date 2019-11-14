@@ -12,7 +12,7 @@ def execute(filters=None):
 	mop = _get_mop()
 
 	columns = _get_columns(mop, filters)
-	data = _get_data(_get_clauses(), filters, mop)
+	data = _get_data(_get_clauses(filters), filters, mop)
 
 	return columns, data
 
@@ -61,6 +61,7 @@ def _get_data(clauses, filters, mop):
 		"""
 			SELECT
 				si.name AS invoice,
+				pp.warehouse AS warehouse,
 				si.posting_date AS posting_date,
 				si.posting_time AS posting_time,
 				si.change_amount AS change_amount,
@@ -69,6 +70,8 @@ def _get_data(clauses, filters, mop):
 			FROM `tabSales Invoice` AS si
 			RIGHT JOIN `tabSales Invoice Payment` AS sip ON
 				sip.parent = si.name
+			LEFT JOIN `tabPOS Profile` AS pp ON
+				pp.name = si.pos_profile
 			WHERE {clauses}
 		""".format(
 			clauses=clauses
@@ -150,13 +153,22 @@ def _sum_invoice_payments(invoice_payments, mop):
 	return data
 
 
-def _get_clauses():
-	clauses = [
-		"si.docstatus = 1",
-		"si.pos_profile = %(pos_profile)s",
-		"si.posting_date BETWEEN %(from_date)s AND %(to_date)s"
-	]
-	return " AND ".join(clauses)
+def _get_clauses(filters):
+	if filters.query_doctype == 'POS Profile':
+		clauses = [
+			"si.docstatus = 1",
+			"si.pos_profile = %(query_doc)s",
+			"si.posting_date BETWEEN %(from_date)s AND %(to_date)s"
+		]
+		return " AND ".join(clauses)
+	if filters.query_doctype == 'Warehouse':
+		clauses = [
+			"si.docstatus = 1",
+			"pp.warehouse = %(query_doc)s",
+			"si.posting_date BETWEEN %(from_date)s AND %(to_date)s"
+		]
+		return " AND ".join(clauses)
+	frappe.throw(_("Invalid 'Query By' filter"))
 
 
 def _make_payment_row(mop_cols, _, row):
