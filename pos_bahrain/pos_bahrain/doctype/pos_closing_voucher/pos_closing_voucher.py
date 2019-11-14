@@ -22,6 +22,7 @@ class POSClosingVoucher(Document):
                     name != %(name)s AND
                     company = %(company)s AND
                     pos_profile = %(pos_profile)s AND
+                    user = %(user)s AND
                     period_from <= %(period_to)s AND
                     period_to >= %(period_from)s
             """,
@@ -29,6 +30,7 @@ class POSClosingVoucher(Document):
                 "name": self.name,
                 "company": self.company,
                 "pos_profile": self.pos_profile,
+                "user": self.user,
                 "period_from": self.period_from or now(),
                 "period_to": self.period_to or now(),
             },
@@ -145,6 +147,7 @@ def _get_clauses():
         "si.docstatus = 1",
         "si.is_pos = 1",
         "si.pos_profile = %(pos_profile)s",
+        "si.owner = %(user)s",
         "si.company = %(company)s",
         "TIMESTAMP(si.posting_date, si.posting_time) BETWEEN %(period_from)s AND %(period_to)s",  # noqa
     ]
