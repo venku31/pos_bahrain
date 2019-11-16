@@ -19,11 +19,21 @@ frappe.query_reports["Daily Cash with Payment"] = {
 		  default: frappe.datetime.get_today(),
 		},
 		{
-			fieldname: 'pos_profile',
-			label: __('POS Profile'),
+			fieldname: 'query_doctype',
+			label: __('Query By'),
 			fieldtype: 'Link',
-			options: 'POS Profile',
-			reqd: 1
+			options: 'DocType',
+			get_query: { filters: [['name', 'in', ['POS Profile', 'Warehouse']]] },
+			reqd: 1,
+			only_select: 1,
+			default: 'POS Profile',
+		},
+		{
+			fieldname: 'query_doc',
+			label: __('Query Document'),
+			fieldtype: 'Dynamic Link',
+			options: 'query_doctype',
+			reqd: 1,
 		},
 		{
 			fieldname: 'summary_view',
