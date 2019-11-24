@@ -114,6 +114,7 @@ fixtures = [
                     "Sales Invoice Item-discount_percentage-depends_on",
                     "Sales Order Item-discount_percentage-precision",
                     "Sales Order Item-discount_percentage-depends_on",
+                    "Payment Entry Reference-total_amount-in_list_view",
                 ],
             ]
         ],
