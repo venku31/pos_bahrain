@@ -15,10 +15,22 @@ frappe.ui.form.on('Sales Order Item', scripts.sales_order.sales_order_item);
 frappe.ui.form.on('Delivery Note', scripts.delivery_note);
 
 frappe.ui.form.on('Purchase Invoice', scripts.purchase_invoice);
+frappe.ui.form.on(
+  'Purchase Invoice Item',
+  scripts.purchase_invoice.purchase_invoice_item
+);
 
 frappe.ui.form.on('Purchase Order', scripts.purchase_order);
+frappe.ui.form.on(
+  'Purchase Order Item',
+  scripts.purchase_order.purchase_order_item
+);
 
 frappe.ui.form.on('Purchase Receipt', scripts.purchase_receipt);
+frappe.ui.form.on(
+  'Purchase Receipt Item',
+  scripts.purchase_receipt.purchase_receipt_item
+);
 
 frappe.ui.form.on('Material Request', scripts.material_request);
 

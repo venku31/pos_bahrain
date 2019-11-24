@@ -80,6 +80,9 @@ fixtures = [
                     "Sales Order Item-retail_price",
                     "Sales Order Item-discount_percentage_on_retail",
                     "Purchase Invoice Item-retail_price",
+                    "Purchase Invoice Item-pb_supplier_part_no",
+                    "Purchase Receipt Item-pb_supplier_part_no",
+                    "Purchase Order Item-pb_supplier_part_no",
                     "Purchase Order Item-retail_price",
                     "Batch-pb_price_sec",
                     "Batch-pb_price_based_on",
@@ -92,7 +95,6 @@ fixtures = [
                     "Purchase Invoice Item-pb_expiry_date",
                     "Stock Entry Detail-pb_expiry_date",
                     "Journal Entry-pb_is_cheque",
-                    "Purchase Invoice-pb_fetch_item_from_supplier_part_no",
                     "Payment Entry Reference-pb_invoice_date",
                 ],
             ]
