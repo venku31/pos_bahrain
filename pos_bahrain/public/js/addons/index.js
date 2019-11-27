@@ -17,10 +17,12 @@ import withCustomItemCart from './withCustomItemCart';
 import withKeyboardShortcuts from './withKeyboardShortcuts';
 import withDiscountValidator from './withDiscountValidator';
 import withSalesEmployee from './withSalesEmployee';
+import withMultiCurrency from './withMultiCurrency';
 
 // the order of the hocs is important. `withIdx` > `withUom` should always run before
 // all other hocs
 export const extend_pos = flowRight([
+  withMultiCurrency,
   withSalesEmployee,
   withKeyboardShortcuts,
   withMorePaymentActions,
