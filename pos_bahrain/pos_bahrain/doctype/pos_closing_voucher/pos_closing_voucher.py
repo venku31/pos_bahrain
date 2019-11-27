@@ -200,15 +200,14 @@ def _get_payments(args):
         """
             SELECT
                 sip.mode_of_payment AS mode_of_payment,
-                type,
+                sip.type AS type,
                 SUM(sip.base_amount) AS amount,
-                mop_currency,
-                SUM(mop_amount) AS mop_amount,
-                `default` AS is_default
+                sip.mop_currency AS mop_currency,
+                SUM(sip.mop_amount) AS mop_amount
             FROM `tabSales Invoice Payment` AS sip
             LEFT JOIN `tabSales Invoice` AS si ON
                 sip.parent = si.name
-            WHERE {clauses}
+            WHERE sip.parenttype = 'Sales Invoice' AND {clauses}
             GROUP BY sip.mode_of_payment
         """.format(
             clauses=_get_clauses()
@@ -253,7 +252,7 @@ def _get_taxes(args):
             FROM `tabSales Taxes and Charges` AS stc
             LEFT JOIN `tabSales Invoice` AS si ON
                 stc.parent = si.name
-            WHERE {clauses}
+            WHERE stc.parenttype = 'Sales Invoice' AND {clauses}
             GROUP BY stc.rate
         """.format(
             clauses=_get_clauses()
