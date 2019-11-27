@@ -4,7 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe.utils import now, flt, cint
+from frappe.utils import get_datetime, flt, cint
 from frappe.model.document import Document
 from functools import partial
 from toolz import merge, compose, pluck, excepts, first
@@ -31,8 +31,8 @@ class POSClosingVoucher(Document):
                 "company": self.company,
                 "pos_profile": self.pos_profile,
                 "user": self.user,
-                "period_from": self.period_from or now(),
-                "period_to": self.period_to or now(),
+                "period_from": get_datetime(self.period_from),
+                "period_to": get_datetime(self.period_to),
             },
         )
         if existing:
@@ -42,11 +42,11 @@ class POSClosingVoucher(Document):
 
     def before_insert(self):
         if not self.period_from:
-            self.period_from = now()
+            self.period_from = get_datetime()
 
     def before_submit(self):
         if not self.period_to:
-            self.period_to = now()
+            self.period_to = get_datetime()
         self.set_report_details()
         get_default_collected = compose(
             lambda x: x.collected_amount if x else 0,
@@ -59,8 +59,8 @@ class POSClosingVoucher(Document):
         args = merge(
             pick(["user", "pos_profile", "company"], self.as_dict()),
             {
-                "period_from": self.period_from or now(),
-                "period_to": self.period_to or now(),
+                "period_from": get_datetime(self.period_from),
+                "period_to": get_datetime(self.period_to),
             },
         )
 
