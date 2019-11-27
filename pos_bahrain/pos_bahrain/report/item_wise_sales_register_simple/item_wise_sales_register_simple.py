@@ -142,7 +142,7 @@ def _get_data(clauses, values, keys):
         partial(pick, keys), partial(merge, template), set_tax, set_amount
     )
 
-    return map(make_row, items)
+    return [make_row(x) for x in items]
 
 
 def _set_tax_amount(items):

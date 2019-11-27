@@ -34,6 +34,7 @@ def execute(filters=None):
 
 
 _get_columns = compose(
+    list,
     partial(filter, lambda x: x.get("fieldname") in _fields),
     lambda x: x[:5]
     + [
@@ -83,4 +84,7 @@ def _get_data(data, filters):
             return True
         return item.get("default_supplier") == filters.default_supplier
 
-    return compose(partial(filter, filter_by_supplier), partial(map, make_row))(data)
+    make_data = compose(
+        list, partial(filter, filter_by_supplier), partial(map, make_row)
+    )
+    return make_data(data)

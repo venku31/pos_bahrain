@@ -69,4 +69,4 @@ def _get_data(clauses, args):
 	def calculate_profit(row):
 		return merge(row, {'profit': row.rate - row.valuation_rate})
 
-	return map(calculate_profit, items)
+	return [calculate_profit(x) for x in items]

@@ -28,16 +28,11 @@ def execute(filters=None):
     args = _get_args(filters)
     columns = _get_columns(args)
     data = _get_data(args, columns)
-    return (
-        map(
-            partial(
-                keyfilter,
-                lambda k: k in ["label", "fieldname", "fieldtype", "options", "width"],
-            ),
-            columns,
-        ),
-        data,
+    make_column = partial(
+        keyfilter,
+        lambda k: k in ["label", "fieldname", "fieldtype", "options", "width"],
     )
+    return [make_column(x) for x in columns], data
 
 
 def _get_args(filters={}):
@@ -125,9 +120,10 @@ def _get_data(args, columns):
         as_dict=1,
     )
     keys = compose(list, partial(pluck, "fieldname"))(columns)
-    periods = filter(lambda x: x.get("start_date") and x.get("end_date"), columns)
+    periods = list(filter(lambda x: x.get("start_date") and x.get("end_date"), columns))
 
     make_data = compose(
+        list,
         partial(map, partial(keyfilter, lambda k: k in keys)),
         partial(filter, lambda x: x.get("total_qty") > 0),
         partial(map, _set_period_columns(sales, periods)),
@@ -171,16 +167,16 @@ def _set_period_columns(sales, periods):
     summer_qty = summer("qty")
     summer_amount = summer("amount")
 
-    segregator_fns = map(
-        lambda x: merge(
+    segregator_fns = [
+        merge(
             x,
             {
                 "seger_qty": seger(summer_qty, x),
                 "seger_amount": seger(summer_amount, x),
             },
-        ),
-        periods,
-    )
+        )
+        for x in periods
+    ]
 
     def seg_reducer(item_code):
         def fn(a, p):

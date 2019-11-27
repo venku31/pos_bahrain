@@ -106,4 +106,4 @@ def _get_data(clauses, values, keys):
     )
 
     make_row = partial(pick, keys)
-    return map(make_row, result)
+    return [make_row(x) for x in result]
