@@ -41,6 +41,7 @@ def _get_columns():
 def _get_filters(filters):
     item_codes = (
         compose(
+            list,
             partial(filter, lambda x: x),
             partial(map, lambda x: x.strip()),
             lambda x: x.split(","),
@@ -87,4 +88,6 @@ def _get_data(clauses, values, keys):
         values=values,
         as_dict=1,
     )
-    return map(partial(pick, keys), result)
+
+    make_row = partial(pick, keys)
+    return [make_row(x) for x in result]

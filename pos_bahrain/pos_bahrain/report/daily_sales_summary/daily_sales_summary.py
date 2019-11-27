@@ -36,7 +36,7 @@ def _get_columns(filters):
         make_column("net_total_after_returns", "Net Total with Returns"),
     ]
     mops = pluck("name", frappe.get_all("Mode of Payment"))
-    return columns + map(lambda x: make_column(x, x), mops)
+    return columns + [make_column(x, x) for x in mops]
 
 
 def _get_filters(filters):
@@ -107,7 +107,7 @@ def _get_data(clauses, values, keys):
         add_net_with_returns,
     )
 
-    return map(make_row, items)
+    return [make_row(x) for x in items]
 
 
 def _set_payments(payments):

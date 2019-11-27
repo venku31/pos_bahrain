@@ -12,6 +12,18 @@ export default function withBarcodeUom(Pos) {
       super.make_control();
       this._make_sales_employee_field();
     }
+    create_new() {
+      super.create_new();
+      if (this.sales_employee_field) {
+        this.sales_employee_field.$input.val('');
+      }
+    }
+    edit_record() {
+      super.edit_record();
+      if (this.sales_employee_field) {
+        this.sales_employee_field.$input.val(this.frm.doc.pb_sales_employee);
+      }
+    }
     validate() {
       super.validate();
       if (this.use_sales_employee) {

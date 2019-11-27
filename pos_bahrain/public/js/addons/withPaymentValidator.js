@@ -14,12 +14,10 @@ export default function withPaymentValidator(Pos) {
           .toggleClass('disabled', this.frm.doc.paid_amount === 0);
       }
     }
-    set_payment_primary_action() {
-      this.dialog.set_primary_action(__('Submit'), () => {
-        this._validate_payment();
-        this.dialog.hide();
-        this.submit_invoice();
-      });
+    payment_primary_action() {
+      this._validate_payment();
+      this.dialog.hide();
+      this.submit_invoice();
     }
     _validate_payment() {
       if (this.do_not_allow_zero_payment) {

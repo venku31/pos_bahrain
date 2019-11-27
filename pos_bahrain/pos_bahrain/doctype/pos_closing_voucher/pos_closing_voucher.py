@@ -4,7 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe.utils import now, flt, cint
+from frappe.utils import get_datetime, flt, cint
 from frappe.model.document import Document
 from functools import partial
 from toolz import merge, compose, pluck, excepts, first
@@ -31,8 +31,8 @@ class POSClosingVoucher(Document):
                 "company": self.company,
                 "pos_profile": self.pos_profile,
                 "user": self.user,
-                "period_from": self.period_from or now(),
-                "period_to": self.period_to or now(),
+                "period_from": get_datetime(self.period_from),
+                "period_to": get_datetime(self.period_to),
             },
         )
         if existing:
@@ -42,11 +42,11 @@ class POSClosingVoucher(Document):
 
     def before_insert(self):
         if not self.period_from:
-            self.period_from = now()
+            self.period_from = get_datetime()
 
     def before_submit(self):
         if not self.period_to:
-            self.period_to = now()
+            self.period_to = get_datetime()
         self.set_report_details()
         get_default_collected = compose(
             lambda x: x.collected_amount if x else 0,
@@ -59,8 +59,8 @@ class POSClosingVoucher(Document):
         args = merge(
             pick(["user", "pos_profile", "company"], self.as_dict()),
             {
-                "period_from": self.period_from or now(),
-                "period_to": self.period_to or now(),
+                "period_from": get_datetime(self.period_from),
+                "period_to": get_datetime(self.period_to),
             },
         )
 
@@ -200,15 +200,14 @@ def _get_payments(args):
         """
             SELECT
                 sip.mode_of_payment AS mode_of_payment,
-                type,
+                sip.type AS type,
                 SUM(sip.base_amount) AS amount,
-                mop_currency,
-                SUM(mop_amount) AS mop_amount,
-                `default` AS is_default
+                sip.mop_currency AS mop_currency,
+                SUM(sip.mop_amount) AS mop_amount
             FROM `tabSales Invoice Payment` AS sip
             LEFT JOIN `tabSales Invoice` AS si ON
                 sip.parent = si.name
-            WHERE {clauses}
+            WHERE sip.parenttype = 'Sales Invoice' AND {clauses}
             GROUP BY sip.mode_of_payment
         """.format(
             clauses=_get_clauses()
@@ -216,17 +215,30 @@ def _get_payments(args):
         values=args,
         as_dict=1,
     )
-    return _correct_mop_amounts(payments)
+    default_mop = compose(
+        excepts(StopIteration, first, lambda __: None),
+        partial(pluck, "mode_of_payment"),
+        frappe.get_all,
+    )(
+        "Sales Invoice Payment",
+        fields=["mode_of_payment"],
+        filters={
+            "parenttype": "POS Profile",
+            "parent": args.get("pos_profile"),
+            "default": 1,
+        },
+    )
+    return _correct_mop_amounts(payments, default_mop)
 
 
-def _correct_mop_amounts(payments):
+def _correct_mop_amounts(payments, default_mop):
     """
         Correct conversion_rate for MOPs using base currency.
         Required because conversion_rate is calculated as
             base_amount / mop_amount
         for MOPs using alternate currencies.
     """
-    base_mops = compose(partial(pluck, "name"), frappe.get_all)(
+    base_mops = compose(list, partial(pluck, "name"), frappe.get_all)(
         "Mode of Payment", filters={"in_alt_currency": 0}
     )
     base_currency = frappe.defaults.get_global_default("currency")
@@ -235,13 +247,14 @@ def _correct_mop_amounts(payments):
         return frappe._dict(
             merge(
                 payment,
-                {"mop_amount": payment.base_amount, "mop_currency": base_currency},
+                {"is_default": 1 if payment.mode_of_payment == default_mop else 0},
+                {"mop_amount": payment.base_amount, "mop_currency": base_currency}
+                if payment.mode_of_payment in base_mops
+                else {},
             )
-            if payment.mode_of_payment in base_mops
-            else payment
         )
 
-    return map(correct, payments)
+    return [correct(x) for x in payments]
 
 
 def _get_taxes(args):
@@ -253,7 +266,7 @@ def _get_taxes(args):
             FROM `tabSales Taxes and Charges` AS stc
             LEFT JOIN `tabSales Invoice` AS si ON
                 stc.parent = si.name
-            WHERE {clauses}
+            WHERE stc.parenttype = 'Sales Invoice' AND {clauses}
             GROUP BY stc.rate
         """.format(
             clauses=_get_clauses()

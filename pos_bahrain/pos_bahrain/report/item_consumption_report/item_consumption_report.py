@@ -90,6 +90,7 @@ def _get_columns(filters):
         make_column("stock", "Available Stock"),
     ]
     intervals = compose(
+        list,
         partial(map, lambda x: merge(x, make_column(x.get("key"), x.get("label")))),
         generate_intervals,
     )
@@ -155,7 +156,7 @@ def _get_data(clauses, values, columns):
 
     make_row = compose(partial(keyfilter, lambda k: k in keys), set_consumption)
 
-    return map(make_row, items)
+    return [make_row(x) for x in items]
 
 
 def _set_consumption(sles, periods):
@@ -179,8 +180,8 @@ def _set_consumption(sles, periods):
     def seg_filter(x):
         return lambda sl: sl.get("item_code") == x
 
-    segregator_fns = map(
-        lambda x: merge(
+    segregator_fns = [
+        merge(
             x,
             {
                 "seger": compose(
@@ -189,9 +190,9 @@ def _set_consumption(sles, periods):
                     seg_filter,
                 )
             },
-        ),
-        periods,
-    )
+        )
+        for x in periods
+    ]
 
     def seg_reducer(item_code):
         def fn(a, p):

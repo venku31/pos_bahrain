@@ -69,4 +69,4 @@ def _get_data(clauses, values, keys):
         return merge(row, {"cash": row.cash_amount - row.change_amount})
 
     make_row = compose(partial(pick, keys), set_cash)
-    return map(make_row, result)
+    return [make_row(x) for x in result]

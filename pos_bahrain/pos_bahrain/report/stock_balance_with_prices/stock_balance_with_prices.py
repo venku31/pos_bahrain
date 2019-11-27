@@ -6,7 +6,7 @@ import frappe
 from functools import partial
 from toolz import concatv, compose, valmap, merge
 
-from pos_bahrain.utils import key_by, mapf, filterf
+from pos_bahrain.utils import key_by
 
 
 def execute(filters=None):
@@ -58,9 +58,7 @@ def _get_data(data, prices, filters):
         partial(valmap, lambda x: x.get("value")),
         partial(key_by, "item_code"),
         lambda x: frappe.db.sql(
-            x,
-            values=merge({"item_codes": mapf(lambda x: x[0], data)}, prices),
-            as_dict=1,
+            x, values=merge({"item_codes": [x[0] for x in data]}, prices), as_dict=1
         ),
     )
     price_query = """
@@ -111,6 +109,8 @@ def _get_data(data, prices, filters):
             return True
         return filters.supplier == row[2]
 
-    make_data = compose(partial(filterf, filter_by_supplier), partial(map, add_fields))
+    make_data = compose(
+        list, partial(filter, filter_by_supplier), partial(map, add_fields)
+    )
 
     return make_data(data)

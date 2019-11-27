@@ -31,7 +31,7 @@ export default function withBarcodeUom(Pos) {
           conversion_factor,
           rate: price_list_rate,
           price_list_rate,
-          amount: flt(item.qty) * price_list_rate,
+          amount: flt(item.qty * price_list_rate, this.precision),
         });
         this.update_paid_amount_status(false);
       }

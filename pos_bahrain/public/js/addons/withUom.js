@@ -43,9 +43,9 @@ export default function withUom(Pos) {
         item_code,
       ]);
       if (customer_wise) {
-        return (
-          (customer_wise * flt(conversion_factor)) /
-          flt(this.frm.doc.conversion_rate)
+        return flt(
+          (customer_wise * conversion_factor) / this.frm.doc.conversion_rate,
+          this.precision
         );
       }
 
@@ -58,9 +58,10 @@ export default function withUom(Pos) {
         return uom_wise;
       }
 
-      return (
-        (get(this.price_list_data, item_code, 0) * flt(conversion_factor)) /
-        flt(this.frm.doc.conversion_rate)
+      return flt(
+        (get(this.price_list_data, item_code, 0) * conversion_factor) /
+          this.frm.doc.conversion_rate,
+        this.precision
       );
     }
     _set_item_price_from_uom(item_code, uom) {
@@ -74,7 +75,7 @@ export default function withUom(Pos) {
           conversion_factor,
           rate: price_list_rate,
           price_list_rate,
-          amount: flt(item.qty) * price_list_rate,
+          amount: flt(item.qty * price_list_rate, this.precision),
         });
         this.update_paid_amount_status(false);
       }
