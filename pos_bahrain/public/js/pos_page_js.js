@@ -125,9 +125,9 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         if (field === 'qty') {
           item.qty = (this.frm.doc.is_return ? -1 : 1) * Math.abs(value);
         } else {
-          item[field] = flt(value);
+          item[field] = flt(value, this.precision);
         }
-        item.amount = flt(item.rate) * flt(item.qty);
+        item.amount = flt(item.rate * item.qty, this.precision);
         if (item.qty === 0 && remove_zero_qty_items) {
           this.remove_item.push(item.idx);
         }
@@ -135,8 +135,10 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
           item.rate = item.price_list_rate;
         }
         if (field === 'rate') {
-          const discount_percentage =
-            (1.0 - flt(value) / flt(item.price_list_rate)) * 100.0;
+          const discount_percentage = flt(
+            (1.0 - value / item.price_list_rate) * 100.0,
+            this.precision
+          );
           if (discount_percentage > 0) {
             item.discount_percentage = discount_percentage;
           }
@@ -156,7 +158,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       .each((i, el) => {
         const value = el.innerText;
         if (value !== '0') {
-          el.innerText = flt(value, precision('discount_percentage'));
+          el.innerText = flt(value, this.precision);
         }
       });
   },
