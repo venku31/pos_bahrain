@@ -215,17 +215,30 @@ def _get_payments(args):
         values=args,
         as_dict=1,
     )
-    return _correct_mop_amounts(payments)
+    default_mop = compose(
+        excepts(StopIteration, first, lambda __: None),
+        partial(pluck, "mode_of_payment"),
+        frappe.get_all,
+    )(
+        "Sales Invoice Payment",
+        fields=["mode_of_payment"],
+        filters={
+            "parenttype": "POS Profile",
+            "parent": args.get("pos_profile"),
+            "default": 1,
+        },
+    )
+    return _correct_mop_amounts(payments, default_mop)
 
 
-def _correct_mop_amounts(payments):
+def _correct_mop_amounts(payments, default_mop):
     """
         Correct conversion_rate for MOPs using base currency.
         Required because conversion_rate is calculated as
             base_amount / mop_amount
         for MOPs using alternate currencies.
     """
-    base_mops = compose(partial(pluck, "name"), frappe.get_all)(
+    base_mops = compose(list, partial(pluck, "name"), frappe.get_all)(
         "Mode of Payment", filters={"in_alt_currency": 0}
     )
     base_currency = frappe.defaults.get_global_default("currency")
@@ -234,13 +247,14 @@ def _correct_mop_amounts(payments):
         return frappe._dict(
             merge(
                 payment,
-                {"mop_amount": payment.base_amount, "mop_currency": base_currency},
+                {"is_default": 1 if payment.mode_of_payment == default_mop else 0},
+                {"mop_amount": payment.base_amount, "mop_currency": base_currency}
+                if payment.mode_of_payment in base_mops
+                else {},
             )
-            if payment.mode_of_payment in base_mops
-            else payment
         )
 
-    return map(correct, payments)
+    return [correct(x) for x in payments]
 
 
 def _get_taxes(args):
