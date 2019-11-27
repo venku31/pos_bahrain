@@ -71,10 +71,10 @@ export default function withMultiCurrency(Pos) {
               }).html(`
                 <div>${mode_of_payment}</div>
                 <div style="font-size: 0.75em; color: #888;">
-                  CR: ${flt(conversion_rate, precision()).toFixed(3)}
+                  CR: ${flt(conversion_rate, this.precision).toFixed(3)}
                   /
                   <span class="local-currency-amount">${format_currency(
-                    amount * flt(conversion_rate, precision()),
+                    amount * flt(conversion_rate, this.precision),
                     this.frm.doc.currency
                   )}</span>
                 </div>
@@ -99,7 +99,7 @@ export default function withMultiCurrency(Pos) {
     bind_amount_change_event() {
       this.selected_mode.off('change');
       this.selected_mode.on('change', e => {
-        this.payment_val = flt(e.target.value) || 0.0;
+        this.payment_val = flt(e.target.value, this.precision) || 0.0;
         this.idx = this.selected_mode.attr('idx');
         const { currency } = this._get_exchange_rate();
         this.selected_mode.val(format_currency(this.payment_val, currency));
@@ -115,8 +115,8 @@ export default function withMultiCurrency(Pos) {
           conversion_rate: mop_conversion_rate,
           currency: mop_currency,
         } = this._get_exchange_rate();
-        const mop_amount = flt(this.selected_mode.val());
-        const amount = mop_amount * flt(mop_conversion_rate);
+        const mop_amount = flt(this.selected_mode.val(), this.precision);
+        const amount = flt(mop_amount * mop_conversion_rate, this.precision);
         Object.assign(selected_payment, {
           amount,
           mop_currency,
@@ -137,15 +137,16 @@ export default function withMultiCurrency(Pos) {
       const { conversion_rate, currency } = this._get_exchange_rate();
       if (
         this.frm.doc.outstanding_amount > 0 &&
-        flt(this.selected_mode.val()) === 0.0
+        flt(this.selected_mode.val(), this.precision) === 0.0
       ) {
         this.payment_val = flt(
-          this.frm.doc.outstanding_amount / conversion_rate
+          this.frm.doc.outstanding_amount / conversion_rate,
+          this.precision
         );
         this.selected_mode.val(format_currency(this.payment_val, currency));
         this.update_payment_amount();
-      } else if (flt(this.selected_mode.val()) > 0) {
-        this.payment_val = flt(this.selected_mode.val());
+      } else if (flt(this.selected_mode.val(), this.precision) > 0) {
+        this.payment_val = flt(this.selected_mode.val(), this.precision);
       }
       this.selected_mode.select();
       this.bind_amount_change_event();

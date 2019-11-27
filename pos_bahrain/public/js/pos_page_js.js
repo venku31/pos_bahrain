@@ -2,6 +2,9 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   onload: function() {
     this._super();
     this.setinterval_to_sync_master_data(600000);
+    this.precision =
+      frappe.defaults.get_default('currency_precision') ||
+      frappe.defaults.get_default('float_precision');
   },
   init_master_data: async function(r, freeze = true) {
     this._super(r);

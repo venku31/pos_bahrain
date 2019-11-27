@@ -36,7 +36,7 @@ export default function withAsyncAddToCart(Pos) {
       });
       if (item) {
         item.qty += this.frm.doc.is_return ? -1 : 1;
-        item.amount = flt(item.rate) * flt(item.qty);
+        item.amount = flt(item.rate * item.qty, this.precision);
         if (this.item_serial_no[item.item_code]) {
           item.serial_no += '\n' + this.item_serial_no[item.item_code][0];
           item.warehouse = this.item_serial_no[item.item_code][1];
