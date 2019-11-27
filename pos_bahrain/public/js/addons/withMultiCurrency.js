@@ -151,5 +151,21 @@ export default function withMultiCurrency(Pos) {
       this.selected_mode.select();
       this.bind_amount_change_event();
     }
+    payment_primary_action() {
+      this.frm.doc.payments.forEach(payment => {
+        const { mode_of_payment, amount } = payment;
+        const {
+          conversion_rate: mop_conversion_rate,
+          currency: mop_currency,
+        } = this._get_exchange_rate(mode_of_payment);
+        const mop_amount = flt(amount / mop_conversion_rate, this.precision);
+        Object.assign(payment, {
+          mop_currency,
+          mop_conversion_rate,
+          mop_amount,
+        });
+      });
+      super.payment_primary_action();
+    }
   };
 }
