@@ -7,29 +7,21 @@ from frappe import _
 from frappe.utils import today
 from functools import partial, reduce
 import operator
-from toolz import (
-    merge,
-    pluck,
-    get,
-    compose,
-    first,
-    flip,
-    groupby,
-    excepts,
-    keyfilter,
-    concatv,
-)
+from toolz import merge, pluck, get, compose, first, flip, groupby, excepts, concatv
 
 from pos_bahrain.pos_bahrain.report.item_consumption_report.helpers import (
     generate_intervals,
 )
+from pos_bahrain.utils import pick
 
 
 def execute(filters=None):
     clauses, values = _get_filters(filters)
     columns = _get_columns(values)
     data = _get_data(clauses, values, columns)
-    return columns, data
+
+    make_column = partial(pick, ["label", "fieldname", "fieldtype", "options", "width"])
+    return [make_column(x) for x in columns], data
 
 
 def _get_filters(filters):
@@ -150,11 +142,13 @@ def _get_data(clauses, values, columns):
         as_dict=1,
     )
     keys = compose(list, partial(pluck, "fieldname"))(columns)
-    periods = filter(lambda x: x.get("start_date") and x.get("end_date"), columns)
+    get_periods = compose(
+        list, partial(filter, lambda x: x.get("start_date") and x.get("end_date"))
+    )
 
-    set_consumption = _set_consumption(sles, periods)
+    set_consumption = _set_consumption(sles, get_periods(columns))
 
-    make_row = compose(partial(keyfilter, lambda k: k in keys), set_consumption)
+    make_row = compose(partial(pick, keys), set_consumption)
 
     return [make_row(x) for x in items]
 

@@ -97,10 +97,12 @@ def _group(items):
         return fn
 
     def set_parent(salesman_name):
-        return partial(
+        return compose(
             list,
-            map,
-            lambda x: merge(x, {"parent": salesman_name, "salesman_name": None}),
+            partial(
+                map,
+                lambda x: merge(x, {"parent": salesman_name, "salesman_name": None}),
+            ),
         )
 
     transformed = {
