@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from functools import partial
-from toolz import compose, pluck, merge
+from toolz import compose, pluck, merge, groupby
 
 from pos_bahrain.utils import pick
 
@@ -32,11 +32,13 @@ def _get_columns(filters):
         make_column("doctype", "Document Type", type="Link", options="Doctype"),
         make_column("docname", "Document No", type="Dynamic Link", options="doctype"),
         make_column("posting_date", "Date", type="Date", width=90),
-        make_column("party", type="Link", options="Customer"),
+        make_column("party_type", type="Link", options="Doctype"),
+        make_column("party", type="Dynamic Link", options="party_type"),
         make_column("party_name", width=150),
         make_column("cheque_no"),
         make_column("cheque_date", type="Date", width=90),
         make_column("amount", type="Currency", width=90),
+        make_column("remarks"),
     ]
 
 
@@ -44,13 +46,11 @@ def _get_filters(filters):
     pe_clauses = [
         "pe.docstatus = 1",
         "pe.posting_date BETWEEN %(from_date)s AND %(to_date)s",
-        "pe.payment_type = 'Receive'",
         "pe.mode_of_payment = 'Cheque'",
     ]
     je_clauses = [
         "je.docstatus = 1",
         "je.posting_date BETWEEN %(from_date)s AND %(to_date)s",
-        "je.voucher_type = 'Bank Entry'",
         "je.pb_is_cheque = 1",
     ]
     values = merge(
@@ -67,37 +67,40 @@ def _get_filters(filters):
 
 
 def _get_data(clauses, values, keys):
-    result = frappe.db.sql(
+    payment_entries = frappe.db.sql(
         """
             SELECT
                 'Payment Entry' AS doctype,
                 pe.name AS docname,
                 pe.posting_date AS posting_date,
+                pe.paid_from AS paid_from,
+                pe.party_type AS party_type,
                 pe.party AS party,
                 pe.party_name AS party_name,
                 pe.reference_no AS cheque_no,
                 pe.reference_date AS cheque_date,
-                pe.paid_amount AS amount
+                pe.paid_amount AS amount,
+                pe.remarks AS remarks
             FROM `tabPayment Entry` AS pe
             WHERE {pe_clauses}
-            UNION ALL
+        """.format(
+            **clauses
+        ),
+        values=values,
+        as_dict=1,
+    )
+    journal_entries = frappe.db.sql(
+        """
             SELECT
                 'Journal Entry' AS doctype,
-                je.name AS name,
+                je.name AS docname,
                 je.posting_date AS posting_date,
-                jea.party AS party,
-                c.customer_name AS party_name,
                 je.cheque_no AS cheque_no,
                 je.cheque_date AS cheque_date,
-                je.total_debit AS amount
+                je.total_debit AS amount,
+                je.remark AS remarks
             FROM `tabJournal Entry` AS je
-            LEFT JOIN `tabJournal Entry Account` AS jea ON
-                jea.parent = je.name AND
-                jea.party_type = 'Customer'
-            LEFT JOIN `tabCustomer` AS c ON
-                c.name = jea.party
             WHERE {je_clauses}
-            ORDER BY posting_date
         """.format(
             **clauses
         ),
@@ -105,5 +108,76 @@ def _get_data(clauses, values, keys):
         as_dict=1,
     )
 
-    make_row = partial(pick, keys)
-    return [make_row(x) for x in result]
+    journal_entry_accounts = (
+        groupby(
+            "parent",
+            frappe.db.sql(
+                """
+                SELECT parent, account, party_type, party, credit
+                FROM `tabJournal Entry Account`
+                WHERE parent IN %(parents)s
+            """,
+                values={"parents": [x.get("docname") for x in journal_entries]},
+                as_dict=1,
+            ),
+        )
+        if journal_entries
+        else {}
+    )
+
+    def set_party(row):
+        if row.get("doctype") == "Journal Entry":
+            for detail in journal_entry_accounts.get(row.get("docname"), []):
+                party_type = detail.get("party_type")
+                party = detail.get("party")
+                if party and party_type in [
+                    "Customer",
+                    "Supplier",
+                    "Employee",
+                    "Member",
+                ]:
+                    name_field = "{}_name".format(party_type.lower())
+                    return merge(
+                        row,
+                        {
+                            "party_type": party_type,
+                            "party": party,
+                            "party_name": frappe.db.get_value(
+                                party_type, party, name_field
+                            ),
+                        },
+                    )
+        return row
+
+    def negated(row):
+        return merge(row, {"amount": -1 * row.get("amount")})
+
+    def set_sign(row):
+
+        if row.get("doctype") == "Payment Entry":
+            if (
+                frappe.db.get_value("Account", row.get("paid_from"), "account_type")
+                == "Bank"
+            ):
+                return negated(row)
+
+        if row.get("doctype") == "Journal Entry":
+            for detail in journal_entry_accounts.get(row.get("docname"), []):
+                if (
+                    detail.get("credit")
+                    and frappe.db.get_value(
+                        "Account", detail.get("account"), "account_type"
+                    )
+                    == "Bank"
+                ):
+                    return negated(row)
+
+        return row
+
+    make_row = compose(partial(pick, keys), set_sign, set_party)
+    return [
+        make_row(x)
+        for x in sorted(
+            payment_entries + journal_entries, key=lambda x: x["posting_date"]
+        )
+    ]
