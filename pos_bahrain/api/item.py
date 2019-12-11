@@ -227,9 +227,9 @@ def get_uom_from(barcode):
 @frappe.whitelist()
 def get_custom_item_cart_fields():
     return frappe.get_all(
-        'POS Bahrain Settings Cart Fields',
-        fields=['item_field', 'label', 'fieldtype', 'width'],
-        order_by='idx'
+        "POS Bahrain Settings Cart Fields",
+        fields=["item_field", "label", "fieldtype", "width"],
+        order_by="idx",
     )
 
 
@@ -269,3 +269,11 @@ def query_uom(doctype, txt, searchfield, start, page_len, filters):
             "page_len": page_len,
         },
     )
+
+
+@frappe.whitelist()
+def get_conversion_factor(item_code, uom):
+    conversion_factor = frappe.db.get_value(
+        "UOM Conversion Detail", {"parent": item_code, "uom": uom}, "conversion_factor"
+    )
+    return conversion_factor
