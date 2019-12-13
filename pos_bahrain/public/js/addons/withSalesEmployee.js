@@ -1,5 +1,15 @@
 export default function withBarcodeUom(Pos) {
   return class PosExtended extends Pos {
+    onload(wrapper) {
+      const header_height = 80;
+      super.onload();
+      $(this.page.wrapper)
+        .find('.page-head')
+        .css('height', header_height);
+      $(this.page.wrapper)
+        .find('.page-content')
+        .css('margin-top', header_height);
+    }
     async init_master_data(r, freeze) {
       const pos_data = await super.init_master_data(r, freeze);
       const { use_sales_employee, sales_employee_details = [] } = pos_data;
@@ -52,6 +62,15 @@ export default function withBarcodeUom(Pos) {
           this.sales_employee_field.refresh();
           this.sales_employee_field.$input.on('change', () => {
             this.frm.doc.pb_sales_employee = this.sales_employee_field.get_value();
+            const { employee_name } =
+              this.sales_employee_details.find(
+                ({ name }) => name === this.frm.doc.pb_sales_employee
+              ) || {};
+            this.sales_employee_field.set_description(
+              `<span style="font-weight: bold; font-size: 1.1em; padding-left: 10px">
+                ${employee_name || ''}
+              </span>`
+            );
           });
         }
         this.sales_employee_field.set_data(autocomplete_data);

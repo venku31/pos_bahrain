@@ -96,6 +96,7 @@ fixtures = [
                     "Stock Entry Detail-pb_expiry_date",
                     "Journal Entry-pb_is_cheque",
                     "Payment Entry Reference-pb_invoice_date",
+                    "Item Price-pb_conversion_factor",
                 ],
             ]
         ],
@@ -188,6 +189,7 @@ doc_events = {
         "before_save": "pos_bahrain.doc_events.stock_entry.before_validate",
         "on_submit": "pos_bahrain.doc_events.purchase_receipt.set_batch_references",
     },
+    "Item Price": {"before_save": "pos_bahrain.doc_events.item_price.before_save"},
 }
 
 boot_session = "pos_bahrain.doc_events.boot.boot_session"

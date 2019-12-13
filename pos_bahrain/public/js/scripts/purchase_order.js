@@ -8,4 +8,10 @@ const purchase_order_item = {
 export default {
   purchase_order_item,
   setup: set_uom_query,
+  schedule_date: function(frm) {
+    const { schedule_date } = frm.doc;
+    frm.doc.items.forEach(({ doctype: cdt, name: cdn }) => {
+      frappe.model.set_value(cdt, cdn, 'schedule_date', schedule_date);
+    });
+  },
 };
