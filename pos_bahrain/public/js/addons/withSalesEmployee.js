@@ -26,6 +26,7 @@ export default function withBarcodeUom(Pos) {
       super.create_new();
       if (this.sales_employee_field) {
         this.sales_employee_field.$input.val('');
+        this.sales_employee_field.set_description('');
       }
     }
     edit_record() {

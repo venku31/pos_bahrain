@@ -4,6 +4,7 @@ import frappe
 from frappe import _
 from frappe.utils import today
 from frappe.desk.reportview import get_filters_cond
+from erpnext.stock.get_item_details import get_item_price
 from functools import partial
 from toolz import groupby, merge, valmap, compose, get, excepts, first, pluck
 
@@ -249,6 +250,8 @@ def fetch_item_from_supplier_part_no(supplier, supplier_part_no):
 
 @frappe.whitelist()
 def query_uom(doctype, txt, searchfield, start, page_len, filters):
+    if not filters.get("item_code"):
+        return []
     return frappe.db.sql(
         """
             SELECT uom
@@ -277,3 +280,16 @@ def get_conversion_factor(item_code, uom):
         "UOM Conversion Detail", {"parent": item_code, "uom": uom}, "conversion_factor"
     )
     return conversion_factor
+
+
+@frappe.whitelist()
+def get_item_rate(item_code, uom, price_list="Standard Selling"):
+    get_price = compose(
+        lambda x: x[1] if x else None,
+        excepts(StopIteration, first, lambda __: None),
+        get_item_price,
+    )
+
+    return get_price(
+        {"price_list": price_list, "uom": uom, "transaction_date": today()}, item_code,
+    )
