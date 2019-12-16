@@ -1,6 +1,13 @@
 // Copyright (c) 2018, 	9t9it and contributors
 // For license information, please see license.txt
 
+frappe.ui.form.off(cur_frm.doctype, 'scan_barcode');
+frappe.ui.form.on(
+  cur_frm.doctype,
+  'scan_barcode',
+  pos_bahrain.scripts.extensions.scan_barcode
+);
+
 const select_batch_and_serial_no = erpnext.stock.select_batch_and_serial_no;
 
 erpnext.stock.select_batch_and_serial_no = (frm, item) => {
