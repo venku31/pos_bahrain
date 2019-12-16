@@ -1,6 +1,6 @@
 {
   "name": "pos_bahrain",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "description": "## Pos Enhancement over the default POS of ERPNext",
   "main": "pos_bahrain/public/js/index.js",
   "scripts": {
