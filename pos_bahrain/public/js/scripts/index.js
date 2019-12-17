@@ -10,3 +10,5 @@ export { default as payment_entry } from './payment_entry';
 export { default as item_price } from './item_price';
 export { default as pos_bahrain_settings } from './pos_bahrain_settings';
 export { default as barcode_print } from './barcode_print';
+import * as extensions from './extensions';
+export { extensions };
