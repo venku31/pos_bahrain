@@ -43,13 +43,15 @@ def set_or_create_batch(doc, method):
     manage_batch = frappe.db.get_single_value("POS Bahrain Settings", "manage_batch")
 
     if manage_batch and doc._action == "save":
-        map(set_existing_batch, doc.items)
+        for item in doc.items:
+            set_existing_batch(item)
 
         # TODO: when `before_validate` gets merged into master create_new_batch should
         # run when doc._action == 'submit'.
         # also update `hooks.py` to use `before_validate` instead of the current
         # `before_save` method
-        map(create_new_batch, doc.items)
+        for item in doc.items:
+            create_new_batch(item)
 
 
 def before_validate(doc, method):
@@ -70,4 +72,5 @@ def set_batch_references(doc, method):
     manage_batch = frappe.db.get_single_value("POS Bahrain Settings", "manage_batch")
 
     if manage_batch:
-        map(set_fields, doc.items)
+        for item in doc.items:
+            set_fields(item)
