@@ -4,8 +4,9 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
+from datetime import datetime
 from functools import partial, reduce
-from toolz import groupby, pluck
+from toolz import groupby, pluck, compose, merge, keyfilter
 
 
 def execute(filters=None):
@@ -91,7 +92,12 @@ def _get_data(clauses, filters, mop):
 			mop
 		)
 
-	return result
+	def get_sort_key(item):
+		if filters.get("summary_view"):
+			return item["posting_date"]
+		return datetime.combine(item["posting_date"], datetime.min.time()) + item["posting_time"]
+
+	return sorted(result, key=get_sort_key)
 
 
 def _summarize_payments(result, mop):
@@ -116,7 +122,11 @@ def _summarize_payments(result, mop):
 			reduce(make_summary_row, payments)
 		)
 
-	return summary
+	get_row_total = compose(
+		sum, lambda x: x.values(), partial(keyfilter, lambda x: x in mop_cols)
+	)
+
+	return [merge(row, {'total': get_row_total(row)}) for row in summary]
 
 
 def _sum_invoice_payments(invoice_payments, mop):

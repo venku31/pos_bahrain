@@ -46,6 +46,11 @@ export default function withStockValidator(Pos) {
         _validate_non_batch_qty(item, index) {
             const { item_code, actual_qty, qty, conversion_factor } = item;
 
+            const { is_stock_item } = this.item_data.find(x => x.item_code === item_code) || {};
+            if (!is_stock_item) {
+              return;
+            }
+
             if (!(item_code in this.items_qty)) {
                 this.items_qty[item_code] = actual_qty;
             }
