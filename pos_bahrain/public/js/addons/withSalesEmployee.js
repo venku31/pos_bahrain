@@ -45,7 +45,7 @@ export default function withBarcodeUom(Pos) {
       if (this.use_sales_employee) {
         const autocomplete_data = this.sales_employee_details.map(
           ({ name, employee_name }) => ({
-            label: employee_name,
+            label: `${name}: ${employee_name}`,
             value: name,
           })
         );
