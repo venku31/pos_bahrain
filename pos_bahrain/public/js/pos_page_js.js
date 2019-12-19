@@ -266,16 +266,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         this.update_paid_amount_status(false);
       });
   },
-  make_payment: function() {
-    if (this.dialog) {
-      this.dialog.$wrapper.remove();
-    }
-    this._super();
-    this.dialog.$body
-      .find('.write_off_amount')
-      .parent()
-      .addClass('hidden');
-  },
   refresh: function() {
     this._super();
     if (!this.pos_voucher) {
