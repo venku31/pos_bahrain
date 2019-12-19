@@ -238,6 +238,43 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     }
     return invoice_data;
   },
+  sync_sales_invoice: function() {
+    const me = this;
+
+    // instead of replacing instance variables
+    const si_docs = this.get_submitted_invoice() || [];
+    const email_queue_list = this.get_email_queue() || {};
+    const customers_list = this.get_customers_details() || {};
+
+    if (si_docs.length || email_queue_list || customers_list) {
+      frappe.call({
+        method: "erpnext.accounts.doctype.sales_invoice.pos.make_invoice",
+        freeze: true,
+        args: {
+          doc_list: si_docs,
+          email_queue_list: email_queue_list,
+          customers_list: customers_list
+        },
+        callback: function (r) {
+          if (r.message) {
+            me.freeze = false;
+            me.customers = r.message.synced_customers_list;
+            me.address = r.message.synced_address;
+            me.contacts = r.message.synced_contacts;
+            me.removed_items = r.message.invoice;
+            me.removed_email = r.message.email_queue;
+            me.removed_customers = r.message.customers;
+            me.remove_doc_from_localstorage();
+            me.remove_email_queue_from_localstorage();
+            me.remove_customer_from_localstorage();
+            me.prepare_customer_mapper();
+            me.autocomplete_customers();
+            me.render_list_customers();
+          }
+        }
+      });
+    }
+  },
   make_control: function() {
     this._super();
     this.make_return_control();
