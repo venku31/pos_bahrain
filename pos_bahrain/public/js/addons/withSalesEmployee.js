@@ -45,7 +45,7 @@ export default function withBarcodeUom(Pos) {
       if (this.use_sales_employee) {
         const autocomplete_data = this.sales_employee_details.map(
           ({ name, employee_name }) => ({
-            label: employee_name,
+            label: `${name}: ${employee_name}`,
             value: name,
           })
         );
@@ -67,6 +67,7 @@ export default function withBarcodeUom(Pos) {
               this.sales_employee_details.find(
                 ({ name }) => name === this.frm.doc.pb_sales_employee
               ) || {};
+            this.frm.doc.pb_sales_employee_name = employee_name;
             this.sales_employee_field.set_description(
               `<span style="font-weight: bold; font-size: 1.1em; padding-left: 10px">
                 ${employee_name || ''}
