@@ -1,4 +1,5 @@
 import frappe
+from frappe.utils import flt
 from functools import reduce
 from toolz import groupby, merge, concat, compose
 
@@ -41,13 +42,16 @@ def make_uom_col_setter(item_codes):
         ),
     )
 
+    precision = frappe.defaults.get_global_default("float_precision")
+
     def fn(row):
         def get_detail(i, detail):
-            qty = row.get("qty") or 0
+            qty = flt(row.get("qty") or 0, precision)
+            cf = flt(detail.get("conversion_factor"), precision)
             return {
                 "uom{}".format(i + 1): detail.get("uom"),
-                "cf{}".format(i + 1): detail.get("conversion_factor"),
-                "qty{}".format(i + 1): qty / detail.get("conversion_factor"),
+                "cf{}".format(i + 1): cf,
+                "qty{}".format(i + 1): flt(qty / cf, precision),
             }
 
         details = uoms_by_item_code.get(row.get("item_code"), [])
