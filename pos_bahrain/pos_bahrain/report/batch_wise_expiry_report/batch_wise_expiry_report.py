@@ -6,9 +6,16 @@ import frappe
 from frappe import _
 from frappe.utils import today, getdate
 from functools import partial
-from toolz import merge, pluck, keyfilter, compose
+from toolz import merge, pluck, keyfilter, compose, concatv, unique
 
 from pos_bahrain.utils.report import make_column
+from pos_bahrain.pos_bahrain.report.batch_wise_expiry_report.helpers import (
+    get_uom_columns,
+    make_uom_col_setter,
+)
+
+
+NUM_OF_UOM_COLUMNS = 3
 
 
 def execute(filters=None):
@@ -39,6 +46,7 @@ def _get_args(filters={}):
 
 
 def _get_columns(args):
+    join_columns = compose(list, concatv)
     columns = [
         make_column("supplier", type="Link", options="Supplier"),
         make_column("brand", type="Link", options="Brand"),
@@ -51,7 +59,7 @@ def _get_columns(args):
         make_column("price1", args.get("price_list1"), type="Currency"),
         make_column("price2", args.get("price_list2"), type="Currency"),
     ]
-    return columns
+    return join_columns(columns, get_uom_columns(NUM_OF_UOM_COLUMNS))
 
 
 def _get_keys(args):
@@ -101,7 +109,10 @@ def _get_data(args, keys):
         expiry_in_days = (row.expiry_date - getdate()).days if row.expiry_date else None
         return merge(row, {"expiry_in_days": expiry_in_days})
 
-    make_row = compose(partial(keyfilter, lambda k: k in keys), set_expiry)
+    get_item_codes = compose(list, unique, partial(pluck, "item_code"))
+    add_uom = make_uom_col_setter(get_item_codes(sles))
+
+    make_row = compose(partial(keyfilter, lambda k: k in keys), add_uom, set_expiry)
 
     filter_rows = compose(
         list,
