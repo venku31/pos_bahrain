@@ -102,4 +102,7 @@ def _get_data(clauses, values, keys):
     add_uom = make_uom_col_setter([x.get("item_code") for x in result])
 
     make_row = compose(partial(pick, keys), add_uom)
-    return [make_row(x) for x in result]
+
+    return [
+        make_row(x) for x in result if not values.get("hide_zero_stock") or x.get("qty")
+    ]
