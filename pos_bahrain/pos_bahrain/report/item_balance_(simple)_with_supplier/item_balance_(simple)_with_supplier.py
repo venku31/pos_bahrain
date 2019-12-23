@@ -3,11 +3,11 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe import _
 from functools import partial, reduce
 from toolz import compose, pluck, merge, concatv, concat, groupby
 
 from pos_bahrain.utils import pick
+from pos_bahrain.utils.report import make_column
 
 
 NUM_OF_UOM_COLUMNS = 3
@@ -22,23 +22,14 @@ def execute(filters=None):
 
 
 def _get_columns():
-    def make_column(key, label, type="Data", options=None, width=120):
-        return {
-            "label": _(label),
-            "fieldname": key,
-            "fieldtype": type,
-            "options": options,
-            "width": width,
-        }
-
     join_columns = compose(list, concat)
     columns = [
-        make_column("item_code", "Item Code", type="Link", options="Item"),
-        make_column("item_name", "Item Name", width=150),
-        make_column("item_group", "Item Group", type="Link", options="Item Group"),
-        make_column("brand", "Brand", type="Link", options="Brand"),
+        make_column("item_code", type="Link", options="Item"),
+        make_column("item_name", width=150),
+        make_column("item_group", type="Link", options="Item Group"),
+        make_column("brand", type="Link", options="Brand"),
         make_column("supplier", "Default Supplier", type="Link", options="Supplier"),
-        make_column("supplier_part_no", "Supplier Part No"),
+        make_column("supplier_part_no"),
         make_column("stock_uom", "Stock UOM", width=90),
         make_column("qty", "Balance Qty", type="Float", width=90),
     ]
