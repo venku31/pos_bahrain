@@ -45,5 +45,10 @@ frappe.query_reports['Item Balance (Simple) with Supplier'] = {
       options: 'Warehouse',
       get_query: { filters: { is_group: 0 } },
     },
+    {
+      fieldname: 'hide_zero_stock',
+      label: __('Hide Zero Stock'),
+      fieldtype: 'Check',
+    },
   ],
 };
