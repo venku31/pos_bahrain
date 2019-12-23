@@ -56,6 +56,7 @@ def _get_columns(args):
         make_column("expiry_date", type="Date", width=90),
         make_column("expiry_in_days", "Expiry in Days", type="Int", width=90),
         make_column("qty", "Quantity", type="Float", width=90),
+        make_column("stock_uom", "Stock UOM", width=90),
         make_column("price1", args.get("price_list1"), type="Currency"),
         make_column("price2", args.get("price_list2"), type="Currency"),
     ]
@@ -74,6 +75,7 @@ def _get_data(args, keys):
                 sle.item_code AS item_code,
                 sle.warehouse AS warehouse,
                 SUM(sle.actual_qty) AS qty,
+                i.stock_uom AS stock_uom,
                 i.item_name AS item_name,
                 i.brand AS brand,
                 id.default_supplier AS supplier,
