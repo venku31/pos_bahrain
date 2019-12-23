@@ -141,7 +141,7 @@ def _get_data(clauses, values, keys):
             return {
                 "uom{}".format(i + 1): detail.get("uom"),
                 "cf{}".format(i + 1): detail.get("conversion_factor"),
-                "qty{}".format(i + 1): qty * detail.get("conversion_factor"),
+                "qty{}".format(i + 1): qty / detail.get("conversion_factor"),
             }
 
         details = uoms_by_item_code.get(row.get("item_code"), [])
