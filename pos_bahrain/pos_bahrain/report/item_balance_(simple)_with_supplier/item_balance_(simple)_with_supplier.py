@@ -3,11 +3,15 @@
 
 from __future__ import unicode_literals
 import frappe
-from functools import partial, reduce
-from toolz import compose, pluck, merge, concatv, concat, groupby
+from functools import partial
+from toolz import compose, pluck, merge, concatv
 
 from pos_bahrain.utils import pick
 from pos_bahrain.utils.report import make_column
+from pos_bahrain.pos_bahrain.report.batch_wise_expiry_report.helpers import (
+    get_uom_columns,
+    make_uom_col_setter,
+)
 
 
 NUM_OF_UOM_COLUMNS = 3
@@ -22,7 +26,7 @@ def execute(filters=None):
 
 
 def _get_columns():
-    join_columns = compose(list, concat)
+    join_columns = compose(list, concatv)
     columns = [
         make_column("item_code", type="Link", options="Item"),
         make_column("item_name", width=150),
@@ -34,21 +38,7 @@ def _get_columns():
         make_column("qty", "Balance Qty", type="Float", width=90),
     ]
 
-    def uom_columns(x):
-        return [
-            make_column("uom{}".format(x), "UOM {}".format(x), width=90),
-            make_column(
-                "cf{}".format(x),
-                "Coversion Factor {}".format(x),
-                type="Float",
-                width=90,
-            ),
-            make_column("qty{}".format(x), "Qty {}".format(x), type="Float", width=90),
-        ]
-
-    return join_columns(
-        [columns] + [uom_columns(x + 1) for x in range(0, NUM_OF_UOM_COLUMNS)]
-    )
+    return join_columns(columns, get_uom_columns(NUM_OF_UOM_COLUMNS))
 
 
 def _get_filters(filters):
@@ -109,35 +99,7 @@ def _get_data(clauses, values, keys):
         as_dict=1,
     )
 
-    uoms_by_item_code = groupby(
-        "item_code",
-        frappe.db.sql(
-            """
-            SELECT
-                i.name AS item_code,
-                ucd.uom AS uom,
-                ucd.conversion_factor AS conversion_factor
-            FROM `tabUOM Conversion Detail` AS ucd
-            LEFT JOIN `tabItem` AS i ON i.name = ucd.parent
-            WHERE ucd.parent IN %(parent)s AND ucd.uom != i.stock_uom
-        """,
-            values={"parent": [x.get("item_code") for x in result]},
-            as_dict=1,
-        ),
-    )
-
-    def add_uom(row):
-        def get_detail(i, detail):
-            qty = row.get("qty") or 0
-            return {
-                "uom{}".format(i + 1): detail.get("uom"),
-                "cf{}".format(i + 1): detail.get("conversion_factor"),
-                "qty{}".format(i + 1): qty / detail.get("conversion_factor"),
-            }
-
-        details = uoms_by_item_code.get(row.get("item_code"), [])
-        fields = reduce(lambda a, x: merge(a, get_detail(*x)), enumerate(details), {})
-        return merge(row, fields)
+    add_uom = make_uom_col_setter([x.get("item_code") for x in result])
 
     make_row = compose(partial(pick, keys), add_uom)
     return [make_row(x) for x in result]
