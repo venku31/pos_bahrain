@@ -38,6 +38,7 @@ def _get_columns():
         make_column("item_group", "Item Group", type="Link", options="Item Group"),
         make_column("brand", "Brand", type="Link", options="Brand"),
         make_column("supplier", "Default Supplier", type="Link", options="Supplier"),
+        make_column("supplier_part_no", "Supplier Part No"),
         make_column("stock_uom", "Stock UOM", width=90),
         make_column("qty", "Balance Qty", type="Float", width=90),
     ]
@@ -78,11 +79,15 @@ def _get_filters(filters):
         ["b.warehouse = %(warehouse)s"] if filters.warehouse else [],
     )
     defaults_clauses = concatv(["id.parent = i.name"], ["id.company = %(company)s"])
+    supplier_clauses = concatv(
+        ["isp.parent = i.name"], ["isp.supplier = id.default_supplier"]
+    )
     return (
         {
             "clauses": " AND ".join(clauses),
             "bin_clauses": " AND ".join(bin_clauses),
             "defaults_clauses": " AND ".join(defaults_clauses),
+            "supplier_clauses": " AND ".join(supplier_clauses),
         },
         merge(filters, {"item_codes": item_codes} if item_codes else {}),
     )
@@ -98,10 +103,12 @@ def _get_data(clauses, values, keys):
                 i.stock_uom AS stock_uom,
                 i.brand AS brand,
                 id.default_supplier AS supplier,
+                isp.supplier_part_no AS supplier_part_no,
                 SUM(b.actual_qty) AS qty
             FROM `tabItem` AS i
             LEFT JOIN `tabBin` AS b ON {bin_clauses}
             LEFT JOIN `tabItem Default` AS id ON {defaults_clauses}
+            LEFT JOIN `tabItem Supplier` AS isp ON {supplier_clauses}
             WHERE {clauses}
             GROUP BY i.item_code
         """.format(
