@@ -19,10 +19,12 @@ import withDiscountValidator from './withDiscountValidator';
 import withSalesEmployee from './withSalesEmployee';
 import withMultiCurrency from './withMultiCurrency';
 import withSubmittedInvoice from "./withSubmittedInvoice";
+import withModifiedPaymentDialogFields from './withModifiedPaymentDialogFields';
 
 // the order of the hocs is important. `withIdx` > `withUom` should always run before
 // all other hocs
 export const extend_pos = flowRight([
+  withModifiedPaymentDialogFields,
   withMultiCurrency,
   withSalesEmployee,
   withKeyboardShortcuts,
