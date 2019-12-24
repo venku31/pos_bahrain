@@ -97,6 +97,7 @@ fixtures = [
                     "Journal Entry-pb_is_cheque",
                     "Payment Entry Reference-pb_invoice_date",
                     "Item Price-pb_conversion_factor",
+                    "Item Price-pb_customer_name",
                 ],
             ]
         ],
