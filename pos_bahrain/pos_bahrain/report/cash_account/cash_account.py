@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import frappe
 
 from frappe import _
+from functools import reduce
 from erpnext import get_company_currency, get_default_company
 
 from toolz import merge, groupby
@@ -104,8 +105,11 @@ def _get_data(company, filters):
 			groupby('posting_date', result)
 		)
 
+	def get_sort_key(item):
+		return item["posting_date"]
+
 	opening = _get_opening(company, filters)
-	result = _set_balance(opening + result)
+	result = _set_balance(opening + sorted(result, key=get_sort_key))
 	closing = _get_closing(result)
 
 	return result + closing
