@@ -1,5 +1,6 @@
 import flowRight from 'lodash/flowRight';
 
+import withBase from './withBase';
 import withUom from './withUom';
 import withBatchPrice from './withBatchPrice';
 import withBarcodeUom from './withBarcodeUom';
@@ -42,4 +43,5 @@ export const extend_pos = flowRight([
   withUom,
   withIdx,
   withCustomItemCart,
+  withBase,
 ]);
