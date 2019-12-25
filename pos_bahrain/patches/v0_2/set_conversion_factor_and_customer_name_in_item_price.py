@@ -35,9 +35,10 @@ def _set_missing_conversion_factor():
             filters={"parent": doc.get("item_code"), "uom": doc.get("uom")},
             fieldname="conversion_factor",
         )
-        frappe.db.set_value(
-            "Item Price", doc.get("name"), "pb_conversion_factor", value
-        )
+        if value:
+            frappe.db.set_value(
+                "Item Price", doc.get("name"), "pb_conversion_factor", value
+            )
 
 
 def _set_missing_customer_name():
@@ -65,4 +66,7 @@ def _set_missing_customer_name():
     )
     for doc in docs:
         value = frappe.db.get_value("Customer", doc.get("customer"), "customer_name")
-        frappe.db.set_value("Item Price", doc.get("name"), "pb_customer_name", value)
+        if value:
+            frappe.db.set_value(
+                "Item Price", doc.get("name"), "pb_customer_name", value
+            )
