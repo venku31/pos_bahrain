@@ -7,6 +7,7 @@ export default function withDiscountValidator(Pos) {
         pb_max_discount: profile_max_discount = 0,
       } = this.pos_profile_data;
       if (allow_user_to_edit_discount) {
+        const { customer, posting_date: transaction_date } = this.frm.doc;
         this.frm.doc.items.forEach(
           ({ item_code, uom, net_amount = 0, qty, idx }) => {
             const { max_discount: item_max_discount = 0 } =
@@ -14,7 +15,13 @@ export default function withDiscountValidator(Pos) {
             const max_discount = item_max_discount || profile_max_discount;
             if (max_discount) {
               const net_rate = net_amount / qty;
-              const price = this.get_item_price({ item_code, uom });
+              const price = this.get_item_price({
+                item_code,
+                uom,
+                customer,
+                qty: min_qty,
+                transaction_date,
+              });
 
               const discount = (1 - net_rate / price) * 100;
               if (discount > max_discount) {

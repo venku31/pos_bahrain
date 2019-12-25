@@ -119,7 +119,9 @@ def _get_barcode_details():
 def _get_item_prices(price_list):
     prices = frappe.db.sql(
         """
-            SELECT item_code, uom, customer, currency, price_list_rate
+            SELECT
+                item_code, currency, price_list_rate,
+                uom, customer, min_qty, valid_from, valid_upto
             FROM `tabItem Price` WHERE price_list = %(price_list)s
         """,
         values={"price_list": price_list},

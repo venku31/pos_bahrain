@@ -59,12 +59,28 @@ def _get_columns(args):
         make_column("stock_uom", "Stock UOM", width=90),
         make_column("price1", args.get("price_list1"), type="Currency"),
         make_column("price2", args.get("price_list2"), type="Currency"),
+        make_column("warehouse"),
     ]
     return join_columns(columns, get_uom_columns(NUM_OF_UOM_COLUMNS))
 
 
 def _get_keys(args):
     return compose(list, partial(pluck, "fieldname"), _get_columns)(args)
+
+
+def _item_price_clauses(alias):
+    return """
+        {alias}.item_code = sle.item_code AND
+        IFNULL({alias}.uom, '') IN ('', i.stock_uom) AND
+        IFNULL({alias}.customer, '') = '' AND
+        IFNULL({alias}.supplier, '') = '' AND
+        IFNULL({alias}.min_qty, 0) <= 1 AND
+        %(query_date)s BETWEEN
+            IFNULL({alias}.valid_from, '2000-01-01') AND
+            IFNULL({alias}.valid_upto, '2500-12-31')
+    """.format(
+        alias=alias
+    )
 
 
 def _get_data(args, keys):
@@ -90,11 +106,11 @@ def _get_data(args, keys):
             LEFT JOIN `tabBatch` AS b ON
                 b.batch_id = sle.batch_no
             LEFT JOIN `tabItem Price` AS p1 ON
-                p1.item_code = sle.item_code AND
-                p1.price_list = %(price_list1)s
+                {p1_clauses}
+                AND p1.price_list = %(price_list1)s
             LEFT JOIN `tabItem Price` AS p2 ON
-                p2.item_code = sle.item_code AND
-                p2.price_list = %(price_list2)s
+                {p2_clauses}
+                AND p2.price_list = %(price_list2)s
             WHERE
                 sle.docstatus = 1 AND
                 sle.company = %(company)s AND
@@ -102,7 +118,9 @@ def _get_data(args, keys):
                 IFNULL(sle.batch_no, '') != ''
             GROUP BY sle.batch_no, sle.warehouse
             ORDER BY sle.item_code, sle.warehouse
-        """,
+        """.format(
+            p1_clauses=_item_price_clauses("p1"), p2_clauses=_item_price_clauses("p2"),
+        ),
         values=args,
         as_dict=1,
     )
