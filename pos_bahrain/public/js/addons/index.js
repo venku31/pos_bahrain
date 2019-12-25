@@ -19,6 +19,7 @@ import withKeyboardShortcuts from './withKeyboardShortcuts';
 import withDiscountValidator from './withDiscountValidator';
 import withSalesEmployee from './withSalesEmployee';
 import withMultiCurrency from './withMultiCurrency';
+import withSubmittedInvoice from './withSubmittedInvoice';
 import withModifiedPaymentDialogFields from './withModifiedPaymentDialogFields';
 import withExtendedItemPrice from './withExtendedItemPrice';
 
@@ -44,6 +45,7 @@ export const extend_pos = flowRight([
   withUom,
   withIdx,
   withCustomItemCart,
+  withSubmittedInvoice,
   withExtendedItemPrice,
   withBase,
 ]);
