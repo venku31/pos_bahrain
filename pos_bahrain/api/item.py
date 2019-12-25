@@ -68,6 +68,7 @@ def get_more_pos_data(profile, company):
         "use_custom_item_cart": settings.use_custom_item_cart,
         "use_stock_validator": settings.use_stock_validator,
         "use_sales_employee": settings.show_sales_employee,
+        "override_sync_limit": settings.override_sync_limit,
         "sales_employee_details": _get_employees()
         if settings.show_sales_employee
         else None,
