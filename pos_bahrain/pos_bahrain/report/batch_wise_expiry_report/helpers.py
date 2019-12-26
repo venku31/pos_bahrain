@@ -51,7 +51,7 @@ def make_uom_col_setter(item_codes):
             return {
                 "uom{}".format(i + 1): detail.get("uom"),
                 "cf{}".format(i + 1): cf,
-                "qty{}".format(i + 1): flt(qty / cf, precision),
+                "qty{}".format(i + 1): flt(qty / cf, precision) if cf else None,
             }
 
         details = uoms_by_item_code.get(row.get("item_code"), [])
