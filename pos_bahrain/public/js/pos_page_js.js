@@ -28,12 +28,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       });
     }
   },
-  create_new: function() {
-    this._super();
-    this.wrapper
-      .find('.pos-bill-wrapper .return-row #is_return_check')
-      .prop('checked', false);
-  },
   setinterval_to_sync_master_data: function(delay) {
     setInterval(async () => {
       const { message } = await frappe.call({ method: 'frappe.handler.ping' });
@@ -106,46 +100,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         }
       });
     }
-  },
-  set_item_details: function(item_code, field, value, remove_zero_qty_items) {
-    // this method is a copy of the original without the negative value validation
-    // and return invoice feature added.
-    const idx = this.wrapper.find('.pos-bill-item.active').data('idx');
-
-    this.remove_item = [];
-
-    (this.frm.doc.items || []).forEach((item, id) => {
-      if (item.item_code === item_code && id === idx) {
-        if (item.serial_no && field === 'qty') {
-          this.validate_serial_no_qty(item, item_code, field, value);
-        }
-        if (field === 'qty') {
-          item.qty = (this.frm.doc.is_return ? -1 : 1) * Math.abs(value);
-        } else {
-          item[field] = flt(value, this.precision);
-        }
-        item.amount = flt(item.rate * item.qty, this.precision);
-        if (item.qty === 0 && remove_zero_qty_items) {
-          this.remove_item.push(item.idx);
-        }
-        if (field === 'discount_percentage' && value === 0) {
-          item.rate = item.price_list_rate;
-        }
-        if (field === 'rate') {
-          const discount_percentage = flt(
-            (1.0 - value / item.price_list_rate) * 100.0,
-            this.precision
-          );
-          if (discount_percentage > 0) {
-            item.discount_percentage = discount_percentage;
-          }
-        }
-      }
-    });
-    if (field === 'qty') {
-      this.remove_zero_qty_items_from_cart();
-    }
-    this.update_paid_amount_status(false);
   },
   show_items_in_item_cart: function() {
     this._super();
@@ -271,34 +225,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         }
       });
     }
-  },
-  make_control: function() {
-    this._super();
-    this.make_return_control();
-  },
-  make_return_control: function() {
-    this.numeric_keypad
-      .parent()
-      .css('margin-top', 0)
-      .before(
-        `
-        <div class="return-row form-check text-right" style="margin-top: 30px">
-          <input class="form-check-input" type="checkbox" id="is_return_check">
-          <label class="form-check-label" for="is_return_check">${__(
-            'Is Return'
-          )}</label>
-        </div>
-        `
-      );
-    this.wrapper
-      .find('.pos-bill-wrapper .return-row #is_return_check')
-      .on('change', e => {
-        this.frm.doc.is_return = e.target.checked ? 1 : 0;
-        (this.frm.doc.items || []).forEach(item => {
-          item.qty = (this.frm.doc.is_return ? -1 : 1) * Math.abs(item.qty);
-        });
-        this.update_paid_amount_status(false);
-      });
   },
   refresh: function() {
     this._super();
