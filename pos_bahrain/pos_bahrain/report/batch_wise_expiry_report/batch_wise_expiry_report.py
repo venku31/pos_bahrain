@@ -61,7 +61,11 @@ def _get_columns(args):
         make_column("price2", args.get("price_list2"), type="Currency"),
         make_column("warehouse"),
     ]
-    return join_columns(columns, get_uom_columns(NUM_OF_UOM_COLUMNS))
+    return (
+        join_columns(columns, get_uom_columns(NUM_OF_UOM_COLUMNS))
+        if args.get("show_alt_uoms")
+        else columns
+    )
 
 
 def _get_keys(args):
@@ -125,14 +129,22 @@ def _get_data(args, keys):
         as_dict=1,
     )
 
-    def set_expiry(row):
-        expiry_in_days = (row.expiry_date - getdate()).days if row.expiry_date else None
-        return merge(row, {"expiry_in_days": expiry_in_days})
+    def get_make_row():
+        def set_expiry(row):
+            expiry_in_days = (
+                (row.expiry_date - getdate()).days if row.expiry_date else None
+            )
+            return merge(row, {"expiry_in_days": expiry_in_days})
 
-    get_item_codes = compose(list, unique, partial(pluck, "item_code"))
-    add_uom = make_uom_col_setter(get_item_codes(sles))
+        if not args.get("show_alt_uoms"):
+            return compose(partial(keyfilter, lambda k: k in keys), set_expiry)
 
-    make_row = compose(partial(keyfilter, lambda k: k in keys), add_uom, set_expiry)
+        get_item_codes = compose(list, unique, partial(pluck, "item_code"))
+        add_uom = make_uom_col_setter(get_item_codes(sles))
+
+        return compose(partial(keyfilter, lambda k: k in keys), add_uom, set_expiry)
+
+    make_row = get_make_row()
 
     filter_rows = compose(
         list,

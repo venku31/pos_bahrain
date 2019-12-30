@@ -50,5 +50,10 @@ frappe.query_reports['Item Balance (Simple) with Supplier'] = {
       label: __('Hide Zero Stock'),
       fieldtype: 'Check',
     },
+    {
+      fieldname: 'show_alt_uoms',
+      label: __('Show Alternate UOMs'),
+      fieldtype: 'Check',
+    },
   ],
 };
