@@ -18,14 +18,14 @@ NUM_OF_UOM_COLUMNS = 3
 
 
 def execute(filters=None):
-    columns = _get_columns()
+    columns = _get_columns(filters)
     keys = compose(list, partial(pluck, "fieldname"))(columns)
     clauses, values = _get_filters(filters)
     data = _get_data(clauses, values, keys)
     return columns, data
 
 
-def _get_columns():
+def _get_columns(filters):
     join_columns = compose(list, concatv)
     columns = [
         make_column("item_code", type="Link", options="Item"),
@@ -38,7 +38,11 @@ def _get_columns():
         make_column("qty", "Balance Qty", type="Float", width=90),
     ]
 
-    return join_columns(columns, get_uom_columns(NUM_OF_UOM_COLUMNS))
+    return (
+        join_columns(columns, get_uom_columns(NUM_OF_UOM_COLUMNS))
+        if filters.get("show_alt_uoms")
+        else columns
+    )
 
 
 def _get_filters(filters):
@@ -99,9 +103,14 @@ def _get_data(clauses, values, keys):
         as_dict=1,
     )
 
-    add_uom = make_uom_col_setter([x.get("item_code") for x in result])
+    def get_make_row():
+        if not values.get("show_alt_uoms"):
+            return partial(pick, keys)
 
-    make_row = compose(partial(pick, keys), add_uom)
+        add_uom = make_uom_col_setter([x.get("item_code") for x in result])
+        return compose(partial(pick, keys), add_uom)
+
+    make_row = get_make_row()
 
     return [
         make_row(x) for x in result if not values.get("hide_zero_stock") or x.get("qty")
