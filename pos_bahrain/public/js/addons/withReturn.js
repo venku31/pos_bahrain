@@ -1,16 +1,35 @@
 export default function withReturn(Pos) {
   return class PosExtended extends Pos {
+    async init_master_data(r, freeze) {
+      const pos_data = await super.init_master_data(r, freeze);
+      const { allow_returns } = pos_data;
+      this.allow_returns = !!cint(allow_returns);
+      if (this.allow_returns) {
+        this._after_get_data_from_server();
+      }
+      return pos_data;
+    }
+    _after_get_data_from_server() {
+      this.make_control();
+      this.create_new();
+      this.make();
+    }
     create_new() {
       super.create_new();
-      this.wrapper
-        .find('.pos-bill-wrapper .return-row #is_return_check')
-        .prop('checked', false);
+      if (this.allow_returns) {
+        this.wrapper
+          .find('.pos-bill-wrapper .return-row #is_return_check')
+          .prop('checked', false);
+      }
     }
     set_item_details(item_code, field, value, remove_zero_qty_items) {
+      if (this.allow_returns && value < 0) {
+        frappe.throw(__('Enter value must be positive'));
+      }
+
       // this method is a copy of the original without the negative value validation
       // and return invoice feature added.
       const idx = this.wrapper.find('.pos-bill-item.active').data('idx');
-
       this.remove_item = [];
 
       (this.frm.doc.items || []).forEach((item, id) => {
@@ -48,7 +67,9 @@ export default function withReturn(Pos) {
     }
     make_control() {
       super.make_control();
-      this._make_return_control();
+      if (this.allow_returns) {
+        this._make_return_control();
+      }
     }
     _make_return_control() {
       this.numeric_keypad

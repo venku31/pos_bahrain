@@ -63,6 +63,7 @@ def get_more_pos_data(profile, company):
         "uom_details": get_uom_details(),
         "exchange_rates": get_exchange_rates(),
         "do_not_allow_zero_payment": settings.do_not_allow_zero_payment,
+        "allow_returns": settings.allow_returns,
         "use_batch_price": settings.use_batch_price,
         "use_barcode_uom": settings.use_barcode_uom,
         "use_custom_item_cart": settings.use_custom_item_cart,
