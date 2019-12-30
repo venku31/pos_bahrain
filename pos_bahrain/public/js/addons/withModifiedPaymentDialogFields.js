@@ -30,5 +30,23 @@ export default function withModifiedPaymentDialogFields(Pos) {
           format_currency(this.frm.doc.change_amount, this.frm.doc.currency)
         );
     }
+    print_dialog() {
+      super.print_dialog();
+      if (this.msgprint) {
+        this.msgprint.$body.css({
+          display: 'flex',
+          'justify-content': 'space-between',
+        });
+        $(
+          `<div>
+            <span style="font-size: 16px;">Change</span>
+            <span style="font-size: 18px; font-weight: bold;">${format_currency(
+              this.frm.doc.change_amount,
+              this.frm.doc.currency
+            )}</span>
+          </div>`
+        ).appendTo(this.msgprint.$body);
+      }
+    }
   };
 }
