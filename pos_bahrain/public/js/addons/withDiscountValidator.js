@@ -19,7 +19,7 @@ export default function withDiscountValidator(Pos) {
                 item_code,
                 uom,
                 customer,
-                qty: min_qty,
+                min_qty: qty,
                 transaction_date,
               });
 
