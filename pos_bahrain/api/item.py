@@ -297,3 +297,16 @@ def get_item_rate(item_code, uom, price_list="Standard Selling"):
     return get_price(
         {"price_list": price_list, "uom": uom, "transaction_date": today()}, item_code,
     )
+
+
+@frappe.whitelist()
+def get_supplier_items(supplier, company=None):
+    items = frappe.get_all(
+        "Item Default",
+        filters={
+            "default_supplier": supplier,
+            "company": company or frappe.defaults.get_user_default("company"),
+        },
+        fields=["parent"],
+    )
+    return [x.get("parent") for x in items]

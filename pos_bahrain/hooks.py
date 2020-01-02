@@ -82,6 +82,7 @@ fixtures = [
                     "Purchase Invoice Item-retail_price",
                     "Purchase Invoice Item-pb_supplier_part_no",
                     "Purchase Receipt Item-pb_supplier_part_no",
+                    "Purchase Order-pb_get_items_from_default_supplier",
                     "Purchase Order Item-pb_supplier_part_no",
                     "Purchase Order Item-retail_price",
                     "Purchase Order Item-pb_actual_qty",
