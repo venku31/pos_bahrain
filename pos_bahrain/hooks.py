@@ -84,6 +84,7 @@ fixtures = [
                     "Purchase Receipt Item-pb_supplier_part_no",
                     "Purchase Order Item-pb_supplier_part_no",
                     "Purchase Order Item-retail_price",
+                    "Purchase Order Item-pb_actual_qty",
                     "Batch-pb_price_sec",
                     "Batch-pb_price_based_on",
                     "Batch-pb_price_col",
