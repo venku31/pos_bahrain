@@ -82,8 +82,10 @@ fixtures = [
                     "Purchase Invoice Item-retail_price",
                     "Purchase Invoice Item-pb_supplier_part_no",
                     "Purchase Receipt Item-pb_supplier_part_no",
+                    "Purchase Order-pb_get_items_from_default_supplier",
                     "Purchase Order Item-pb_supplier_part_no",
                     "Purchase Order Item-retail_price",
+                    "Purchase Order Item-pb_actual_qty",
                     "Batch-pb_price_sec",
                     "Batch-pb_price_based_on",
                     "Batch-pb_price_col",
@@ -191,6 +193,7 @@ doc_events = {
         "on_submit": "pos_bahrain.doc_events.purchase_receipt.set_batch_references",
     },
     "Item Price": {"before_save": "pos_bahrain.doc_events.item_price.before_save"},
+    "Bin": {"on_update": "pos_bahrain.doc_events.bin.on_update"},
 }
 
 boot_session = "pos_bahrain.doc_events.boot.boot_session"
