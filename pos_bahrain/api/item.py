@@ -310,3 +310,28 @@ def get_supplier_items(supplier, company=None):
         fields=["parent"],
     )
     return [x.get("parent") for x in items]
+
+
+@frappe.whitelist()
+def search_serial_or_batch_or_barcode_number(search_value):
+    from erpnext.selling.page.point_of_sale.point_of_sale import (
+        search_serial_or_batch_or_barcode_number,
+    )
+
+    item_code = frappe.db.get_value(
+        "Item", search_value, ["name as item_code"], as_dict=True
+    )
+    if item_code:
+        return item_code
+
+    result = search_serial_or_batch_or_barcode_number(search_value)
+    if result and result.get("batch_no"):
+        return merge(
+            result,
+            {
+                "pb_expiry_date": frappe.db.get_value(
+                    "Batch", result.get("batch_no"), "expiry_date"
+                )
+            },
+        )
+    return result or None
