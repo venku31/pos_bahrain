@@ -34,9 +34,51 @@ const purchase_order_item = {
   warehouse: set_actual_qty,
 };
 
+function override_update_items_button(frm) {
+  // hack to show item_name. the condition to run this is the same as the one to
+  // dd_custom_button in upstream `refresh`
+  // https://github.com/frappe/erpnext/blob/440a3b75be6a8ee7c7baae4b3e2e484203dedcea/erpnext/buying/doctype/purchase_order/purchase_order.js#L49
+  if (
+    frm.doc.docstatus === 1 &&
+    frm.doc.status !== 'Closed' &&
+    flt(frm.doc.per_received) < 100 &&
+    flt(frm.doc.per_billed) < 100
+  ) {
+    const data = frm.doc.items.map(
+      ({ name, item_code, item_name, qty, rate }) => ({
+        docname: name,
+        name,
+        item_code,
+        item_name,
+        qty,
+        rate,
+      })
+    );
+    const wait_for_button = setInterval(() => {
+      const update_items_btn = frm.page.inner_toolbar.find(
+        `button:contains("${__('Update Items')}")`
+      );
+      if (update_items_btn.length > 0) {
+        update_items_btn.on('click', () => {
+          const wait_for_dialog = setInterval(() => {
+            if (cur_dialog) {
+              cur_dialog.fields_dict.trans_items.df.data = data;
+              cur_dialog.fields_dict.trans_items.df.get_data = () => data;
+              cur_dialog.fields_dict.trans_items.grid.refresh();
+              clearInterval(wait_for_dialog);
+            }
+          }, 300);
+        });
+        clearInterval(wait_for_button);
+      }
+    }, 60);
+  }
+}
+
 export default {
   purchase_order_item,
   setup: set_uom_query,
+  refresh: override_update_items_button,
   pb_get_items_from_default_supplier: fetch_from_supplier,
   schedule_date: function(frm) {
     const { schedule_date } = frm.doc;
