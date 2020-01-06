@@ -253,23 +253,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       }
     });
   },
-
-  calculate_outstanding_amount: function(update_paid_amount) {
-    // over-simplified approach. doesn't consider alternate currencies or decimal
-    // rounding. this needed because, as it is, set_default_payment will never be
-    // called for is_return invoices.
-    if (this.frm.doc.is_return) {
-      (this.frm.doc.payments || []).every(payment => {
-        if (payment.default) {
-          payment.base_amount = this.frm.doc.grand_total;
-          payment.amount = this.frm.doc.grand_total;
-          return false;
-        }
-        return true;
-      });
-    }
-    this._super(update_paid_amount);
-  },
 });
 
 erpnext.pos.PointOfSale = pos_bahrain.addons.extend_pos(
