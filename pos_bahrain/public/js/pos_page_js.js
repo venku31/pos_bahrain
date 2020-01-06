@@ -232,27 +232,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       this.set_opening_entry();
     }
   },
-
-  set_payment_primary_action: function() {
-    this.dialog.set_primary_action(
-      __('Submit'),
-      this.payment_primary_action.bind(this)
-    );
-  },
-  payment_primary_action: function() {
-    // callback for the 'Submit' button in the payment modal. copied from upstream.
-    // implemented as a class method to make the callback extendable from
-    // subsequent hocs
-
-    // Allow no ZERO payment
-    $.each(this.frm.doc.payments, (index, data) => {
-      if (data.amount != 0) {
-        this.dialog.hide();
-        this.submit_invoice();
-        return;
-      }
-    });
-  },
 });
 
 erpnext.pos.PointOfSale = pos_bahrain.addons.extend_pos(
