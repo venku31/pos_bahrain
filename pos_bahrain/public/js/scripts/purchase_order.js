@@ -16,16 +16,32 @@ async function set_actual_qty(frm, cdt, cdn) {
 }
 
 async function fetch_from_supplier(frm) {
-  const { supplier, company } = frm.doc;
+  const { supplier, company, items } = frm.doc;
   if (!supplier) {
     frappe.throw(__('Cannot fetch Items without Supplier'));
   }
-  const { message: item_codes = [] } = await frappe.call({
-    method: 'pos_bahrain.api.item.get_supplier_items',
-    args: { supplier, company },
+  const {
+    item_page_limit = 100,
+    item_page_start = 0,
+    has_ended_item_paging,
+  } = frm;
+  const item_codes = await frappe.db.get_list('Item Default', {
+    parent: 'Item',
+    limit: item_page_limit,
+    start: item_page_start,
+    fields: ['parent as item_code'],
+    filters: { default_supplier: supplier },
+    order_by: 'parent',
   });
-  await frm.set_value('items', []);
-  item_codes.forEach(item_code => {
+  if (item_codes.length === 0) {
+    frm.has_ended_item_paging = true;
+    frappe.throw(__('No more Items to fetch'));
+  }
+  frm.item_page_start = item_page_start + item_codes.length;
+  if (items.length === 1 && !items[0].item_code) {
+    await frm.set_value('items', []);
+  }
+  item_codes.forEach(({ item_code }) => {
     const { doctype: cdt, name: cdn } = frm.add_child('items');
     frappe.model.set_value(cdt, cdn, 'item_code', item_code);
   });
@@ -80,7 +96,14 @@ function override_update_items_button(frm) {
 
 export default {
   purchase_order_item,
-  setup: set_uom_query,
+  setup: async function(frm) {
+    set_uom_query(frm);
+    const default_supplier_items_limit = await frappe.db.get_single_value(
+      'POS Bahrain Settings',
+      'default_supplier_items_limit'
+    );
+    frm.item_page_limit = default_supplier_items_limit;
+  },
   refresh: override_update_items_button,
   pb_get_items_from_default_supplier: fetch_from_supplier,
   schedule_date: function(frm) {
