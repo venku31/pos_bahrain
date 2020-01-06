@@ -1826,7 +1826,7 @@
   "in_list_view": 0,
   "in_standard_filter": 0,
   "insert_after": "returned_qty",
-  "label": "Actual Current Qty",
+  "label": "Act Qty",
   "modified": "2020-01-02 18:24:38.212202",
   "name": "Purchase Order Item-pb_actual_qty",
   "no_copy": 0,
