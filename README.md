@@ -29,6 +29,10 @@
   1. XXXXXXXXXXX
 
 
+## Dev Notes
+
+- **Custom Fields** created by this app generally start with `pb_`. There are a few fields that do not follow this convention. Please refer to the `hooks.py` for more info.
+
 #### License
 
 MIT# pos_bahrain
