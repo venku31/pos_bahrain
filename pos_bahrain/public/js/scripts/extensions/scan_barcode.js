@@ -1,9 +1,13 @@
 export default async function(frm) {
+  const scan_fieldname = ['Purchase Receipt'].includes(frm.doc.doctype)
+    ? 'pb_scan_barcode'
+    : 'scan_barcode';
   function set_description(msg) {
-    frm.fields_dict['scan_barcode'].set_new_description(__(msg));
+    frm.fields_dict[scan_fieldname].set_new_description(__(msg));
   }
 
-  const { scan_barcode: search_value, items } = frm.doc;
+  const search_value = frm.doc[scan_fieldname];
+  const { items } = frm.doc;
 
   if (search_value) {
     const { message: data } = await frappe.call({
@@ -54,6 +58,7 @@ export default async function(frm) {
     );
 
     frm.fields_dict['scan_barcode'].set_value('');
+    frm.fields_dict[scan_fieldname].set_value('');
   }
   return false;
 }

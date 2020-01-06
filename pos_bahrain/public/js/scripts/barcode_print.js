@@ -1,4 +1,5 @@
 import { set_uom_query } from './sales_invoice';
+import scan_barcode from './extensions/scan_barcode.js';
 
 function set_batch_query(frm) {
   frm.set_query('batch', 'items', function(doc, cdt, cdn) {
@@ -44,4 +45,5 @@ export default {
     });
     frm.page.btn_secondary.toggle(!is_print_preview);
   },
+  scan_barcode,
 };
