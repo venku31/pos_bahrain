@@ -2,7 +2,10 @@ import { set_uom_query } from './sales_invoice';
 import { set_item_from_supplier_pn } from './purchase_invoice';
 
 async function set_actual_qty(frm, cdt, cdn) {
-  const { item_code, warehouse } = frappe.get_doc(cdt, cdn) || {};
+  const { item_code, warehouse: items_warehouse } =
+    frappe.get_doc(cdt, cdn) || {};
+  const { set_warehouse: doc_warehouse } = frm.doc;
+  const warehouse = items_warehouse || doc_warehouse;
   if (item_code && warehouse) {
     const { message: { actual_qty } = {} } = await frappe.call({
       method: 'erpnext.stock.get_item_details.get_bin_details',

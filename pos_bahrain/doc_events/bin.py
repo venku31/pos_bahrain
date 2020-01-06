@@ -27,6 +27,6 @@ def on_update(doc, method):
                     "doctype": "Item Price",
                     "item_code": doc.item_code,
                     "price_list": settings.valuation_price_list,
-                    "price_list_rate": doc.valuation_rate,
+                    "price_list_rate": doc.valuation_rate or 0,
                 }
             ).insert(ignore_permissions=True)

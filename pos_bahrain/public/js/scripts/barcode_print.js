@@ -30,6 +30,7 @@ export default {
   },
   refresh: function(frm) {
     frm.disable_save();
+    frm.page.show_menu();
     const is_print_preview =
       frm.page.current_view_name === 'print' || frm.hidden;
     const action_label = is_print_preview ? 'Edit' : 'Print';
