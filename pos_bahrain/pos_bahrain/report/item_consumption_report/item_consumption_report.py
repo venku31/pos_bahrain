@@ -29,14 +29,20 @@ def _get_filters(filters):
         frappe.throw(_("Company is required to generate report"))
 
     clauses = concatv(
-        ["TRUE"], ["i.item_group = %(item_group)s"] if filters.item_group else []
+        ["TRUE"],
+        ["i.item_group = %(item_group)s"] if filters.item_group else [],
+        ["i.name = %(item_code)s"] if filters.item_code else [],
+        ["id.default_supplier = %(default_supplier)s"]
+        if filters.default_supplier
+        else [],
     )
-    warehouse_clauses = (
+    warehouse_clauses = concatv(
+        ["item_code = %(item_code)s"] if filters.item_code else [],
         ["warehouse = %(warehouse)s"]
         if filters.warehouse
         else [
             "warehouse IN (SELECT name FROM `tabWarehouse` WHERE company = %(company)s)"
-        ]
+        ],
     )
     values = merge(
         filters,
