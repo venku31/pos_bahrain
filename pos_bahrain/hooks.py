@@ -38,7 +38,7 @@ page_js = {
 # include js in doctype views
 doctype_js = {
     "Mode of Payment": "public/js/mode_of_payment.js",
-    "Stock Entry": "public/js/stock_entry.js",
+    "Stock Entry": ["public/js/includes/scan_barcode.js", "public/js/stock_entry.js"],
     "Company": "public/js/company.js",
     "Sales Invoice": "public/js/alternate_discount.js",
     "Sales Order": "public/js/alternate_discount.js",
