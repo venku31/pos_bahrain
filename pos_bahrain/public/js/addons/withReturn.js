@@ -95,5 +95,53 @@ export default function withReturn(Pos) {
           this.update_paid_amount_status(false);
         });
     }
+    calculate_outstanding_amount(update_paid_amount) {
+      super.calculate_outstanding_amount();
+      if (this.frm.doc.is_return) {
+        const total_amount_to_pay = this._get_amount_to_pay();
+        this.set_default_payment(total_amount_to_pay, update_paid_amount);
+        this.calculate_paid_amount();
+      }
+    }
+    set_default_payment(total_amount_to_pay, update_paid_amount) {
+      super.set_default_payment(total_amount_to_pay, update_paid_amount);
+      if (
+        this.frm.doc.is_return &&
+        [undefined, true].includes(update_paid_amount)
+      ) {
+        this.frm.doc.payments.forEach(p => {
+          p.amount = 0;
+        });
+        if (total_amount_to_pay < 0) {
+          const default_payment = this.frm.doc.payments.find(p => p.default);
+          default_payment.base_amount = flt(
+            total_amount_to_pay,
+            this.precision
+          );
+          default_payment.amount = flt(
+            total_amount_to_pay / this.frm.doc.conversion_rate,
+            this.precision
+          );
+        }
+      }
+    }
+    _get_amount_to_pay() {
+      const grand_total =
+        this.frm.doc.rounded_total || this.frm.doc.grand_total;
+      if (this.frm.doc.party_account_currency === this.frm.doc.currency) {
+        return flt(
+          grand_total -
+            this.frm.doc.total_advance -
+            this.frm.doc.write_off_amount,
+          this.precision
+        );
+      }
+      return flt(
+        flt(grand_total * this.frm.doc.conversion_rate, this.precision) -
+          this.frm.doc.total_advance -
+          this.frm.doc.base_write_off_amount,
+        this.precision
+      );
+    }
   };
 }

@@ -232,44 +232,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       this.set_opening_entry();
     }
   },
-
-  set_payment_primary_action: function() {
-    this.dialog.set_primary_action(
-      __('Submit'),
-      this.payment_primary_action.bind(this)
-    );
-  },
-  payment_primary_action: function() {
-    // callback for the 'Submit' button in the payment modal. copied from upstream.
-    // implemented as a class method to make the callback extendable from
-    // subsequent hocs
-
-    // Allow no ZERO payment
-    $.each(this.frm.doc.payments, (index, data) => {
-      if (data.amount != 0) {
-        this.dialog.hide();
-        this.submit_invoice();
-        return;
-      }
-    });
-  },
-
-  calculate_outstanding_amount: function(update_paid_amount) {
-    // over-simplified approach. doesn't consider alternate currencies or decimal
-    // rounding. this needed because, as it is, set_default_payment will never be
-    // called for is_return invoices.
-    if (this.frm.doc.is_return) {
-      (this.frm.doc.payments || []).every(payment => {
-        if (payment.default) {
-          payment.base_amount = this.frm.doc.grand_total;
-          payment.amount = this.frm.doc.grand_total;
-          return false;
-        }
-        return true;
-      });
-    }
-    this._super(update_paid_amount);
-  },
 });
 
 erpnext.pos.PointOfSale = pos_bahrain.addons.extend_pos(

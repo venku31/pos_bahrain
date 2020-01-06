@@ -300,19 +300,6 @@ def get_item_rate(item_code, uom, price_list="Standard Selling"):
 
 
 @frappe.whitelist()
-def get_supplier_items(supplier, company=None):
-    items = frappe.get_all(
-        "Item Default",
-        filters={
-            "default_supplier": supplier,
-            "company": company or frappe.defaults.get_user_default("company"),
-        },
-        fields=["parent"],
-    )
-    return [x.get("parent") for x in items]
-
-
-@frappe.whitelist()
 def search_serial_or_batch_or_barcode_number(search_value):
     from erpnext.selling.page.point_of_sale.point_of_sale import (
         search_serial_or_batch_or_barcode_number,

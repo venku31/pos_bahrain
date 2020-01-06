@@ -38,12 +38,19 @@ page_js = {
 # include js in doctype views
 doctype_js = {
     "Mode of Payment": "public/js/mode_of_payment.js",
-    "Stock Entry": "public/js/stock_entry.js",
+    "Stock Entry": ["public/js/includes/scan_barcode.js", "public/js/stock_entry.js"],
     "Company": "public/js/company.js",
-    "Sales Invoice": "public/js/alternate_discount.js",
+    "Sales Invoice": [
+        "public/js/alternate_discount.js",
+        "public/js/includes/scan_barcode.js",
+    ],
     "Sales Order": "public/js/alternate_discount.js",
-    "Purchase Invoice": "public/js/set_retail_price.js",
+    "Purchase Invoice": [
+        "public/js/set_retail_price.js",
+        "public/js/includes/scan_barcode.js",
+    ],
     "Purchase Order": "public/js/set_retail_price.js",
+    "Purchase Receipt": "public/js/includes/scan_barcode.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -79,6 +86,7 @@ fixtures = [
                     "Sales Order Item-other_prices_section",
                     "Sales Order Item-retail_price",
                     "Sales Order Item-discount_percentage_on_retail",
+                    "Purchase Receipt-pb_scan_barcode",
                     "Purchase Invoice Item-retail_price",
                     "Purchase Invoice Item-pb_supplier_part_no",
                     "Purchase Receipt Item-pb_supplier_part_no",
