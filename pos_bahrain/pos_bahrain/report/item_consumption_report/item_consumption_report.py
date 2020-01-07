@@ -87,6 +87,26 @@ def _get_columns(filters):
         ),
         make_column("stock", "Available Stock"),
     ]
+
+    def get_warehouse_columns():
+        if not filters.get("warehouse"):
+            return [
+                merge(make_column(x, x), {"key": x, "is_warehouse": True})
+                for x in pluck(
+                    "name",
+                    frappe.get_all(
+                        "Warehouse",
+                        filters={
+                            "is_group": 0,
+                            "disabled": 0,
+                            "company": filters.get("company"),
+                        },
+                        order_by="name",
+                    ),
+                )
+            ]
+        return []
+
     intervals = compose(
         list,
         partial(map, lambda x: merge(x, make_column(x.get("key"), x.get("label")))),
@@ -97,6 +117,7 @@ def _get_columns(filters):
         + intervals(
             filters.get("interval"), filters.get("start_date"), filters.get("end_date")
         )
+        + get_warehouse_columns()
         + [make_column("total_consumption")]
     )
 
@@ -134,7 +155,7 @@ def _get_data(clauses, values, columns):
     )
     sles = frappe.db.sql(
         """
-            SELECT item_code, posting_date, actual_qty
+            SELECT item_code, posting_date, actual_qty, warehouse
             FROM `tabStock Ledger Entry`
             WHERE docstatus < 2 AND
                 voucher_type = 'Sales Invoice' AND
@@ -148,13 +169,15 @@ def _get_data(clauses, values, columns):
         as_dict=1,
     )
     keys = compose(list, partial(pluck, "fieldname"))(columns)
+    get_warehouses = compose(list, partial(filter, lambda x: x.get("is_warehouse")))
     get_periods = compose(
         list, partial(filter, lambda x: x.get("start_date") and x.get("end_date"))
     )
 
+    set_warehouse_qty = _set_warehouse_qtys(sles, get_warehouses(columns))
     set_consumption = _set_consumption(sles, get_periods(columns))
 
-    make_row = compose(partial(pick, keys), set_consumption)
+    make_row = compose(partial(pick, keys), set_warehouse_qty, set_consumption)
 
     return [make_row(x) for x in items]
 
@@ -166,7 +189,7 @@ def _set_consumption(sles, periods):
 
         return fn
 
-    seg_reducer, segregator_fns = _build_seg_entities(sles, groupby_filter, periods)
+    segregate = _make_segregator(sles, groupby_filter, periods)
 
     total_fn = compose(
         operator.neg,
@@ -178,15 +201,29 @@ def _set_consumption(sles, periods):
     def fn(item):
         item_code = item.get("item_code")
         return merge(
-            item,
-            reduce(seg_reducer(item_code), segregator_fns, {}),
-            {"total_consumption": total_fn(item_code)},
+            item, segregate(item_code), {"total_consumption": total_fn(item_code)},
         )
 
     return fn
 
 
-def _build_seg_entities(sles, groupby_filter, partitions):
+def _set_warehouse_qtys(sles, warehouses):
+    def groupby_filter(sl):
+        def fn(w):
+            return w.get("key") == sl.get("warehouse")
+
+        return fn
+
+    segregate = _make_segregator(sles, groupby_filter, warehouses)
+
+    def fn(item):
+        item_code = item.get("item_code")
+        return merge(item, segregate(item_code))
+
+    return fn
+
+
+def _make_segregator(sles, groupby_filter, partitions):
     groupby_fn = compose(
         partial(get, "key", default=None),
         excepts(StopIteration, first, lambda __: {}),
@@ -223,4 +260,7 @@ def _build_seg_entities(sles, groupby_filter, partitions):
         for x in partitions
     ]
 
-    return seg_reducer, segregator_fns
+    def fn(item_code):
+        return reduce(seg_reducer(item_code), segregator_fns, {})
+
+    return fn
