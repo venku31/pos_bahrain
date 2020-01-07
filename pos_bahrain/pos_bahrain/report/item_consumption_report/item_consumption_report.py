@@ -166,19 +166,48 @@ def _set_consumption(sles, periods):
 
         return fn
 
+    seg_reducer, segregator_fns = _build_seg_entities(sles, groupby_filter, periods)
+
+    total_fn = compose(
+        operator.neg,
+        sum,
+        partial(pluck, "actual_qty"),
+        lambda item_code: filter(lambda x: x.get("item_code") == item_code, sles),
+    )
+
+    def fn(item):
+        item_code = item.get("item_code")
+        return merge(
+            item,
+            reduce(seg_reducer(item_code), segregator_fns, {}),
+            {"total_consumption": total_fn(item_code)},
+        )
+
+    return fn
+
+
+def _build_seg_entities(sles, groupby_filter, partitions):
     groupby_fn = compose(
         partial(get, "key", default=None),
         excepts(StopIteration, first, lambda __: {}),
-        partial(flip, filter, periods),
+        partial(flip, filter, partitions),
         groupby_filter,
     )
 
     sles_grouped = groupby(groupby_fn, sles)
 
-    summer = compose(operator.neg, sum, partial(pluck, "actual_qty"))
-
     def seg_filter(x):
         return lambda sl: sl.get("item_code") == x
+
+    summer = compose(operator.neg, sum, partial(pluck, "actual_qty"))
+
+    def seg_reducer(item_code):
+        def fn(a, p):
+            key = get("key", p, None)
+            seger = get("seger", p, lambda __: None)
+            return merge(a, {key: seger(item_code)})
+
+        return fn
 
     segregator_fns = [
         merge(
@@ -191,25 +220,7 @@ def _set_consumption(sles, periods):
                 )
             },
         )
-        for x in periods
+        for x in partitions
     ]
 
-    def seg_reducer(item_code):
-        def fn(a, p):
-            key = get("key", p, None)
-            seger = get("seger", p, lambda __: None)
-            return merge(a, {key: seger(item_code)})
-
-        return fn
-
-    total_fn = compose(summer, partial(flip, filter, sles), seg_filter)
-
-    def fn(item):
-        item_code = item.get("item_code")
-        return merge(
-            item,
-            reduce(seg_reducer(item_code), segregator_fns, {}),
-            {"total_consumption": total_fn(item_code)},
-        )
-
-    return fn
+    return seg_reducer, segregator_fns
