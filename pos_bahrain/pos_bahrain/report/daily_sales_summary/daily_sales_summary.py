@@ -28,12 +28,11 @@ def _get_columns(filters):
 
     columns = [
         make_column("posting_date", "Date", type="Date", width=90),
-        make_column("total"),
-        make_column("net_total"),
+        make_column("grand_total"),
         make_column("tax_total"),
-        make_column("returns_net_total", "Returns Net"),
-        make_column("returns_grand_total", "Returns Grand"),
-        make_column("net_total_after_returns", "Net Total with Returns"),
+        make_column("net_total", "Total Sales Value"),
+        make_column("returns_grand_total", "Total Returns"),
+        make_column("net_total_after_returns", "Net Sales After Tax & Returns"),
     ]
     mops = pluck("name", frappe.get_all("Mode of Payment"))
     return columns + [make_column(x, x) for x in mops]
@@ -52,11 +51,9 @@ def _get_data(clauses, values, keys):
         """
             SELECT
                 s.posting_date AS posting_date,
-                SUM(si.base_total) AS total,
-                SUM(si.base_net_total) AS net_total,
+                SUM(si.base_grand_total) AS grand_total,
                 SUM(si.base_total_taxes_and_charges) AS tax_total,
-                SUM(si.base_change_amount) AS change_amount,
-                SUM(sr.base_net_total) AS returns_net_total,
+                SUM(si.base_net_total) AS net_total,
                 SUM(sr.base_grand_total) AS returns_grand_total
             FROM `tabSales Invoice` as s
             LEFT JOIN (
