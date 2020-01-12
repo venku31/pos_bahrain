@@ -78,7 +78,7 @@ def _get_data(clauses, values, keys):
                 SUM(p.base_amount) AS amount
             FROM `tabSales Invoice` as s
             LEFT JOIN `tabSales Invoice Payment` as p ON p.parent = s.name
-            WHERE {clauses}
+            WHERE s.is_return = 0 AND {clauses}
             GROUP BY s.posting_date, p.mode_of_payment
         """.format(
             clauses=clauses
