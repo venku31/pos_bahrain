@@ -8,13 +8,14 @@ def set_item_price_from_bin(bin):
             "Item Price",
             {"item_code": bin.item_code, "price_list": settings.valuation_price_list},
         )
+        valuation_rate = bin.valuation_rate or 0
         if item_price:
             if (
                 frappe.db.get_value("Item Price", item_price, "price_list_rate")
                 != bin.valuation_rate
             ):
                 frappe.db.set_value(
-                    "Item Price", item_price, "price_list_rate", bin.valuation_rate
+                    "Item Price", item_price, "price_list_rate", valuation_rate
                 )
         else:
             frappe.get_doc(
@@ -22,6 +23,6 @@ def set_item_price_from_bin(bin):
                     "doctype": "Item Price",
                     "item_code": bin.item_code,
                     "price_list": settings.valuation_price_list,
-                    "price_list_rate": bin.valuation_rate or 0,
+                    "price_list_rate": valuation_rate,
                 }
             ).insert(ignore_permissions=True)
