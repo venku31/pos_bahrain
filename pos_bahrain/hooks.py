@@ -38,12 +38,19 @@ page_js = {
 # include js in doctype views
 doctype_js = {
     "Mode of Payment": "public/js/mode_of_payment.js",
-    "Stock Entry": "public/js/stock_entry.js",
+    "Stock Entry": ["public/js/includes/scan_barcode.js", "public/js/stock_entry.js"],
     "Company": "public/js/company.js",
-    "Sales Invoice": "public/js/alternate_discount.js",
+    "Sales Invoice": [
+        "public/js/alternate_discount.js",
+        "public/js/includes/scan_barcode.js",
+    ],
     "Sales Order": "public/js/alternate_discount.js",
-    "Purchase Invoice": "public/js/set_retail_price.js",
+    "Purchase Invoice": [
+        "public/js/set_retail_price.js",
+        "public/js/includes/scan_barcode.js",
+    ],
     "Purchase Order": "public/js/set_retail_price.js",
+    "Purchase Receipt": "public/js/includes/scan_barcode.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -79,11 +86,14 @@ fixtures = [
                     "Sales Order Item-other_prices_section",
                     "Sales Order Item-retail_price",
                     "Sales Order Item-discount_percentage_on_retail",
+                    "Purchase Receipt-pb_scan_barcode",
                     "Purchase Invoice Item-retail_price",
                     "Purchase Invoice Item-pb_supplier_part_no",
                     "Purchase Receipt Item-pb_supplier_part_no",
+                    "Purchase Order-pb_get_items_from_default_supplier",
                     "Purchase Order Item-pb_supplier_part_no",
                     "Purchase Order Item-retail_price",
+                    "Purchase Order Item-pb_actual_qty",
                     "Batch-pb_price_sec",
                     "Batch-pb_price_based_on",
                     "Batch-pb_price_col",
@@ -97,6 +107,7 @@ fixtures = [
                     "Journal Entry-pb_is_cheque",
                     "Payment Entry Reference-pb_invoice_date",
                     "Item Price-pb_conversion_factor",
+                    "Item Price-pb_customer_name",
                 ],
             ]
         ],
@@ -190,6 +201,7 @@ doc_events = {
         "on_submit": "pos_bahrain.doc_events.purchase_receipt.set_batch_references",
     },
     "Item Price": {"before_save": "pos_bahrain.doc_events.item_price.before_save"},
+    "Bin": {"on_update": "pos_bahrain.doc_events.bin.on_update"},
 }
 
 boot_session = "pos_bahrain.doc_events.boot.boot_session"
@@ -232,4 +244,5 @@ scheduler_events = {
 override_whitelisted_methods = {
     "erpnext.stock.get_item_details.get_item_details": "pos_bahrain.api.get_item_details.get_item_details",  # noqa
     "erpnext.accounts.doctype.sales_invoice.pos.get_pos_data": "pos_bahrain.api.item.get_pos_data",  # noqa
+    "erpnext.selling.page.point_of_sale.point_of_sale.search_serial_or_batch_or_barcode_number": "pos_bahrain.api.item.search_serial_or_batch_or_barcode_number",  # noqa
 }

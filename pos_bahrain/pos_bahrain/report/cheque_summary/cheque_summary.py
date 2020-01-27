@@ -29,10 +29,10 @@ def _get_columns(filters):
         }
 
     return [
-        make_column("doctype", "Document Type", type="Link", options="Doctype"),
+        make_column("doctype", "Document Type"),
         make_column("docname", "Document No", type="Dynamic Link", options="doctype"),
         make_column("posting_date", "Date", type="Date", width=90),
-        make_column("party_type", type="Link", options="Doctype"),
+        make_column("party_type"),
         make_column("party", type="Dynamic Link", options="party_type"),
         make_column("party_name", width=150),
         make_column("cheque_no"),
@@ -113,10 +113,10 @@ def _get_data(clauses, values, keys):
             "parent",
             frappe.db.sql(
                 """
-                SELECT parent, account, party_type, party, credit
-                FROM `tabJournal Entry Account`
-                WHERE parent IN %(parents)s
-            """,
+                    SELECT parent, account, party_type, party, credit
+                    FROM `tabJournal Entry Account`
+                    WHERE parent IN %(parents)s
+                """,
                 values={"parents": [x.get("docname") for x in journal_entries]},
                 as_dict=1,
             ),
@@ -153,7 +153,6 @@ def _get_data(clauses, values, keys):
         return merge(row, {"amount": -1 * row.get("amount")})
 
     def set_sign(row):
-
         if row.get("doctype") == "Payment Entry":
             if (
                 frappe.db.get_value("Account", row.get("paid_from"), "account_type")

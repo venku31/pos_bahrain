@@ -13,15 +13,18 @@ function handle_price_list_fields(frm) {
 
 function handle_daily_email(frm) {
   const { use_daily_email } = frm.doc;
-  frm.set_df_property(
-    'manager_email',
-    'disabled',
-    !use_daily_email
-  );
+  frm.set_df_property('manager_email', 'disabled', !use_daily_email);
 }
 
 export default {
   onload: handle_onload,
   discount_on_retail: handle_price_list_fields,
   use_daily_email: handle_daily_email,
+  valuation_price_list: function(frm) {
+    const { valuation_price_list } = frm.doc;
+    frm.toggle_reqd('valuation_warehouse', !!valuation_price_list);
+    if (!valuation_price_list) {
+      frm.set_value('valuation_warehouse', null);
+    }
+  },
 };

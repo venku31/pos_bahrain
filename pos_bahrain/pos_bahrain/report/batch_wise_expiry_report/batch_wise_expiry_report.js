@@ -23,5 +23,10 @@ frappe.query_reports['Batch-wise Expiry Report'] = {
       label: __('Hide Zero Stock'),
       fieldtype: 'Check',
     },
+    {
+      fieldname: 'show_alt_uoms',
+      label: __('Show Alternate UOMs'),
+      fieldtype: 'Check',
+    },
   ],
 };

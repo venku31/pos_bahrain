@@ -3,39 +3,46 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe import _
 from functools import partial
 from toolz import compose, pluck, merge, concatv
 
 from pos_bahrain.utils import pick
+from pos_bahrain.utils.report import make_column
+from pos_bahrain.pos_bahrain.report.batch_wise_expiry_report.helpers import (
+    get_uom_columns,
+    make_uom_col_setter,
+)
+
+
+NUM_OF_UOM_COLUMNS = 3
 
 
 def execute(filters=None):
-    columns = _get_columns()
+    columns = _get_columns(filters)
     keys = compose(list, partial(pluck, "fieldname"))(columns)
     clauses, values = _get_filters(filters)
     data = _get_data(clauses, values, keys)
     return columns, data
 
 
-def _get_columns():
-    def make_column(key, label, type="Data", options=None, width=120):
-        return {
-            "label": _(label),
-            "fieldname": key,
-            "fieldtype": type,
-            "options": options,
-            "width": width,
-        }
-
-    return [
-        make_column("item_code", "Item Code", type="Link", options="Item"),
-        make_column("item_name", "Item Name", width=150),
-        make_column("item_group", "Item Group", type="Link", options="Item Group"),
-        make_column("brand", "Brand", type="Link", options="Brand"),
+def _get_columns(filters):
+    join_columns = compose(list, concatv)
+    columns = [
+        make_column("item_code", type="Link", options="Item"),
+        make_column("item_name", width=150),
+        make_column("item_group", type="Link", options="Item Group"),
+        make_column("brand", type="Link", options="Brand"),
         make_column("supplier", "Default Supplier", type="Link", options="Supplier"),
-        make_column("qty", "Balance Qty", type="Float"),
+        make_column("supplier_part_no"),
+        make_column("stock_uom", "Stock UOM", width=90),
+        make_column("qty", "Balance Qty", type="Float", width=90),
     ]
+
+    return (
+        join_columns(columns, get_uom_columns(NUM_OF_UOM_COLUMNS))
+        if filters.get("show_alt_uoms")
+        else columns
+    )
 
 
 def _get_filters(filters):
@@ -57,11 +64,15 @@ def _get_filters(filters):
         ["b.warehouse = %(warehouse)s"] if filters.warehouse else [],
     )
     defaults_clauses = concatv(["id.parent = i.name"], ["id.company = %(company)s"])
+    supplier_clauses = concatv(
+        ["isp.parent = i.name"], ["isp.supplier = id.default_supplier"]
+    )
     return (
         {
             "clauses": " AND ".join(clauses),
             "bin_clauses": " AND ".join(bin_clauses),
             "defaults_clauses": " AND ".join(defaults_clauses),
+            "supplier_clauses": " AND ".join(supplier_clauses),
         },
         merge(filters, {"item_codes": item_codes} if item_codes else {}),
     )
@@ -74,12 +85,15 @@ def _get_data(clauses, values, keys):
                 i.item_code AS item_code,
                 i.item_name AS item_name,
                 i.item_group AS item_group,
+                i.stock_uom AS stock_uom,
                 i.brand AS brand,
                 id.default_supplier AS supplier,
+                isp.supplier_part_no AS supplier_part_no,
                 SUM(b.actual_qty) AS qty
             FROM `tabItem` AS i
             LEFT JOIN `tabBin` AS b ON {bin_clauses}
             LEFT JOIN `tabItem Default` AS id ON {defaults_clauses}
+            LEFT JOIN `tabItem Supplier` AS isp ON {supplier_clauses}
             WHERE {clauses}
             GROUP BY i.item_code
         """.format(
@@ -89,5 +103,15 @@ def _get_data(clauses, values, keys):
         as_dict=1,
     )
 
-    make_row = partial(pick, keys)
-    return [make_row(x) for x in result]
+    def get_make_row():
+        if not values.get("show_alt_uoms"):
+            return partial(pick, keys)
+
+        add_uom = make_uom_col_setter([x.get("item_code") for x in result])
+        return compose(partial(pick, keys), add_uom)
+
+    make_row = get_make_row()
+
+    return [
+        make_row(x) for x in result if not values.get("hide_zero_stock") or x.get("qty")
+    ]

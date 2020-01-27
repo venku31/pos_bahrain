@@ -1,9 +1,13 @@
 export default async function(frm) {
+  const scan_fieldname = ['Purchase Receipt'].includes(frm.doc.doctype)
+    ? 'pb_scan_barcode'
+    : 'scan_barcode';
   function set_description(msg) {
-    frm.fields_dict['scan_barcode'].set_new_description(__(msg));
+    frm.fields_dict[scan_fieldname].set_new_description(__(msg));
   }
 
-  const { scan_barcode: search_value, items } = frm.doc;
+  const search_value = frm.doc[scan_fieldname];
+  const { items } = frm.doc;
 
   if (search_value) {
     const { message: data } = await frappe.call({
@@ -53,7 +57,22 @@ export default async function(frm) {
       )
     );
 
-    frm.fields_dict['scan_barcode'].set_value('');
+    // this is necessary because the upstream `item_code` event unsets the `batch_no` via `get_item_details`
+    // https://github.com/frappe/erpnext/blob/926150bccbf1d93bacebcf36dc33a3d116173138/erpnext/stock/get_item_details.py#L23
+    // https://github.com/frappe/erpnext/blob/926150bccbf1d93bacebcf36dc33a3d116173138/erpnext/public/js/controllers/transaction.js#L400
+    // should monitor changes to `get_item_details` and its callback and remove when necessary
+    if (data.batch_no) {
+      const wait_for_item_code_event = setInterval(() => {
+        const { doctype: cdt, name: cdn } = row;
+        const { batch_no } = frappe.get_doc(cdt, cdn);
+        if (batch_no === null) {
+          frappe.model.set_value(cdt, cdn, 'batch_no', data.batch_no);
+          clearInterval(wait_for_item_code_event);
+        }
+      }, 300);
+    }
+
+    frm.fields_dict[scan_fieldname].set_value('');
   }
   return false;
 }

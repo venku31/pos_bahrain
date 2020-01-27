@@ -4,7 +4,7 @@ import frappe
 from frappe import _
 from frappe.utils import today
 from frappe.desk.reportview import get_filters_cond
-from erpnext.stock.get_item_details import get_item_price
+from erpnext.stock.get_item_details import get_item_price, get_batch_qty
 from functools import partial
 from toolz import groupby, merge, valmap, compose, get, excepts, first, pluck
 
@@ -63,11 +63,13 @@ def get_more_pos_data(profile, company):
         "uom_details": get_uom_details(),
         "exchange_rates": get_exchange_rates(),
         "do_not_allow_zero_payment": settings.do_not_allow_zero_payment,
+        "allow_returns": settings.allow_returns,
         "use_batch_price": settings.use_batch_price,
         "use_barcode_uom": settings.use_barcode_uom,
         "use_custom_item_cart": settings.use_custom_item_cart,
         "use_stock_validator": settings.use_stock_validator,
         "use_sales_employee": settings.show_sales_employee,
+        "override_sync_limit": settings.override_sync_limit,
         "sales_employee_details": _get_employees()
         if settings.show_sales_employee
         else None,
@@ -118,7 +120,9 @@ def _get_barcode_details():
 def _get_item_prices(price_list):
     prices = frappe.db.sql(
         """
-            SELECT item_code, uom, customer, currency, price_list_rate
+            SELECT
+                item_code, currency, price_list_rate,
+                uom, customer, min_qty, valid_from, valid_upto
             FROM `tabItem Price` WHERE price_list = %(price_list)s
         """,
         values={"price_list": price_list},
@@ -293,3 +297,42 @@ def get_item_rate(item_code, uom, price_list="Standard Selling"):
     return get_price(
         {"price_list": price_list, "uom": uom, "transaction_date": today()}, item_code,
     )
+
+
+@frappe.whitelist()
+def get_actual_qty(item_code, warehouse, batch=None):
+    has_batch_no = frappe.db.get_value("Item", item_code, "has_batch_no")
+    if has_batch_no and batch:
+        batch_qty = get_batch_qty(batch, warehouse, item_code) or {}
+        return batch_qty.get("actual_batch_qty", 0)
+    return (
+        frappe.db.get_value(
+            "Bin", {"item_code": item_code, "warehouse": warehouse}, "actual_qty"
+        )
+        or 0
+    )
+
+
+@frappe.whitelist()
+def search_serial_or_batch_or_barcode_number(search_value):
+    from erpnext.selling.page.point_of_sale.point_of_sale import (
+        search_serial_or_batch_or_barcode_number,
+    )
+
+    item_code = frappe.db.get_value(
+        "Item", search_value, ["name as item_code"], as_dict=True
+    )
+    if item_code:
+        return item_code
+
+    result = search_serial_or_batch_or_barcode_number(search_value)
+    if result and result.get("batch_no"):
+        return merge(
+            result,
+            {
+                "pb_expiry_date": frappe.db.get_value(
+                    "Batch", result.get("batch_no"), "expiry_date"
+                )
+            },
+        )
+    return result or None
