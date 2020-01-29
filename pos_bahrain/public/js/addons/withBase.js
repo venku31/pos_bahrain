@@ -33,5 +33,11 @@ export default function withBase(Pos) {
         }
       });
     }
+    make_new_cart() {
+      super.make_new_cart();
+      this.items = this.item_data;
+      this.search_item.$input.val('');
+      this.make_item_list();
+    }
   };
 }
