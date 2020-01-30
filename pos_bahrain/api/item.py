@@ -336,3 +336,36 @@ def search_serial_or_batch_or_barcode_number(search_value):
             },
         )
     return result or None
+
+
+@frappe.whitelist()
+def get_standard_prices(item_code):
+    buying_price_list = frappe.db.get_single_value(
+        "Buying Settings", "buying_price_list"
+    )
+    selling_price_list = frappe.db.get_single_value(
+        "Selling Settings", "selling_price_list"
+    )
+    stock_uom = frappe.db.get_value("Item", item_code, "stock_uom")
+
+    get_price = compose(
+        lambda x: x.get("price_list_rate"),
+        excepts(StopIteration, first, lambda _0: {}),
+        lambda x: frappe.db.sql(
+            """
+                SELECT price_list_rate FROM `tabItem Price`
+                WHERE
+                    item_code = %(item_code)s AND
+                    price_list = %(price_list)s AND
+                    IFNULL(uom, '') IN ('', %(stock_uom)s) AND
+                    IFNULL(customer, '') = ''
+            """,
+            values={"item_code": item_code, "price_list": x, "stock_uom": stock_uom},
+            as_dict=1,
+        ),
+    )
+
+    return {
+        "selling_price": get_price(selling_price_list),
+        "buying_price": get_price(buying_price_list),
+    }

@@ -36,6 +36,8 @@ frappe.ui.form.on('Material Request', scripts.material_request);
 
 frappe.ui.form.on('Stock Entry', scripts.stock_entry);
 
+frappe.ui.form.on('Item', scripts.item);
+
 frappe.ui.form.on('Item Price', scripts.item_price);
 
 frappe.ui.form.on(
