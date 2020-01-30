@@ -39,6 +39,17 @@ async function set_actual_qty(frm, cdt, cdn) {
   }
 }
 
+async function set_batch(frm, cdt, cdn) {
+  const { item_code } = frappe.get_doc(cdt, cdn);
+  if (item_code) {
+    const { message: batch } = await frappe.call({
+      method: 'pos_bahrain.api.item.get_one_batch',
+      args: { item_code },
+    });
+    frappe.model.set_value(cdt, cdn, 'batch', batch);
+  }
+}
+
 const barcode_print_item = {
   items_add: function(frm, cdt, cdn) {
     const row = frappe.get_doc(cdt, cdn);
@@ -47,6 +58,7 @@ const barcode_print_item = {
   item_code: function(frm, cdt, cdn) {
     set_item_price(frm, cdt, cdn);
     set_actual_qty(frm, cdt, cdn);
+    set_batch(frm, cdt, cdn);
   },
   uom: set_item_price,
   batch: set_actual_qty,

@@ -369,3 +369,11 @@ def get_standard_prices(item_code):
         "selling_price": get_price(selling_price_list),
         "buying_price": get_price(buying_price_list),
     }
+
+
+@frappe.whitelist()
+def get_one_batch(item_code):
+    batches = frappe.db.get_all("Batch", {"item": item_code})
+    if len(batches) == 1:
+        return batches[0].get("name")
+    return None
