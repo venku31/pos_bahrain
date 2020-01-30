@@ -8,6 +8,7 @@ from frappe.utils import today, getdate
 from functools import partial
 from toolz import merge, pluck, keyfilter, compose, concatv, unique
 
+from pos_bahrain.utils import pick
 from pos_bahrain.utils.report import make_column
 from pos_bahrain.pos_bahrain.report.batch_wise_expiry_report.helpers import (
     get_uom_columns,
@@ -87,6 +88,19 @@ def _item_price_clauses(alias):
     )
 
 
+def _sle_clauses(args):
+    join_clauses = compose(lambda x: " AND ".join(x), concatv)
+    return join_clauses(
+        [
+            "sle.docstatus = 1",
+            "sle.company = %(company)s",
+            "sle.posting_date <= %(query_date)s",
+            "IFNULL(sle.batch_no, '') != ''",
+        ],
+        ["sle.warehouse = %(warehouse)s"] if args.get("warehouse") else [],
+    )
+
+
 def _get_data(args, keys):
     sles = frappe.db.sql(
         """
@@ -115,15 +129,13 @@ def _get_data(args, keys):
             LEFT JOIN `tabItem Price` AS p2 ON
                 {p2_clauses}
                 AND p2.price_list = %(price_list2)s
-            WHERE
-                sle.docstatus = 1 AND
-                sle.company = %(company)s AND
-                sle.posting_date <= %(query_date)s AND
-                IFNULL(sle.batch_no, '') != ''
+            WHERE {sle_clauses}
             GROUP BY sle.batch_no, sle.warehouse
             ORDER BY sle.item_code, sle.warehouse
         """.format(
-            p1_clauses=_item_price_clauses("p1"), p2_clauses=_item_price_clauses("p2"),
+            sle_clauses=_sle_clauses(args),
+            p1_clauses=_item_price_clauses("p1"),
+            p2_clauses=_item_price_clauses("p2"),
         ),
         values=args,
         as_dict=1,
