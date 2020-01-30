@@ -67,8 +67,13 @@ export default {
       frm.page.current_view_name === 'print' || frm.hidden;
     const action_label = is_print_preview ? 'Edit' : 'Print';
     frm.page.set_primary_action(action_label, async function() {
-      await frm.save();
-      frm.print_doc();
+      let has_errored;
+      const m = await frm.save(undefined, undefined, undefined, () => {
+        has_errored = true;
+      });
+      if (!has_errored) {
+        frm.print_doc();
+      }
     });
     frm.page.set_secondary_action('Clear', async function() {
       frm.clear_table('items');
