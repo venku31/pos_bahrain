@@ -3,8 +3,13 @@ import scan_barcode from './extensions/scan_barcode.js';
 
 function set_batch_query(frm) {
   frm.set_query('batch', 'items', function(doc, cdt, cdn) {
-    const { item_code: item } = frappe.get_doc(cdt, cdn) || {};
-    return { filters: { item } };
+    const child = frappe.get_doc(cdt, cdn) || {};
+    const { item_code } = child;
+    const warehouse = doc.warehouse || frm.doc.set_warehouse;
+    return {
+      filters: { item_code, warehouse },
+      query: 'erpnext.controllers.queries.get_batch_no',
+    };
   });
 }
 
