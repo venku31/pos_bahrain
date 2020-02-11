@@ -68,12 +68,17 @@ fixtures = [
                     "Mode of Payment-currency_section",
                     "Mode of Payment-in_alt_currency",
                     "Mode of Payment-alt_currency",
+                    "Mode of Payment-pb_alt_col",
+                    "Mode of Payment-pb_bank_method",
                     "POS Profile-pb_max_discount",
                     "Sales Invoice Payment-pos_section",
                     "Sales Invoice Payment-mop_currency",
                     "Sales Invoice Payment-cb11",
                     "Sales Invoice Payment-mop_conversion_rate",
                     "Sales Invoice Payment-mop_amount",
+                    "Sales Invoice Payment-pb_ref_sec",
+                    "Sales Invoice Payment-pb_reference_no",
+                    "Sales Invoice Payment-pb_reference_date",
                     "Batch-naming_series",
                     "Company-default_warehouse",
                     "Sales Invoice-pb_sales_employee",
@@ -184,7 +189,10 @@ fixtures = [
 # Hook on document methods and events
 
 doc_events = {
-    "Sales Invoice": {"on_submit": "pos_bahrain.doc_events.sales_invoice.on_submit"},
+    "Sales Invoice": {
+        "validate": "pos_bahrain.doc_events.sales_invoice.validate",
+        "on_submit": "pos_bahrain.doc_events.sales_invoice.on_submit",
+    },
     "Purchase Receipt": {
         "before_save": "pos_bahrain.doc_events.purchase_receipt.before_validate",
         "on_submit": "pos_bahrain.doc_events.purchase_receipt.set_batch_references",
@@ -211,9 +219,7 @@ on_session_creation = "pos_bahrain.doc_events.set_user_defaults"
 # ---------------
 
 scheduler_events = {
-    "daily": [
-        "pos_bahrain.scheduler_events.daily.send_email_to_manager"
-    ]
+    "daily": ["pos_bahrain.scheduler_events.daily.send_email_to_manager"]
 }
 # scheduler_events = {
 # 	"all": [
