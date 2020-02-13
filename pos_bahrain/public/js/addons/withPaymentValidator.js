@@ -8,11 +8,15 @@ export default function withPaymentValidator(Pos) {
     }
     show_amounts() {
       super.show_amounts();
+      this.dialog
+        .get_primary_btn()
+        .toggleClass('disabled', !this.actions_enabled());
+    }
+    actions_enabled() {
       if (this.do_not_allow_zero_payment) {
-        this.dialog
-          .get_primary_btn()
-          .toggleClass('disabled', this.frm.doc.paid_amount === 0);
+        return this.frm.doc.paid_amount !== 0;
       }
+      return true;
     }
     payment_primary_action() {
       this._validate_payment();
