@@ -73,6 +73,7 @@ def get_more_pos_data(profile, company):
         "sales_employee_details": _get_employees()
         if settings.show_sales_employee
         else None,
+        "mode_of_payment_details": _get_mop_details(),
     }
 
 
@@ -206,6 +207,16 @@ def get_exchange_rates():
             mops,
         )
     }
+
+
+def _get_mop_details():
+    return frappe.db.sql(
+        """
+            SELECT name, pb_bank_method FROM `tabMode of Payment`
+            WHERE IFNULL(pb_bank_method, '') != ''
+        """,
+        as_dict=1,
+    )
 
 
 @frappe.whitelist()
