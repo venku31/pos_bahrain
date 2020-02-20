@@ -9,12 +9,16 @@ from erpnext.setup.utils import get_exchange_rate
 
 
 def validate(doc, method):
-    if doc.is_pos and doc.offline_pos_name:
-        existing_si = frappe.db.exists(
-            "Sales Invoice", {"offline_pos_name": doc.offline_pos_name}
+    if (
+        doc.is_pos
+        and not doc.is_return
+        and doc.offline_pos_name
+        and frappe.db.exists(
+            "Sales Invoice",
+            {"offline_pos_name": doc.offline_pos_name, "name": ("!=", doc.name)},
         )
-        if existing_si and existing_si != doc.name:
-            frappe.throw("Cannot create duplicate offline POS invoice")
+    ):
+        frappe.throw("Cannot create duplicate offline POS invoice")
     for payment in doc.payments:
         if payment.amount:
             bank_method = frappe.get_cached_value(
