@@ -11,6 +11,7 @@ from erpnext.setup.utils import get_exchange_rate
 def validate(doc, method):
     if (
         doc.is_pos
+        and not doc.is_return
         and doc.offline_pos_name
         and frappe.db.exists(
             "Sales Invoice",
