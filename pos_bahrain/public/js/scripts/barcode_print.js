@@ -62,6 +62,16 @@ async function set_batch(frm, cdt, cdn) {
   }
 }
 
+function load_print_docs_from_route(frm) {
+  const [page, print_dt, print_dn] = frappe.get_prev_route();
+  if (
+    page === 'Form' &&
+    ['Purchase Invoice', 'Purchase Receipt'].includes(print_dt)
+  ) {
+    frm.set_value({ print_dt, print_dn });
+  }
+}
+
 const barcode_print_item = {
   items_add: function(frm, cdt, cdn) {
     const row = frappe.get_doc(cdt, cdn);
@@ -105,6 +115,7 @@ export default {
       frm.refresh_field('items');
     });
     frm.page.btn_secondary.toggle(!is_print_preview);
+    load_print_docs_from_route(frm);
   },
   print_dn: async function(frm) {
     const { print_dt, print_dn } = frm.doc;
