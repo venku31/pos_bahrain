@@ -110,6 +110,7 @@ class POSClosingVoucher(Document):
         self.tax_total = sum_by("tax_amount", taxes)
         self.discount_total = sum_by("discount_amount", sales)
         self.change_total = sum_by("change_amount", sales)
+        self.total_collected = sum_by("amount", actual_payments) - self.change_total
 
         self.invoices = []
         for invoice in sales:

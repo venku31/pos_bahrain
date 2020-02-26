@@ -19,6 +19,22 @@ frappe.ui.form.on('POS Closing Voucher', {
       });
     }
   },
+  before_submit(frm) {
+    const unsynced_docs = (
+      JSON.parse(localStorage.getItem('sales_invoice_doc')) || []
+    ).filter(x => {
+      const { docstatus } = Object.values(x)[0];
+      return docstatus === 1;
+    });
+    if (unsynced_docs.length > 0) {
+      frappe.throw(
+        __(
+          `${unsynced_docs.length} unsynced invoices present. Please resolve conflicts and try again.`
+        )
+      );
+    }
+    localStorage.setItem('sales_invoice_doc', '[]');
+  },
   user: function(frm) {
     frm.trigger('set_report_details');
   },
