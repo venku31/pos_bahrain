@@ -12,6 +12,7 @@ def validate(doc, method):
     if (
         doc.is_pos
         and not doc.is_return
+        and not doc.amended_from
         and doc.offline_pos_name
         and frappe.db.exists(
             "Sales Invoice",
