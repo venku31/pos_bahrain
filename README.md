@@ -10,7 +10,7 @@
   6. Make batch number naming Series.
   7. Fetch item number directly in JS using Material Receipt/Purchase receipt Item selection.
   8. Select Default Warehouse in Purchase receipt - (Multi Company Scenario).
-  9. Shortcut Key to press Pay in POS - Used F9 to press Pay, Ctrl + P to Print & Ctrl + B for New.
+  9. Shortcut Key to press Pay in POS - Used F9 to press Pay, Ctrl + P to Print & Ctrl + B for New, ctrl + , focuses on Sales Employee field(When Employee Field is used).
   10. Focus back to Item Search field for user to input next item directly (when Batch item is scanned).
   11. POS to Fetch only those batch and Items which are in stock in the POS profile selected warehouse.
   12. Show Expiry Date while selecting Batch from drop down in Stock Entry (Material Receipt).

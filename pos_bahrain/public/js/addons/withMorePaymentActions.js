@@ -16,5 +16,11 @@ export default function withMorePaymentActions(Pos) {
         })
         .appendTo(this.dialog.header.find('.buttons'));
     }
+    show_amounts() {
+      super.show_amounts();
+      this.dialog.header
+        .find('.buttons .submit_print')
+        .toggleClass('disabled', !this.actions_enabled());
+    }
   };
 }

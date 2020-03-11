@@ -63,6 +63,7 @@ def get_more_pos_data(profile, company):
         "uom_details": get_uom_details(),
         "exchange_rates": get_exchange_rates(),
         "do_not_allow_zero_payment": settings.do_not_allow_zero_payment,
+        "enforce_full_payment": settings.enforce_full_payment,
         "allow_returns": settings.allow_returns,
         "use_batch_price": settings.use_batch_price,
         "use_barcode_uom": settings.use_barcode_uom,
@@ -73,6 +74,7 @@ def get_more_pos_data(profile, company):
         "sales_employee_details": _get_employees()
         if settings.show_sales_employee
         else None,
+        "mode_of_payment_details": _get_mop_details(),
     }
 
 
@@ -208,6 +210,16 @@ def get_exchange_rates():
     }
 
 
+def _get_mop_details():
+    return frappe.db.sql(
+        """
+            SELECT name, pb_bank_method FROM `tabMode of Payment`
+            WHERE IFNULL(pb_bank_method, '') != ''
+        """,
+        as_dict=1,
+    )
+
+
 @frappe.whitelist()
 def get_retail_price(item_code):
     retail_price_list = frappe.db.get_value(
@@ -336,3 +348,44 @@ def search_serial_or_batch_or_barcode_number(search_value):
             },
         )
     return result or None
+
+
+@frappe.whitelist()
+def get_standard_prices(item_code):
+    buying_price_list = frappe.db.get_single_value(
+        "Buying Settings", "buying_price_list"
+    )
+    selling_price_list = frappe.db.get_single_value(
+        "Selling Settings", "selling_price_list"
+    )
+    stock_uom = frappe.db.get_value("Item", item_code, "stock_uom")
+
+    get_price = compose(
+        lambda x: x.get("price_list_rate"),
+        excepts(StopIteration, first, lambda _0: {}),
+        lambda x: frappe.db.sql(
+            """
+                SELECT price_list_rate FROM `tabItem Price`
+                WHERE
+                    item_code = %(item_code)s AND
+                    price_list = %(price_list)s AND
+                    IFNULL(uom, '') IN ('', %(stock_uom)s) AND
+                    IFNULL(customer, '') = ''
+            """,
+            values={"item_code": item_code, "price_list": x, "stock_uom": stock_uom},
+            as_dict=1,
+        ),
+    )
+
+    return {
+        "selling_price": get_price(selling_price_list),
+        "buying_price": get_price(buying_price_list),
+    }
+
+
+@frappe.whitelist()
+def get_one_batch(item_code):
+    batches = frappe.db.get_all("Batch", {"item": item_code})
+    if len(batches) == 1:
+        return batches[0].get("name")
+    return None

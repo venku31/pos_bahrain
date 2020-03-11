@@ -22,6 +22,15 @@ export default function withModifiedPaymentDialogFields(Pos) {
         </div>`
       ).appendTo(this.dialog.$body.find('.amount-row'));
     }
+    show_payment_details() {
+      super.show_payment_details();
+
+      // hack to focus on first mop. need to find a better method instead of
+      // relying on timer
+      setTimeout(() => {
+        this.dialog.$body.find('div.pos-payment-row[idx="1"]').click();
+      }, 500);
+    }
     show_amounts() {
       super.show_amounts();
       $(this.$body)

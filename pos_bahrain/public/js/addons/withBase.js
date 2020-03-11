@@ -1,5 +1,6 @@
 import keyBy from 'lodash/keyBy';
 
+// depends on withIdx
 export default function withBase(Pos) {
   return class PosExtended extends Pos {
     onload() {
@@ -32,6 +33,49 @@ export default function withBase(Pos) {
           return;
         }
       });
+    }
+    make_new_cart() {
+      super.make_new_cart();
+      this.items = this.item_data;
+      this.search_item.$input.val('');
+      this.make_item_list();
+    }
+    set_item_details(item_code, field, value, remove_zero_qty_items) {
+      // this method is a copy of the original with discount fixes and uses
+      // `selected_cart_idx` to find the item to be be operated on.
+      if (value < 0) {
+        frappe.throw(__('Enter value must be positive'));
+      }
+
+      this.remove_item = [];
+      const item = this.frm.doc.items[this.selected_cart_idx];
+      if (item) {
+        if (item.serial_no && field == 'qty') {
+          this.validate_serial_no_qty(item, item_code, field, value);
+        }
+
+        item[field] = flt(value, this.precision);
+        item.amount = flt(item.rate * item.qty, this.precision);
+        if (item.qty === 0 && remove_zero_qty_items) {
+          this.remove_item.push(item.idx);
+        }
+        if (field === 'discount_percentage' && value === 0) {
+          item.rate = item.price_list_rate;
+        }
+        if (field === 'rate') {
+          const discount_percentage = flt(
+            (1.0 - value / item.price_list_rate) * 100.0,
+            this.precision
+          );
+          if (discount_percentage > 0) {
+            item.discount_percentage = discount_percentage;
+          }
+        }
+      }
+      if (field === 'qty') {
+        this.remove_zero_qty_items_from_cart();
+      }
+      this.update_paid_amount_status(false);
     }
   };
 }

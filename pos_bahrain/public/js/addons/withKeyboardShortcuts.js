@@ -51,6 +51,10 @@ export default function withKeyboardShortcuts(Pos) {
             e.preventDefault();
             e.stopPropagation();
             trigger_new_cart();
+          } else if (e.ctrlKey && e.keyCode === 188) {
+            if (this.sales_employee_field) {
+              this.sales_employee_field.set_focus();
+            }
           }
         }
       });

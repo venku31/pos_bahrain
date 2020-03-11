@@ -6,11 +6,17 @@ frappe.query_reports['Batch-wise Expiry Report'] = {
   filters: [
     {
       fieldname: 'company',
-      label: __('Company'),
+      label: __('Warehouse'),
       fieldtype: 'Link',
       options: 'Company',
       reqd: 1,
       default: frappe.defaults.get_user_default('company'),
+    },
+    {
+      fieldname: 'warehouse',
+      label: __('Warehouse'),
+      fieldtype: 'Link',
+      options: 'Warehouse',
     },
     {
       fieldname: 'query_date',

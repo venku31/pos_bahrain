@@ -171,7 +171,7 @@ def _set_tax_amount(items):
                 SELECT parent AS invoice, item_wise_tax_detail
                 FROM `tabSales Taxes and Charges` WHERE parent in %(invoices)s
             """,
-            values={"invoices": item_map.keys()},
+            values={"invoices": list(item_map.keys())},
             as_dict=1,
         )
     )

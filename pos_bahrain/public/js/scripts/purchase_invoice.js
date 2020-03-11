@@ -10,6 +10,12 @@ export async function set_item_from_supplier_pn(frm, cdt, cdn) {
   frappe.model.set_value(cdt, cdn, 'item_code', item && item.name);
 }
 
+export function add_print_label_action(frm) {
+  frm.page.add_menu_item('Print Labels', () => {
+    frappe.set_route('Form/Barcode Print');
+  });
+}
+
 const purchase_invoice_item = {
   pb_supplier_part_no: set_item_from_supplier_pn,
 };
@@ -17,4 +23,5 @@ const purchase_invoice_item = {
 export default {
   purchase_invoice_item,
   setup: set_uom_query,
+  refresh: add_print_label_action,
 };
