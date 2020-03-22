@@ -214,7 +214,7 @@ def _get_mop_details():
     return frappe.db.sql(
         """
             SELECT name, pb_bank_method FROM `tabMode of Payment`
-            WHERE IFNULL(pb_bank_method, '') != ''
+            WHERE type = 'Bank' AND IFNULL(pb_bank_method, '') != ''
         """,
         as_dict=1,
     )
