@@ -22,14 +22,14 @@ from pos_bahrain.utils import pick, sum_by, with_report_error_check
 
 
 def execute(filters=None, transaction_type="Sales"):
-    columns = get_columns(filters, transaction_type)
+    columns = _get_columns(filters, transaction_type)
     keys = compose(list, partial(pluck, "fieldname"))(columns)
-    clauses, values = get_filters(filters, transaction_type)
-    data = get_data(clauses, values, keys)
+    clauses, values = _get_filters(filters, transaction_type)
+    data = _get_data(clauses, values, keys)
     return columns, data
 
 
-def get_columns(filters, transaction_type):
+def _get_columns(filters, transaction_type):
     def make_column(key, label=None, type="Data", options=None, width=120):
         return {
             "label": _(label or key.replace("_", " ").title()),
@@ -57,7 +57,7 @@ def get_columns(filters, transaction_type):
     ]
 
 
-def get_filters(filters, transaction_type):
+def _get_filters(filters, transaction_type):
     clauses = concatv(
         [
             "inv.docstatus = 1",
@@ -68,6 +68,7 @@ def get_filters(filters, transaction_type):
         ["INSTR(inv_item.item_name, %(item_name)s) > 0"] if filters.item_name else [],
         ["inv_item.item_group = %(item_group)s"] if filters.item_group else [],
         ["inv.customer = %(customer)s"] if filters.customer else [],
+        ["inv.supplier = %(supplier)s"] if filters.supplier else [],
         ["inv_item.warehouse = %(warehouse)s"] if filters.warehouse else [],
     )
     bin_clauses = concatv(
@@ -77,6 +78,7 @@ def get_filters(filters, transaction_type):
         pick(
             [
                 "customer",
+                "supplier",
                 "company",
                 "warehouse",
                 "item_code",
@@ -98,7 +100,7 @@ def get_filters(filters, transaction_type):
 
 
 @with_report_error_check
-def get_data(clauses, values, keys):
+def _get_data(clauses, values, keys):
     items = frappe.db.sql(
         """
             SELECT
