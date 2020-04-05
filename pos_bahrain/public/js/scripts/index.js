@@ -11,5 +11,6 @@ export { default as item_price } from './item_price';
 export { default as pos_bahrain_settings } from './pos_bahrain_settings';
 export { default as barcode_print } from './barcode_print';
 export { default as item } from './item';
+export { default as backported_stock_reconciliation } from './backported_stock_reconciliation';
 import * as extensions from './extensions';
 export { extensions };
