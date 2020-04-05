@@ -35,6 +35,10 @@ def validate(doc, method):
                 )
 
 
+def before_save(doc, method):
+    set_cost_center(doc)
+
+
 def on_submit(doc, method):
     for payment in doc.payments:
         if not payment.mop_currency:
@@ -66,3 +70,9 @@ def on_submit(doc, method):
                 "mop_amount",
                 flt(payment.base_amount) / flt(conversion_rate),
             )
+
+
+def set_cost_center(doc):
+    if doc.pb_set_cost_center:
+        for row in doc.items:
+            row.cost_center = doc.pb_set_cost_center

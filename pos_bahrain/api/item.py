@@ -4,7 +4,13 @@ import frappe
 from frappe import _
 from frappe.utils import today
 from frappe.desk.reportview import get_filters_cond
-from erpnext.stock.get_item_details import get_item_price, get_batch_qty
+from erpnext.stock.get_item_details import (
+    get_item_price,
+    get_batch_qty,
+    get_default_cost_center,
+)
+from erpnext.stock.doctype.item.item import get_item_defaults
+from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from functools import partial
 from toolz import groupby, merge, valmap, compose, get, excepts, first, pluck
 
@@ -389,3 +395,18 @@ def get_one_batch(item_code):
     if len(batches) == 1:
         return batches[0].get("name")
     return None
+
+
+@frappe.whitelist()
+def get_item_cost_center(item_code=None, company=None, project=None, customer=None):
+    cost_center = frappe.get_cached_value("Company", company, "cost_center")
+    if not item_code:
+        return cost_center
+    item_defaults = get_item_defaults(item_code, company)
+    item_group_defaults = get_item_group_defaults(item_code, company)
+    args = {
+        "project": project,
+        "customer": customer,
+        "cost_center": cost_center,
+    }
+    return get_default_cost_center(args, item_defaults, item_group_defaults, company)

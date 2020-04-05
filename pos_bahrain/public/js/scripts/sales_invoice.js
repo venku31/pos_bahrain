@@ -40,7 +40,7 @@ export async function set_uom(frm, cdt, cdn) {
 }
 
 export function set_uom_query(frm) {
-  frm.set_query('uom', 'items', function(doc, cdt, cdn) {
+  frm.set_query('uom', 'items', function (doc, cdt, cdn) {
     const { item_code } = frappe.get_doc(cdt, cdn) || {};
     return {
       query: 'pos_bahrain.api.item.query_uom',
@@ -49,12 +49,65 @@ export function set_uom_query(frm) {
   });
 }
 
+export function set_cost_center_query(frm) {
+  frm.set_query('pb_set_cost_center', function (doc) {
+    const { company } = doc;
+    return { filters: { company, is_group: 0 } };
+  });
+}
+
+export async function set_table_cost_centers(frm) {
+  const { pb_set_cost_center, company, project, customer } = frm.doc;
+  if (pb_set_cost_center) {
+    frm.doc.items.forEach(({ doctype, name }) => {
+      frappe.model.set_value(doctype, name, 'cost_center', pb_set_cost_center);
+    });
+  } else {
+    frm.doc.items.forEach(async function ({ doctype, name, item_code }) {
+      const { message: cost_center } = await frappe.call({
+        method: 'pos_bahrain.api.item.get_item_cost_center',
+        args: { item_code, company, project, customer },
+      });
+      frappe.model.set_value(doctype, name, 'cost_center', cost_center);
+    });
+  }
+}
+
+export async function set_item_cost_center(frm, cdt, cdn) {
+  // wait for get_item_details triggered by 'item_code' to complete
+  // and set cost center.
+  // `item_name` is just an arbitrary property to watch. `item_name` is
+  // considered to be unique so this will fail if otherwise.
+  // clearInterval after ~3 mins
+  const { pb_set_cost_center } = frm.doc;
+  const { item_code, item_name } = frappe.get_doc(cdt, cdn);
+
+  if (pb_set_cost_center) {
+    if (item_code) {
+      let tries = 0;
+      const interval = setInterval(() => {
+        const { item_name: fetched_name } = frappe.get_doc(cdt, cdn);
+        if (item_name !== fetched_name || tries > 600) {
+          frappe.model.set_value(cdt, cdn, 'cost_center', pb_set_cost_center);
+          clearInterval(interval);
+        }
+        tries++;
+      }, 300);
+    }
+  }
+}
+
 const sales_invoice_item = {
+  item_code: set_item_cost_center,
   batch_no: set_rate_from_batch,
   barcode: set_uom,
 };
 
 export default {
   sales_invoice_item,
-  setup: set_uom_query,
+  setup: function (frm) {
+    set_uom_query(frm);
+    set_cost_center_query(frm);
+  },
+  pb_set_cost_center: set_table_cost_centers,
 };
