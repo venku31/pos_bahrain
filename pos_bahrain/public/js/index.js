@@ -1,4 +1,5 @@
 import * as scripts from './scripts';
+import * as reports from './reports';
 import * as addons from './addons';
 
 frappe.provide('pos_bahrain');
@@ -45,4 +46,4 @@ frappe.ui.form.on(
   scripts.payment_entry.payment_entry_reference
 );
 
-pos_bahrain = { scripts, addons };
+pos_bahrain = { scripts, reports, addons };
