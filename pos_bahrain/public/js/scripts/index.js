@@ -12,5 +12,6 @@ export { default as pos_bahrain_settings } from './pos_bahrain_settings';
 export { default as barcode_print } from './barcode_print';
 export { default as item } from './item';
 export { default as backported_stock_reconciliation } from './backported_stock_reconciliation';
+export { default as payment_entry_pb } from './payment_entry_pb';
 import * as extensions from './extensions';
 export { extensions };

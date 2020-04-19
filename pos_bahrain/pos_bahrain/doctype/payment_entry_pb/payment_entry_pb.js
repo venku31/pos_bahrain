@@ -12,4 +12,4 @@ Object.entries(frappe.ui.form.handlers['Payment Entry PB']).forEach(
   }
 );
 
-frappe.ui.form.on('Payment Entry PB', {});
+frappe.ui.form.on('Payment Entry PB', pos_bahrain.scripts.payment_entry_pb());

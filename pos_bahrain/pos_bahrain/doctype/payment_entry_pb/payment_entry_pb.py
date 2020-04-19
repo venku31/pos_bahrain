@@ -8,4 +8,6 @@ from erpnext.accounts.doctype.payment_entry.payment_entry import PaymentEntry
 
 
 class PaymentEntryPB(PaymentEntry):
-    pass
+    def validate_account_type(self, account, account_types):
+        if self.payment_type != "Internal Transfer":
+            super().validate_account_type(account, account_types)
