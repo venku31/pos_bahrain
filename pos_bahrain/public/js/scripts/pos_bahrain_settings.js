@@ -18,9 +18,14 @@ function handle_daily_email(frm) {
 
 export default {
   onload: handle_onload,
+  setup: function (frm) {
+    frm.set_query('vat_exempt_account', {
+      filters: { account_type: 'Tax', is_group: 0 },
+    });
+  },
   discount_on_retail: handle_price_list_fields,
   use_daily_email: handle_daily_email,
-  valuation_price_list: function(frm) {
+  valuation_price_list: function (frm) {
     const { valuation_price_list } = frm.doc;
     frm.toggle_reqd('valuation_warehouse', !!valuation_price_list);
     if (!valuation_price_list) {
