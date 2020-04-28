@@ -54,6 +54,7 @@ def _get_filters(doctype, filters):
             )
         )
     clauses = [
+        "d.docstatus = 1",
         "d.posting_date BETWEEN %(from_date)s AND %(to_date)s",
         "dt.account_head {} %(tax_account)s".format(
             "=" if filters.vat_type == "exempt" else "!="
