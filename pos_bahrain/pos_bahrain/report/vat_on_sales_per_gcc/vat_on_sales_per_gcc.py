@@ -102,8 +102,24 @@ def _get_data(clauses, values, keys):
         values=values,
         as_dict=1,
     )
-    items = _get_child_table_rows(clauses.get("item_doctype"), invoices)
-    taxes = _get_child_table_rows(clauses.get("tax_doctype"), invoices)
+    items = _get_child_table_rows(
+        """
+            SELECT * FROM `tab{child_doctype}` WHERE parent IN %(invoices)s
+        """.format(
+            child_doctype=clauses.get("item_doctype"),
+        ),
+        invoices,
+    )
+    taxes = _get_child_table_rows(
+        """
+            SELECT p.* FROM `tab{child_doctype}` AS p
+            LEFT JOIN `tabAccount` AS a ON a.name = p.account_head
+            WHERE p.parent IN %(invoices)s AND a.account_type = 'Tax'
+        """.format(
+            child_doctype=clauses.get("tax_doctype"),
+        ),
+        invoices,
+    )
 
     def make_doc(x):
         doc = frappe.get_doc(merge({"doctype": clauses.get("doctype")}, x))
@@ -160,18 +176,12 @@ def _get_data(clauses, values, keys):
     return make_list([make_row(x) for x in invoices])
 
 
-def _get_child_table_rows(child_doctype, invoices):
+def _get_child_table_rows(query, invoices):
     if not invoices:
         return {}
     return groupby(
         "parent",
         frappe.db.sql(
-            """
-                SELECT * FROM `tab{child_doctype}` WHERE parent IN %(invoices)s
-            """.format(
-                child_doctype=child_doctype
-            ),
-            values={"invoices": [x.get("name") for x in invoices]},
-            as_dict=1,
+            query, values={"invoices": [x.get("name") for x in invoices]}, as_dict=1,
         ),
     )
