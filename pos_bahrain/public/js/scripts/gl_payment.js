@@ -46,12 +46,23 @@ async function set_calculated_fields(frm, cdt, cdn) {
   frm.refresh();
 }
 
+function set_template_type(payment_type, cdt, cdn) {
+  function get_type() {
+    if (payment_type === 'Incoming') {
+      return 'Sales Taxes and Charges Template';
+    }
+    if (payment_type === 'Outgoing') {
+      return 'Purchase Taxes and Charges Template';
+    }
+    return null;
+  }
+  frappe.model.set_value(cdt, cdn, 'template_type', get_type());
+}
+
 const gl_payment_item = {
   items_add: function (frm, cdt, cdn) {
-    frm.script_manager.copy_from_first_row('items', frappe.get_doc(cdt, cdn), [
-      'template_type',
-      'tax_template',
-    ]);
+    const { payment_type } = frm.doc;
+    set_template_type(payment_type, cdt, cdn);
   },
   template_type: function (frm, cdt, cdn) {
     frappe.model.set_value(cdt, cdn, 'tax_template', null);
@@ -65,23 +76,20 @@ export default function () {
     gl_payment_item,
     setup: setup_queries,
     payment_type: function (frm) {
-      function set_template_type_to(template_type) {
-        return ({ doctype: cdt, name: cdn }) => {
-          frappe.model.set_value(cdt, cdn, 'template_type', template_type);
-        };
+      function get_party_type(payment_type) {
+        if (payment_type === 'Incoming') {
+          return 'Customer';
+        }
+        if (payment_type === 'Outgoing') {
+          return 'Supplier';
+        }
+        return null;
       }
-      const { payment_type } = frm.doc;
-      if (payment_type === 'Incoming') {
-        frm.doc.items.forEach(
-          set_template_type_to('Sales Taxes and Charges Template')
-        );
-      } else if (payment_type === 'Outgoing') {
-        frm.doc.items.forEach(
-          set_template_type_to('Purchase Taxes and Charges Template')
-        );
-      } else {
-        frm.doc.items.forEach(set_template_type_to(null));
-      }
+      const { payment_type, items = [] } = frm.doc;
+      items.forEach(({ doctype: cdt, name: cdn }) =>
+        set_template_type(payment_type, cdt, cdn)
+      );
+      frm.set_value({ party_type: get_party_type(payment_type) });
     },
     party: async function (frm) {
       const { party_type, party } = frm.doc;
