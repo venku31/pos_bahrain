@@ -69,6 +69,25 @@ function set_tax_amount(frm, cdt, cdn) {
   );
 }
 
+function show_general_ledger(frm) {
+  if (frm.doc.docstatus === 1) {
+    frm.add_custom_button(
+      __('Ledger'),
+      function () {
+        frappe.route_options = {
+          voucher_no: frm.doc.name,
+          from_date: frm.doc.posting_date,
+          to_date: frm.doc.posting_date,
+          company: frm.doc.company,
+          group_by: '',
+        };
+        frappe.set_route('query-report', 'General Ledger');
+      },
+      'fa fa-table'
+    );
+  }
+}
+
 const gl_payment_item = {
   items_add: function (frm, cdt, cdn) {
     const { payment_type } = frm.doc;
@@ -110,6 +129,7 @@ export default function () {
   return {
     gl_payment_item,
     setup: setup_queries,
+    refresh: show_general_ledger,
     payment_type: function (frm) {
       function get_party_type(payment_type) {
         if (payment_type === 'Incoming') {
