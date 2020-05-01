@@ -59,6 +59,16 @@ function set_template_type(payment_type, cdt, cdn) {
   frappe.model.set_value(cdt, cdn, 'template_type', get_type());
 }
 
+function set_tax_amount(frm, cdt, cdn) {
+  const { net_amount = 0, rate = 0 } = frappe.get_doc(cdt, cdn);
+  return frappe.model.set_value(
+    cdt,
+    cdn,
+    'tax_amount',
+    (net_amount * rate) / 100
+  );
+}
+
 const gl_payment_item = {
   items_add: function (frm, cdt, cdn) {
     const { payment_type } = frm.doc;
@@ -67,7 +77,32 @@ const gl_payment_item = {
   template_type: function (frm, cdt, cdn) {
     frappe.model.set_value(cdt, cdn, 'tax_template', null);
   },
-  net_amount: set_calculated_fields,
+  tax_template: async function (frm, cdt, cdn) {
+    function set_fields(values = {}) {
+      ['rate', 'account_head'].forEach((field) => {
+        frappe.model.set_value(cdt, cdn, field, values[field] || null);
+      });
+    }
+    const { company } = frm.doc;
+    if (!company) {
+      frappe.throw(__('Please set Company first'));
+    }
+    const { template_type, tax_template } = frappe.get_doc(cdt, cdn);
+    if (tax_template) {
+      const { message: { rate, account_head } = {} } = await frappe.call({
+        method: 'pos_bahrain.api.gl_payment.get_tax',
+        args: { company, template_type, tax_template },
+      });
+      set_fields({ rate, account_head });
+    } else {
+      set_fields();
+    }
+  },
+  net_amount: async function (frm, cdt, cdn) {
+    await set_tax_amount(frm, cdt, cdn);
+    set_calculated_fields(frm, cdt, cdn);
+  },
+  rate: set_tax_amount,
   tax_amount: set_calculated_fields,
 };
 
