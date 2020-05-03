@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
+import json
 import frappe
 from erpnext.controllers.taxes_and_totals import get_itemised_tax_breakup_data
 from functools import partial
@@ -53,19 +54,23 @@ def _get_filters(doctype, filters):
                 )
             )
         )
-    clauses = [
+    inv_clauses = [
         "d.docstatus = 1",
         "d.posting_date BETWEEN %(from_date)s AND %(to_date)s",
         "dt.account_head {} %(tax_account)s".format(
             "=" if filters.vat_type == "exempt" else "!="
         ),
     ]
+    glp_clauses = concatv(
+        inv_clauses, ["d.payment_type = %(payment_type)s", "a.account_type = 'Tax'"]
+    )
     values = merge(
         pick(["vat_type"], filters),
         {
             "from_date": filters.date_range[0],
             "to_date": filters.date_range[1],
             "tax_account": vat_exempt_account,
+            "payment_type": "Incoming" if doctype == "Sales Invoice" else "Outgoing",
         },
     )
     return (
@@ -78,7 +83,8 @@ def _get_filters(doctype, filters):
             "party_name": "{}_name".format(
                 "customer" if doctype == "Sales Invoice" else "supplier"
             ),
-            "clauses": " AND ".join(clauses),
+            "invoice_clauses": " AND ".join(inv_clauses),
+            "glp_clauses": " AND ".join(glp_clauses),
         },
         values,
     )
@@ -88,13 +94,14 @@ def _get_data(clauses, values, keys):
     invoices = frappe.db.sql(
         """
             SELECT
+                '{doctype}' AS doctype,
                 d.name AS name,
                 d.posting_date,
                 d.tax_id AS tax_id,
                 d.{party_name} AS {party_name}
             FROM `tab{tax_doctype}` AS dt
             LEFT JOIN `tab{doctype}` AS d ON d.name = dt.parent
-            WHERE {clauses}
+            WHERE {invoice_clauses}
             GROUP BY d.name
         """.format(
             **clauses
@@ -102,30 +109,80 @@ def _get_data(clauses, values, keys):
         values=values,
         as_dict=1,
     )
-    items = _get_child_table_rows(
+    invoice_items = _get_child_table_rows(
         """
-            SELECT * FROM `tab{child_doctype}` WHERE parent IN %(invoices)s
+            SELECT * FROM `tab{child_doctype}` WHERE parent IN %(docnames)s
         """.format(
             child_doctype=clauses.get("item_doctype"),
         ),
         invoices,
     )
-    taxes = _get_child_table_rows(
+    invoice_taxes = _get_child_table_rows(
         """
             SELECT p.* FROM `tab{child_doctype}` AS p
             LEFT JOIN `tabAccount` AS a ON a.name = p.account_head
-            WHERE p.parent IN %(invoices)s AND a.account_type = 'Tax'
+            WHERE p.parent IN %(docnames)s AND a.account_type = 'Tax'
         """.format(
             child_doctype=clauses.get("tax_doctype"),
         ),
         invoices,
     )
 
+    gl_payments = frappe.db.sql(
+        """
+            SELECT
+                d.name AS name,
+                d.posting_date,
+                d.tax_id AS tax_id,
+                d.party_name AS {party_name},
+                dt.net_amount AS net_amount,
+                dt.tax_amount AS tax_amount,
+                dt.rate AS tax_rate,
+                dt.account AS account,
+                dt.account_head AS account_head,
+                dt.remarks AS remarks
+            FROM `tabGL Payment Item` AS dt
+            LEFT JOIN `tabGL Payment` AS d ON d.name = dt.parent
+            LEFT JOIN `tabAccount` AS a ON a.name = dt.account_head
+            WHERE {glp_clauses}
+        """.format(
+            **clauses
+        ),
+        values=values,
+        as_dict=1,
+    )
+
     def make_doc(x):
-        doc = frappe.get_doc(merge({"doctype": clauses.get("doctype")}, x))
-        doc.items = items.get(x.get("name"), [])
-        doc.taxes = taxes.get(x.get("name"), [])
-        return doc
+        if x.doctype:
+            inv = frappe.get_doc(x)
+            inv.items = invoice_items.get(x.get("name"), [])
+            inv.taxes = invoice_taxes.get(x.get("name"), [])
+            return inv
+        inv = frappe.get_doc((merge({"doctype": clauses.get("doctype")}, x)))
+        inv.items = [
+            frappe._dict(
+                {
+                    "item_code": x.get("account"),
+                    "item_name": x.get("remarks"),
+                    "net_amount": x.get("net_amount"),
+                }
+            )
+        ]
+        inv.taxes = [
+            frappe._dict(
+                {
+                    "item_wise_tax_detail": json.dumps(
+                        {
+                            x.get("account"): [
+                                x.get("tax_rate") or 0,
+                                x.get("tax_amount") or 0,
+                            ]
+                        }
+                    )
+                }
+            )
+        ]
+        return inv
 
     def breakup_taxes(doc):
         tax, amount = get_itemised_tax_breakup_data(doc)
@@ -172,16 +229,20 @@ def _get_data(clauses, values, keys):
         return True
 
     make_row = compose(breakup_taxes, make_doc)
-    make_list = compose(list, partial(filter, filter_type), concat)
-    return make_list([make_row(x) for x in invoices])
+    make_list = compose(
+        partial(sorted, key=lambda x: x.get("date")),
+        partial(filter, filter_type),
+        concat,
+    )
+    return make_list([make_row(x) for x in invoices + gl_payments])
 
 
-def _get_child_table_rows(query, invoices):
-    if not invoices:
+def _get_child_table_rows(query, docs):
+    if not docs:
         return {}
     return groupby(
         "parent",
         frappe.db.sql(
-            query, values={"invoices": [x.get("name") for x in invoices]}, as_dict=1,
+            query, values={"docnames": [x.get("name") for x in docs]}, as_dict=1,
         ),
     )
