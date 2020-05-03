@@ -14,7 +14,17 @@ from toolz import compose, concat
 
 class GLPayment(AccountsController):
     def validate(self):
-        pass
+        rows_without_tax_account = [
+            "#{}".format(x.idx) for x in self.items if not x.account_head
+        ]
+        if rows_without_tax_account:
+            frappe.throw(
+                frappe._(
+                    "Tax Template is either empty or invalid in row(s) {}".format(
+                        frappe.bold(", ".join(rows_without_tax_account))
+                    )
+                )
+            )
 
     def on_submit(self):
         self._make_gl_entries()
