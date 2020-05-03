@@ -229,7 +229,11 @@ def _get_data(clauses, values, keys):
         return True
 
     make_row = compose(breakup_taxes, make_doc)
-    make_list = compose(list, partial(filter, filter_type), concat)
+    make_list = compose(
+        partial(sorted, key=lambda x: x.get("date")),
+        partial(filter, filter_type),
+        concat,
+    )
     return make_list([make_row(x) for x in invoices + gl_payments])
 
 
