@@ -10,7 +10,13 @@ function setup_queries(frm) {
     };
   });
   frm.set_query('account', 'items', function ({ company }) {
-    return { filters: { company, root_type: ['in', ['Income', 'Expense']] } };
+    return {
+      filters: {
+        company,
+        root_type: ['in', ['Income', 'Expense']],
+        is_group: 0,
+      },
+    };
   });
   frm.set_query('template_type', 'items', function () {
     return {
@@ -153,11 +159,13 @@ export default function () {
         const { message: doc = {} } = await frappe.db.get_value(
           party_type,
           party,
-          party_name_field
+          [party_name_field, 'tax_id']
         );
-        frm.set_value('party_name', doc[party_name_field]);
+        const party_name = doc[party_name_field];
+        const { tax_id } = doc;
+        frm.set_value({ party_name, tax_id });
       } else {
-        frm.set_value('party_name', null);
+        frm.set_value({ party_name: null, tax_id: null });
       }
     },
   };
