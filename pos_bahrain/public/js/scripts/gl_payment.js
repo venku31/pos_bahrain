@@ -19,13 +19,7 @@ function setup_queries(frm) {
     };
   });
   frm.set_query('account', 'items', function ({ company }) {
-    return {
-      filters: {
-        company,
-        root_type: ['in', ['Income', 'Expense']],
-        is_group: 0,
-      },
-    };
+    return { filters: { company, is_group: 0 } };
   });
   frm.set_query('template_type', 'items', function () {
     return {
