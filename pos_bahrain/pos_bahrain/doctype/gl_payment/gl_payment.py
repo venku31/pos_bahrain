@@ -14,6 +14,19 @@ from toolz import compose, concat
 
 class GLPayment(AccountsController):
     def validate(self):
+        account_type = frappe.db.get_value(
+            "Account", self.payment_account, "account_type"
+        )
+
+        valid_account_types = ["Cash", "Bank"]
+        if account_type not in valid_account_types:
+            frappe.throw(
+                frappe._("Account Type for {} must be one of {}").format(
+                    self.payment_account, frappe.utils.comma_or(valid_account_types)
+                )
+            )
+
+
         rows_without_tax_account = [
             "#{}".format(x.idx) for x in self.items if not x.account_head
         ]
@@ -21,7 +34,7 @@ class GLPayment(AccountsController):
             frappe.throw(
                 frappe._(
                     "Tax Template is either empty or invalid in row(s) {}".format(
-                        frappe.bold(", ".join(rows_without_tax_account))
+                        frappe.utils.comma_and(rows_without_tax_account)
                     )
                 )
             )
@@ -40,13 +53,10 @@ class GLPayment(AccountsController):
         make_gl_entries(gl_entries, cancel=cancel)
 
     def _get_payment_gl_entries(self):
-        payment_account = get_bank_cash_account(self.mode_of_payment, self.company)[
-            "account"
-        ]
         credit_or_debit = _get_direction(self.payment_type)
         return [
             {
-                "account": payment_account,
+                "account": self.payment_account,
                 credit_or_debit: self.total_amount,
                 "against": self.party,
             }

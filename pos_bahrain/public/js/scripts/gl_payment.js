@@ -9,6 +9,15 @@ function setup_queries(frm) {
       },
     };
   });
+  frm.set_query('payment_account', function ({ company }) {
+    return {
+      filters: {
+        company,
+        account_type: ['in', ['Bank', 'Cash']],
+        is_group: 0,
+      },
+    };
+  });
   frm.set_query('account', 'items', function ({ company }) {
     return {
       filters: {
@@ -151,6 +160,19 @@ export default function () {
         set_template_type(payment_type, cdt, cdn)
       );
       frm.set_value({ party_type: get_party_type(payment_type) });
+    },
+    mode_of_payment: async function (frm) {
+      const { company, mode_of_payment } = frm.doc;
+      if (company && mode_of_payment) {
+        const {
+          message: { account: payment_account } = {},
+        } = await frappe.call({
+          method:
+            'erpnext.accounts.doctype.sales_invoice.sales_invoice.get_bank_cash_account',
+          args: { mode_of_payment, company },
+        });
+        frm.set_value({ payment_account });
+      }
     },
     party: async function (frm) {
       const { party_type, party } = frm.doc;
