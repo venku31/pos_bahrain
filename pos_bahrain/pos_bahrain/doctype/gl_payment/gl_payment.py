@@ -26,6 +26,13 @@ class GLPayment(AccountsController):
                 )
             )
 
+        if account_type == "Bank":
+            if not self.reference_no or not self.reference_date:
+                frappe.throw(
+                    frappe._(
+                        "Reference No and Reference Date is mandatory for bank transactions"
+                    )
+                )
 
         rows_without_tax_account = [
             "#{}".format(x.idx) for x in self.items if not x.account_head
