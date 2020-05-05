@@ -9,6 +9,7 @@ from frappe.model.document import Document
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.accounts.doctype.sales_invoice.sales_invoice import get_bank_cash_account
 from erpnext.accounts.general_ledger import make_gl_entries
+from functools import partial
 from toolz import compose, concat
 
 
@@ -47,10 +48,31 @@ class GLPayment(AccountsController):
             )
 
     def on_submit(self):
+        if not self.remarks:
+            self._set_remarks()
         self._make_gl_entries()
 
     def on_cancel(self):
         self._make_gl_entries(cancel=1)
+
+    def _set_remarks(self):
+        get_remarks = compose(lambda x: "\n".join(x), partial(filter, None))
+        self.remarks = get_remarks(
+            [
+                "Amount {} {} {}".format(
+                    self.get_formatted("total_amount"),
+                    "from" if self.payment_type == "Incoming" else "to",
+                    self.party_name,
+                )
+                if self.party
+                else "",
+                "Transaction reference no {} dated {}".format(
+                    self.reference_no, self.reference_date
+                )
+                if self.reference_no
+                else "",
+            ]
+        )
 
     def _make_gl_entries(self, cancel=0):
         gl_entries = [
@@ -66,6 +88,7 @@ class GLPayment(AccountsController):
                 "account": self.payment_account,
                 credit_or_debit: self.total_amount,
                 "against": self.party,
+                "remarks": self.remarks,
             }
         ]
 
