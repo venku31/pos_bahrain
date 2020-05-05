@@ -43,13 +43,16 @@ def _get_columns(doctype, filters):
 
 
 def _get_filters(doctype, filters):
-    vat_exempt_account = frappe.db.get_single_value(
-        "POS Bahrain Settings", "vat_exempt_account"
-    )
-    if not vat_exempt_account:
+    vat_exempt_accounts = [
+        x[0]
+        for x in frappe.get_all(
+            "POS Bahrain Settings Tax Exempt", fields=["account"], as_list=1
+        )
+    ]
+    if not vat_exempt_accounts:
         frappe.throw(
             frappe._(
-                "Please set {}: <em>VAT Exempt Account</em>".format(
+                "Please set {}: <em>VAT Exempt Accounts</em>".format(
                     frappe.get_desk_link("POS Bahrain Settings", "")
                 )
             )
@@ -57,8 +60,8 @@ def _get_filters(doctype, filters):
     inv_clauses = [
         "d.docstatus = 1",
         "d.posting_date BETWEEN %(from_date)s AND %(to_date)s",
-        "dt.account_head {} %(tax_account)s".format(
-            "=" if filters.vat_type == "exempt" else "!="
+        "dt.account_head {} %(tax_accounts)s".format(
+            "IN" if filters.vat_type == "exempt" else "NOT IN"
         ),
     ]
     glp_clauses = concatv(
@@ -69,7 +72,7 @@ def _get_filters(doctype, filters):
         {
             "from_date": filters.date_range[0],
             "to_date": filters.date_range[1],
-            "tax_account": vat_exempt_account,
+            "tax_accounts": vat_exempt_accounts,
             "payment_type": "Incoming" if doctype == "Sales Invoice" else "Outgoing",
         },
     )

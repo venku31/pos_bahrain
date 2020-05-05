@@ -9,11 +9,32 @@ from frappe.model.document import Document
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.accounts.doctype.sales_invoice.sales_invoice import get_bank_cash_account
 from erpnext.accounts.general_ledger import make_gl_entries
+from functools import partial
 from toolz import compose, concat
 
 
 class GLPayment(AccountsController):
     def validate(self):
+        account_type = frappe.db.get_value(
+            "Account", self.payment_account, "account_type"
+        )
+
+        valid_account_types = ["Cash", "Bank"]
+        if account_type not in valid_account_types:
+            frappe.throw(
+                frappe._("Account Type for {} must be one of {}").format(
+                    self.payment_account, frappe.utils.comma_or(valid_account_types)
+                )
+            )
+
+        if account_type == "Bank":
+            if not self.reference_no or not self.reference_date:
+                frappe.throw(
+                    frappe._(
+                        "Reference No and Reference Date is mandatory for bank transactions"
+                    )
+                )
+
         rows_without_tax_account = [
             "#{}".format(x.idx) for x in self.items if not x.account_head
         ]
@@ -21,16 +42,37 @@ class GLPayment(AccountsController):
             frappe.throw(
                 frappe._(
                     "Tax Template is either empty or invalid in row(s) {}".format(
-                        frappe.bold(", ".join(rows_without_tax_account))
+                        frappe.utils.comma_and(rows_without_tax_account)
                     )
                 )
             )
 
     def on_submit(self):
+        if not self.remarks:
+            self._set_remarks()
         self._make_gl_entries()
 
     def on_cancel(self):
         self._make_gl_entries(cancel=1)
+
+    def _set_remarks(self):
+        get_remarks = compose(lambda x: "\n".join(x), partial(filter, None))
+        self.remarks = get_remarks(
+            [
+                "Amount {} {} {}".format(
+                    self.get_formatted("total_amount"),
+                    "from" if self.payment_type == "Incoming" else "to",
+                    self.party_name,
+                )
+                if self.party
+                else "",
+                "Transaction reference no {} dated {}".format(
+                    self.reference_no, self.reference_date
+                )
+                if self.reference_no
+                else "",
+            ]
+        )
 
     def _make_gl_entries(self, cancel=0):
         gl_entries = [
@@ -40,15 +82,13 @@ class GLPayment(AccountsController):
         make_gl_entries(gl_entries, cancel=cancel)
 
     def _get_payment_gl_entries(self):
-        payment_account = get_bank_cash_account(self.mode_of_payment, self.company)[
-            "account"
-        ]
         credit_or_debit = _get_direction(self.payment_type)
         return [
             {
-                "account": payment_account,
+                "account": self.payment_account,
                 credit_or_debit: self.total_amount,
                 "against": self.party,
+                "remarks": self.remarks,
             }
         ]
 
