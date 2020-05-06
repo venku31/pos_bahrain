@@ -35,17 +35,20 @@ class GLPayment(AccountsController):
                     )
                 )
 
-        rows_without_tax_account = [
-            "#{}".format(x.idx) for x in self.items if not x.account_head
-        ]
-        if rows_without_tax_account:
-            frappe.throw(
-                frappe._(
-                    "Tax Template is either empty or invalid in row(s) {}".format(
-                        frappe.utils.comma_and(rows_without_tax_account)
+        if self.payment_type != "Internal Transfer":
+            rows_without_tax_account = [
+                "#{}".format(x.idx) for x in self.items if not x.account_head
+            ]
+            if rows_without_tax_account:
+                frappe.throw(
+                    frappe._(
+                        "Tax Template is either empty or invalid in row(s) {}. "
+                        "This is required for {} Payment Type.".format(
+                            frappe.utils.comma_and(rows_without_tax_account),
+                            frappe.bold(self.payment_type),
+                        )
                     )
                 )
-            )
 
     def on_submit(self):
         if not self.remarks:
@@ -78,6 +81,7 @@ class GLPayment(AccountsController):
         gl_entries = [
             self.get_gl_dict(x)
             for x in self._get_payment_gl_entries() + self._get_account_gl_entries()
+            if x.get("account")
         ]
         make_gl_entries(gl_entries, cancel=cancel)
 
@@ -119,6 +123,4 @@ class GLPayment(AccountsController):
 def _get_direction(payment_type, reverse=False):
     if payment_type == "Incoming":
         return "debit" if not reverse else "credit"
-    if payment_type == "Outgoing":
-        return "credit" if not reverse else "debit"
-    frappe.throw(frappe._("Invalid Payment Type"))
+    return "credit" if not reverse else "debit"
