@@ -60,12 +60,13 @@ def _get_filters(doctype, filters):
     inv_clauses = [
         "d.docstatus = 1",
         "d.posting_date BETWEEN %(from_date)s AND %(to_date)s",
+        "IFNULL(dt.account_head, '') != ''",
         "dt.account_head {} %(tax_accounts)s".format(
             "IN" if filters.vat_type == "exempt" else "NOT IN"
         ),
     ]
     glp_clauses = concatv(
-        inv_clauses, ["d.payment_type = %(payment_type)s", "a.account_type = 'Tax'"]
+        inv_clauses, ["d.payment_type IN %(payment_types)s", "a.account_type = 'Tax'"]
     )
     values = merge(
         pick(["vat_type"], filters),
@@ -73,7 +74,9 @@ def _get_filters(doctype, filters):
             "from_date": filters.date_range[0],
             "to_date": filters.date_range[1],
             "tax_accounts": vat_exempt_accounts,
-            "payment_type": "Incoming" if doctype == "Sales Invoice" else "Outgoing",
+            "payment_types": ["Incoming"]
+            if doctype == "Sales Invoice"
+            else ["Outgoing", "Internal Transfer"],
         },
     )
     return (
@@ -233,7 +236,7 @@ def _get_data(clauses, values, keys):
 
     make_row = compose(breakup_taxes, make_doc)
     make_list = compose(
-        partial(sorted, key=lambda x: x.get("date")),
+        partial(sorted, key=lambda x: (x.get("date"), x.get("invoice"))),
         partial(filter, filter_type),
         concat,
     )
