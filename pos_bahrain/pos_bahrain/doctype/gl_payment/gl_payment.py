@@ -35,21 +35,6 @@ class GLPayment(AccountsController):
                     )
                 )
 
-        if self.payment_type != "Internal Transfer":
-            rows_without_tax_account = [
-                "#{}".format(x.idx) for x in self.items if not x.account_head
-            ]
-            if rows_without_tax_account:
-                frappe.throw(
-                    frappe._(
-                        "Tax Template is either empty or invalid in row(s) {}. "
-                        "This is required for {} Payment Type.".format(
-                            frappe.utils.comma_and(rows_without_tax_account),
-                            frappe.bold(self.payment_type),
-                        )
-                    )
-                )
-
     def on_submit(self):
         if not self.remarks:
             self._set_remarks()
