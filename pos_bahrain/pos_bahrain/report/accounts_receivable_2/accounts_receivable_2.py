@@ -14,7 +14,8 @@ def execute(filters=None):
 
 
 def extend_report(base_execute, filters):
-    columns, data, *_ = base_execute(filters)
+    base_result = base_execute(filters)
+    columns, data = base_result[0], base_result[1]
     extended_data = _extend_data(filters, data)
     return columns, extended_data, None, _extend_chart(filters, extended_data)
 
