@@ -126,10 +126,6 @@ export default {
         },
       };
     });
-    frm.set_query('batch_no', 'items', function (frm, cdt, cdn) {
-      const { item_code: item } = frappe.get_doc(cdt, cdn);
-      return { filters: { item } };
-    });
 
     if (frm.doc.company) {
       erpnext.queries.setup_queries(frm, 'Warehouse', function () {
@@ -141,11 +137,63 @@ export default {
       frm.trigger('set_expense_account');
     }
   },
+
   refresh: function (frm) {
+    if (frm.doc.docstatus < 1) {
+      frm.add_custom_button(__('Fetch Items from Warehouse'), function () {
+        frm.events.get_items(frm);
+      });
+    }
+
     if (frm.doc.company) {
       frm.trigger('toggle_display_account_head');
     }
   },
+
+  get_items: function (frm) {
+    frappe.prompt(
+      {
+        label: 'Warehouse',
+        fieldname: 'warehouse',
+        fieldtype: 'Link',
+        options: 'Warehouse',
+        reqd: 1,
+        get_query: function () {
+          return {
+            filters: {
+              company: frm.doc.company,
+            },
+          };
+        },
+      },
+      function (data) {
+        frappe.call({
+          method:
+            'pos_bahrain.pos_bahrain.doctype.backported_stock_reconciliation.backported_stock_reconciliation.get_items',
+          args: {
+            warehouse: data.warehouse,
+            posting_date: frm.doc.posting_date,
+            posting_time: frm.doc.posting_time,
+            company: frm.doc.company,
+          },
+          callback: function (r) {
+            var items = [];
+            frm.clear_table('items');
+            for (var i = 0; i < r.message.length; i++) {
+              var d = frm.add_child('items');
+              $.extend(d, r.message[i]);
+              if (!d.qty) d.qty = null;
+              if (!d.valuation_rate) d.valuation_rate = null;
+            }
+            frm.refresh_field('items');
+          },
+        });
+      },
+      __('Get Items'),
+      __('Update')
+    );
+  },
+
   company: function (frm) {
     frm.trigger('toggle_display_account_head');
   },
