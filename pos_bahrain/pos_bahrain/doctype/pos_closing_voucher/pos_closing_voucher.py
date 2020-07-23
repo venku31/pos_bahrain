@@ -6,8 +6,8 @@ from __future__ import unicode_literals
 import frappe
 from frappe.utils import get_datetime, flt, cint
 from frappe.model.document import Document
-from functools import partial
-from toolz import merge, compose, pluck, excepts, first
+from functools import partial, reduce
+from toolz import merge, compose, pluck, excepts, first, unique
 
 from pos_bahrain.utils import pick, sum_by
 
@@ -101,6 +101,7 @@ class POSClosingVoucher(Document):
             )
 
         make_tax = partial(pick, ["rate", "tax_amount"])
+        get_employees = partial(pick, ["pb_sales_employee", "pb_sales_employee_name", "grand_total"])
 
         self.returns_total = sum_by("grand_total", returns)
         self.returns_net_total = sum_by("net_total", returns)
@@ -146,6 +147,33 @@ class POSClosingVoucher(Document):
         for tax in taxes:
             self.append("taxes", make_tax(tax))
 
+        self.employees = []
+        employee_with_sales = compose(list, partial(map, get_employees))(sales)
+        employees = compose(
+            list,
+            unique,
+            partial(map, lambda x: x['pb_sales_employee'])
+        )(employee_with_sales)
+        for employee in employees:
+            sales_employee_name = compose(
+                first,
+                partial(
+                    filter,
+                    lambda x: x['pb_sales_employee'] == employee
+                )
+            )(employee_with_sales)['pb_sales_employee_name']
+            sales = compose(
+                list,
+                partial(map, lambda x: x['grand_total']),
+                partial(filter, lambda x: x['pb_sales_employee'] == employee)
+            )(employee_with_sales)
+            self.append("employees", {
+                'sales_employee': employee,
+                'sales_employee_name': sales_employee_name,
+                'invoices_count': len(sales),
+                'sales_total': sum(sales),
+            })
+
 
 def _get_clauses():
     clauses = [
@@ -171,7 +199,8 @@ def _get_invoices(args):
                 si.outstanding_amount AS outstanding_amount,
                 si.paid_amount AS paid_amount,
                 si.change_amount AS change_amount,
-                si.pb_sales_employee
+                si.pb_sales_employee,
+                si.pb_sales_employee_name
             FROM `tabSales Invoice` AS si
             WHERE {clauses} AND is_return != 1
         """.format(
@@ -190,7 +219,8 @@ def _get_invoices(args):
                 si.base_discount_amount AS discount_amount,
                 si.paid_amount AS paid_amount,
                 si.change_amount AS change_amount,
-                si.pb_sales_employee
+                si.pb_sales_employee,
+                si.pb_sales_employee_name
             FROM `tabSales Invoice` As si
             WHERE {clauses} AND is_return = 1
         """.format(

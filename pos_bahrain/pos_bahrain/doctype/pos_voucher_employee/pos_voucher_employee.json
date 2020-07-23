@@ -1,0 +1,56 @@
+{
+ "creation": "2020-07-23 22:44:30.097301",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sales_employee",
+  "sales_employee_name",
+  "invoices_count",
+  "sales_total"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "sales_employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Sales Employee",
+   "options": "Employee",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "sales_employee.employee_name",
+   "fieldname": "sales_employee_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Sales Employee Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "invoices_count",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Invoices Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sales_total",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Sales Total",
+   "read_only": 1
+  }
+ ],
+ "istable": 1,
+ "modified": "2020-07-23 23:40:28.615079",
+ "modified_by": "ivanray@gmail.com",
+ "module": "Pos Bahrain",
+ "name": "POS Voucher Employee",
+ "owner": "ivanray@gmail.com",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
