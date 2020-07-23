@@ -71,7 +71,11 @@ class POSClosingVoucher(Document):
         def make_invoice(invoice):
             return merge(
                 pick(["grand_total", "paid_amount", "change_amount"], invoice),
-                {"invoice": invoice.name, "total_qty": invoice.pos_total_qty},
+                {
+                    "invoice": invoice.name,
+                    "total_qty": invoice.pos_total_qty,
+                    "sales_employee": invoice.pb_sales_employee
+                },
             )
 
         def make_payment(payment):
@@ -166,7 +170,8 @@ def _get_invoices(args):
                 si.base_discount_amount AS discount_amount,
                 si.outstanding_amount AS outstanding_amount,
                 si.paid_amount AS paid_amount,
-                si.change_amount AS change_amount
+                si.change_amount AS change_amount,
+                si.pb_sales_employee
             FROM `tabSales Invoice` AS si
             WHERE {clauses} AND is_return != 1
         """.format(
@@ -184,7 +189,8 @@ def _get_invoices(args):
                 si.base_net_total AS net_total,
                 si.base_discount_amount AS discount_amount,
                 si.paid_amount AS paid_amount,
-                si.change_amount AS change_amount
+                si.change_amount AS change_amount,
+                si.pb_sales_employee
             FROM `tabSales Invoice` As si
             WHERE {clauses} AND is_return = 1
         """.format(
