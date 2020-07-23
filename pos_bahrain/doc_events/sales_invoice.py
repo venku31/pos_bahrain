@@ -12,6 +12,7 @@ def validate(doc, method):
     if (
         doc.is_pos
         and not doc.is_return
+        and not doc.amended_from
         and doc.offline_pos_name
         and frappe.db.exists(
             "Sales Invoice",
@@ -32,6 +33,10 @@ def validate(doc, method):
                 frappe.throw(
                     "Reference Date necessary in payment row #{}".format(payment.idx)
                 )
+
+
+def before_save(doc, method):
+    set_cost_center(doc)
 
 
 def on_submit(doc, method):
@@ -65,3 +70,9 @@ def on_submit(doc, method):
                 "mop_amount",
                 flt(payment.base_amount) / flt(conversion_rate),
             )
+
+
+def set_cost_center(doc):
+    if doc.pb_set_cost_center:
+        for row in doc.items:
+            row.cost_center = doc.pb_set_cost_center

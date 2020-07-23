@@ -81,6 +81,7 @@ fixtures = [
                     "Sales Invoice Payment-pb_reference_date",
                     "Batch-naming_series",
                     "Company-default_warehouse",
+                    "Sales Invoice-pb_set_cost_center",
                     "Sales Invoice-pb_sales_employee",
                     "Sales Invoice-pb_sales_employee_name",
                     "Sales Invoice-discount_on_retail_price",
@@ -92,6 +93,7 @@ fixtures = [
                     "Sales Order Item-retail_price",
                     "Sales Order Item-discount_percentage_on_retail",
                     "Purchase Receipt-pb_scan_barcode",
+                    "Purchase Invoice-pb_set_cost_center",
                     "Purchase Invoice Item-retail_price",
                     "Purchase Invoice Item-pb_supplier_part_no",
                     "Purchase Receipt Item-pb_supplier_part_no",
@@ -191,6 +193,7 @@ fixtures = [
 doc_events = {
     "Sales Invoice": {
         "validate": "pos_bahrain.doc_events.sales_invoice.validate",
+        "before_save": "pos_bahrain.doc_events.sales_invoice.before_save",
         "on_submit": "pos_bahrain.doc_events.sales_invoice.on_submit",
     },
     "Purchase Receipt": {
@@ -198,7 +201,10 @@ doc_events = {
         "on_submit": "pos_bahrain.doc_events.purchase_receipt.set_batch_references",
     },
     "Purchase Invoice": {
-        "before_save": "pos_bahrain.doc_events.purchase_invoice.before_validate",
+        "before_save": [
+            "pos_bahrain.doc_events.purchase_invoice.before_validate",
+            "pos_bahrain.doc_events.purchase_invoice.before_save",
+        ],
         "on_submit": "pos_bahrain.doc_events.purchase_receipt.set_batch_references",
     },
     "Payment Entry": {
@@ -250,5 +256,6 @@ scheduler_events = {
 override_whitelisted_methods = {
     "erpnext.stock.get_item_details.get_item_details": "pos_bahrain.api.get_item_details.get_item_details",  # noqa
     "erpnext.accounts.doctype.sales_invoice.pos.get_pos_data": "pos_bahrain.api.item.get_pos_data",  # noqa
+    "erpnext.accounts.doctype.sales_invoice.pos.make_invoice": "pos_bahrain.api.pos.make_invoice",  # noqa
     "erpnext.selling.page.point_of_sale.point_of_sale.search_serial_or_batch_or_barcode_number": "pos_bahrain.api.item.search_serial_or_batch_or_barcode_number",  # noqa
 }

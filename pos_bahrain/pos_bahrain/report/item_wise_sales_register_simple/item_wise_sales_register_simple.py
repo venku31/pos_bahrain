@@ -21,15 +21,15 @@ from toolz import (
 from pos_bahrain.utils import pick, sum_by, with_report_error_check
 
 
-def execute(filters=None):
-    columns = _get_columns(filters)
+def execute(filters=None, transaction_type="Sales"):
+    columns = _get_columns(filters, transaction_type)
     keys = compose(list, partial(pluck, "fieldname"))(columns)
-    clauses, values = _get_filters(filters)
+    clauses, values = _get_filters(filters, transaction_type)
     data = _get_data(clauses, values, keys)
     return columns, data
 
 
-def _get_columns(filters):
+def _get_columns(filters, transaction_type):
     def make_column(key, label=None, type="Data", options=None, width=120):
         return {
             "label": _(label or key.replace("_", " ").title()),
@@ -41,7 +41,9 @@ def _get_columns(filters):
 
     return [
         make_column("posting_date", type="Date", width=90),
-        make_column("invoice", type="Link", options="Sales Invoice"),
+        make_column(
+            "invoice", type="Link", options="{} Invoice".format(transaction_type)
+        ),
         make_column("item_code", type="Link", options="Item"),
         make_column("item_name", width=150),
         make_column("item_group", type="Link", options="Item Group"),
@@ -55,18 +57,19 @@ def _get_columns(filters):
     ]
 
 
-def _get_filters(filters):
+def _get_filters(filters, transaction_type):
     clauses = concatv(
         [
-            "si.docstatus = 1",
-            "si.posting_date BETWEEN %(from_date)s AND %(to_date)s",
-            "si.company = %(company)s",
+            "inv.docstatus = 1",
+            "inv.posting_date BETWEEN %(from_date)s AND %(to_date)s",
+            "inv.company = %(company)s",
         ],
-        ["sii.item_code = %(item_code)s"] if filters.item_code else [],
-        ["INSTR(sii.item_name, %(item_name)s) > 0"] if filters.item_name else [],
-        ["sii.item_group = %(item_group)s"] if filters.item_group else [],
-        ["si.customer = %(customer)s"] if filters.customer else [],
-        ["sii.warehouse = %(warehouse)s"] if filters.warehouse else [],
+        ["inv_item.item_code = %(item_code)s"] if filters.item_code else [],
+        ["INSTR(inv_item.item_name, %(item_name)s) > 0"] if filters.item_name else [],
+        ["inv_item.item_group = %(item_group)s"] if filters.item_group else [],
+        ["inv.customer = %(customer)s"] if filters.customer else [],
+        ["inv.supplier = %(supplier)s"] if filters.supplier else [],
+        ["inv_item.warehouse = %(warehouse)s"] if filters.warehouse else [],
     )
     bin_clauses = concatv(
         ["TRUE"], ["warehouse = %(warehouse)s"] if filters.warehouse else []
@@ -75,6 +78,7 @@ def _get_filters(filters):
         pick(
             [
                 "customer",
+                "supplier",
                 "company",
                 "warehouse",
                 "item_code",
@@ -86,7 +90,11 @@ def _get_filters(filters):
         {"from_date": filters.date_range[0], "to_date": filters.date_range[1]},
     )
     return (
-        {"clauses": " AND ".join(clauses), "bin_clauses": " AND ".join(bin_clauses)},
+        {
+            "clauses": " AND ".join(clauses),
+            "bin_clauses": " AND ".join(bin_clauses),
+            "transaction_type": transaction_type,
+        },
         values,
     )
 
@@ -96,31 +104,31 @@ def _get_data(clauses, values, keys):
     items = frappe.db.sql(
         """
             SELECT
-                si.posting_date AS posting_date,
-                si.name AS invoice,
-                sii.item_code AS item_code,
-                sii.item_name AS item_name,
-                sii.item_group AS item_group,
+                inv.posting_date AS posting_date,
+                inv.name AS invoice,
+                inv_item.item_code AS item_code,
+                inv_item.item_name AS item_name,
+                inv_item.item_group AS item_group,
                 id.default_supplier AS default_supplier,
                 b.actual_qty AS current_qty,
-                sii.stock_qty AS stock_qty,
-                sii.stock_uom AS stock_uom,
-                sii.qty AS qty,
-                sii.uom AS uom,
-                sii.net_rate AS net_rate,
-                sii.net_amount AS net_amount
-            FROM `tabSales Invoice Item` AS sii
-            LEFT JOIN `tabSales Invoice` AS si ON
-                si.name = sii.parent
+                inv_item.stock_qty AS stock_qty,
+                inv_item.stock_uom AS stock_uom,
+                inv_item.qty AS qty,
+                inv_item.uom AS uom,
+                inv_item.net_rate AS net_rate,
+                inv_item.net_amount AS net_amount
+            FROM `tab{transaction_type} Invoice Item` AS inv_item
+            LEFT JOIN `tab{transaction_type} Invoice` AS inv ON
+                inv.name = inv_item.parent
             LEFT JOIN `tabItem Default` AS id ON
-                id.parent = sii.item_code AND id.company = %(company)s
+                id.parent = inv_item.item_code AND id.company = %(company)s
             LEFT JOIN (
                 SELECT item_code, SUM(actual_qty) AS actual_qty
                 FROM `tabBin` WHERE {bin_clauses} GROUP BY item_code
             ) AS b ON
-                b.item_code = sii.item_code
+                b.item_code = inv_item.item_code
             WHERE {clauses}
-            ORDER BY si.posting_date DESC
+            ORDER BY inv.posting_date DESC
         """.format(
             **clauses
         ),
@@ -135,7 +143,7 @@ def _get_data(clauses, values, keys):
             {"rate": row.net_rate * row.qty / row.stock_qty, "amount": row.net_amount},
         )
 
-    set_tax = _set_tax_amount(items)
+    set_tax = _set_tax_amount(items, transaction_type=clauses.get("transaction_type"))
 
     template = reduce(lambda a, x: merge(a, {x: None}), keys, {})
     make_row = compose(
@@ -145,7 +153,7 @@ def _get_data(clauses, values, keys):
     return [make_row(x) for x in items]
 
 
-def _set_tax_amount(items):
+def _set_tax_amount(items, transaction_type):
     item_map = valmap(
         lambda values: reduceby(
             "item_code", lambda a, x: a + x.get("net_amount", 0), values, 0
@@ -169,8 +177,10 @@ def _set_tax_amount(items):
         frappe.db.sql(
             """
                 SELECT parent AS invoice, item_wise_tax_detail
-                FROM `tabSales Taxes and Charges` WHERE parent in %(invoices)s
-            """,
+                FROM `tab{transaction_type} Taxes and Charges` WHERE parent in %(invoices)s
+            """.format(
+                transaction_type=transaction_type
+            ),
             values={"invoices": list(item_map.keys())},
             as_dict=1,
         )
