@@ -65,7 +65,7 @@ class POSClosingVoucher(Document):
         )
 
         sales, returns = _get_invoices(args)
-        actual_payments = _get_payments(args)
+        actual_payments, collection_payments = _get_payments(args)
         taxes = _get_taxes(args)
 
         def make_invoice(invoice):
@@ -100,6 +100,20 @@ class POSClosingVoucher(Document):
                 },
             )
 
+        def make_collection_payment(payment):
+            collected_amount = payment.get("amount")
+            return merge(
+                pick(["mode_of_payment"], payment),
+                {
+                    "mop_conversion_rate": 1,
+                    "collected_amount": collected_amount,
+                    "expected_amount": collected_amount,
+                    "difference_amount": 0,
+                    "mop_currency": frappe.defaults.get_global_default("currency"),
+                    "base_collected_amount": collected_amount
+                }
+            )
+
         make_tax = partial(pick, ["rate", "tax_amount"])
         get_employees = partial(pick, ["pb_sales_employee", "pb_sales_employee_name", "grand_total"])
 
@@ -115,7 +129,7 @@ class POSClosingVoucher(Document):
         self.tax_total = sum_by("tax_amount", taxes)
         self.discount_total = sum_by("discount_amount", sales)
         self.change_total = sum_by("change_amount", sales)
-        self.total_collected = sum_by("amount", actual_payments) - self.change_total
+        self.total_collected = sum_by("amount", actual_payments) + sum_by("amount", collection_payments) - self.change_total
 
         self.invoices = []
         for invoice in sales:
@@ -143,6 +157,14 @@ class POSClosingVoucher(Document):
                     make_payment(payment), get_form_collected(payment.mode_of_payment)
                 ),
             )
+        for payment in collection_payments:
+            self.append(
+                "payments",
+                merge(
+                    make_payment(payment), get_form_collected(payment.mode_of_payment)
+                ),
+            )
+
         self.taxes = []
         for tax in taxes:
             self.append("taxes", make_tax(tax))
@@ -233,7 +255,7 @@ def _get_invoices(args):
 
 
 def _get_payments(args):
-    payments = frappe.db.sql(
+    sales_payments = frappe.db.sql(
         """
             SELECT
                 sip.mode_of_payment AS mode_of_payment,
@@ -265,7 +287,22 @@ def _get_payments(args):
             "default": 1,
         },
     )
-    return _correct_mop_amounts(payments, default_mop)
+    collection_payments = frappe.db.sql(
+        """
+            SELECT
+                mode_of_payment,
+                SUM(paid_amount) AS amount
+            FROM `tabPayment Entry`
+            WHERE docstatus = 1
+            AND company = %(company)s
+            AND owner = %(user)s
+            AND TIMESTAMP(posting_date, pb_posting_time) BETWEEN %(period_from)s AND %(period_to)s
+        """,
+        values=args,
+        as_dict=1,
+    )
+
+    return _correct_mop_amounts(sales_payments, default_mop), _correct_mop_amounts(collection_payments, default_mop)
 
 
 def _correct_mop_amounts(payments, default_mop):
