@@ -73,7 +73,7 @@ class POSClosingVoucher(Document):
                 pick(["grand_total", "paid_amount", "change_amount"], invoice),
                 {
                     "invoice": invoice.name,
-                    "total_qty": invoice.pos_total_qty,
+                    "total_quantity": invoice.pos_total_qty,
                     "sales_employee": invoice.pb_sales_employee
                 },
             )
