@@ -43,16 +43,21 @@ def _get_columns(doctype, filters):
 
 
 def _get_filters(doctype, filters):
+    is_include = filters.vat_type not in ["Standard Rated", "Zero Rated"]
     vat_exempt_accounts = [
         x[0]
         for x in frappe.get_all(
-            "POS Bahrain Settings Tax Exempt", fields=["account"], as_list=1
+            "POS Bahrain Settings Tax Category",
+            filters={"category": filters.vat_type} if is_include else {},
+            fields=["account"],
+            as_list=1,
         )
     ]
+    print([vat_exempt_accounts, filters])
     if not vat_exempt_accounts:
         frappe.throw(
             frappe._(
-                "Please set {}: <em>VAT Exempt Accounts</em>".format(
+                "Please setup {}: <em>VAT Tax Categories</em>".format(
                     frappe.get_desk_link("POS Bahrain Settings", "")
                 )
             )
@@ -61,9 +66,7 @@ def _get_filters(doctype, filters):
         "d.docstatus = 1",
         "d.posting_date BETWEEN %(from_date)s AND %(to_date)s",
         "IFNULL(dt.account_head, '') != ''",
-        "dt.account_head {} %(tax_accounts)s".format(
-            "IN" if filters.vat_type == "exempt" else "NOT IN"
-        ),
+        "dt.account_head {} %(tax_accounts)s".format("IN" if is_include else "NOT IN"),
     ]
     glp_clauses = concatv(
         inv_clauses, ["d.payment_type IN %(payment_types)s", "a.account_type = 'Tax'"]
@@ -228,9 +231,9 @@ def _get_data(clauses, values, keys):
         ]
 
     def filter_type(row):
-        if values.get("vat_type") == "standard":
+        if values.get("vat_type") == "Standard Rate":
             return row.get("vat_amount") != 0
-        if values.get("vat_type") == "zero":
+        if values.get("vat_type") == "Zero Rated":
             return row.get("vat_amount") == 0
         return True
 
