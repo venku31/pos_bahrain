@@ -19,7 +19,7 @@ function handle_daily_email(frm) {
 export default {
   onload: handle_onload,
   setup: function (frm) {
-    frm.set_query('account', 'vat_exempt_accounts', {
+    frm.set_query('account', 'vat_tax_categories', {
       filters: { account_type: 'Tax', is_group: 0 },
     });
   },
