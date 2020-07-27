@@ -231,7 +231,7 @@ def _get_data(clauses, values, keys):
         ]
 
     def filter_type(row):
-        if values.get("vat_type") == "Standard Rate":
+        if values.get("vat_type") == "Standard Rated":
             return row.get("vat_amount") != 0
         if values.get("vat_type") == "Zero Rated":
             return row.get("vat_amount") == 0
