@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=no-member,access-member-before-definition
 # Copyright (c) 2018, 	9t9it and contributors
 # For license information, please see license.txt
 
@@ -7,25 +8,30 @@ import frappe
 from frappe.utils import get_datetime, flt, cint
 from frappe.model.document import Document
 from functools import partial
-from toolz import merge, compose, pluck, excepts, first
+from toolz import merge, compose, pluck, excepts, first, concatv
 
 from pos_bahrain.utils import pick, sum_by
 
 
 class POSClosingVoucher(Document):
     def validate(self):
+        clauses = concatv(
+            [
+                "docstatus = 1",
+                "name != %(name)s",
+                "company = %(company)s",
+                "pos_profile = %(pos_profile)s",
+                "period_from <= %(period_to)s",
+                "period_to >= %(period_from)s",
+            ],
+            ["user = %(user)s"] if self.user else [],
+        )
         existing = frappe.db.sql(
             """
-                SELECT 1 FROM `tabPOS Closing Voucher`
-                WHERE
-                    docstatus = 1 AND
-                    name != %(name)s AND
-                    company = %(company)s AND
-                    pos_profile = %(pos_profile)s AND
-                    user = %(user)s AND
-                    period_from <= %(period_to)s AND
-                    period_to >= %(period_from)s
-            """,
+                SELECT 1 FROM `tabPOS Closing Voucher` WHERE {clauses}
+            """.format(
+                clauses=" AND ".join(clauses)
+            ),
             values={
                 "name": self.name,
                 "company": self.company,
@@ -143,15 +149,18 @@ class POSClosingVoucher(Document):
             self.append("taxes", make_tax(tax))
 
 
-def _get_clauses():
-    clauses = [
-        "si.docstatus = 1",
-        "si.is_pos = 1",
-        "si.pos_profile = %(pos_profile)s",
-        "si.owner = %(user)s",
-        "si.company = %(company)s",
-        "TIMESTAMP(si.posting_date, si.posting_time) BETWEEN %(period_from)s AND %(period_to)s",  # noqa
-    ]
+def _get_clauses(args):
+
+    clauses = concatv(
+        [
+            "si.docstatus = 1",
+            "si.is_pos = 1",
+            "si.pos_profile = %(pos_profile)s",
+            "si.company = %(company)s",
+            "TIMESTAMP(si.posting_date, si.posting_time) BETWEEN %(period_from)s AND %(period_to)s",  # noqa
+        ],
+        ["si.owner = %(user)s"] if args.get("user") else [],
+    )
     return " AND ".join(clauses)
 
 
@@ -170,7 +179,7 @@ def _get_invoices(args):
             FROM `tabSales Invoice` AS si
             WHERE {clauses} AND is_return != 1
         """.format(
-            clauses=_get_clauses()
+            clauses=_get_clauses(args)
         ),
         values=args,
         as_dict=1,
@@ -188,7 +197,7 @@ def _get_invoices(args):
             FROM `tabSales Invoice` As si
             WHERE {clauses} AND is_return = 1
         """.format(
-            clauses=_get_clauses()
+            clauses=_get_clauses(args)
         ),
         values=args,
         as_dict=1,
@@ -211,7 +220,7 @@ def _get_payments(args):
             WHERE sip.parenttype = 'Sales Invoice' AND {clauses}
             GROUP BY sip.mode_of_payment
         """.format(
-            clauses=_get_clauses()
+            clauses=_get_clauses(args)
         ),
         values=args,
         as_dict=1,
@@ -270,7 +279,7 @@ def _get_taxes(args):
             WHERE stc.parenttype = 'Sales Invoice' AND {clauses}
             GROUP BY stc.rate
         """.format(
-            clauses=_get_clauses()
+            clauses=_get_clauses(args)
         ),
         values=args,
         as_dict=1,
