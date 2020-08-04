@@ -129,6 +129,10 @@ class POSClosingVoucher(Document):
         self.tax_total = sum_by("tax_amount", taxes)
         self.discount_total = sum_by("discount_amount", sales)
         self.change_total = sum_by("change_amount", sales)
+
+        print(actual_payments)
+        print(collection_payments)
+
         self.total_collected = sum_by("amount", actual_payments) + sum_by("amount", collection_payments) - self.change_total
 
         self.invoices = []
@@ -297,6 +301,7 @@ def _get_payments(args):
             AND company = %(company)s
             AND owner = %(user)s
             AND TIMESTAMP(posting_date, pb_posting_time) BETWEEN %(period_from)s AND %(period_to)s
+            GROUP BY mode_of_payment
         """,
         values=args,
         as_dict=1,
