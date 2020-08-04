@@ -1,5 +1,9 @@
 [
  {
+  "_assign": null,
+  "_comments": null,
+  "_liked_by": null,
+  "_user_tags": null,
   "default_value": null,
   "doc_type": "Batch",
   "docstatus": 0,
@@ -16,6 +20,10 @@
   "value": "0"
  },
  {
+  "_assign": null,
+  "_comments": null,
+  "_liked_by": null,
+  "_user_tags": null,
   "default_value": null,
   "doc_type": "Batch",
   "docstatus": 0,
@@ -32,6 +40,30 @@
   "value": "1"
  },
  {
+  "_assign": null,
+  "_comments": null,
+  "_liked_by": null,
+  "_user_tags": null,
+  "default_value": null,
+  "doc_type": "Batch",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "expiry_date",
+  "modified": "2018-12-12 17:49:08.098507",
+  "name": "Batch-expiry_date-bold",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "bold",
+  "property_type": "Check",
+  "value": "1"
+ },
+ {
+  "_assign": null,
+  "_comments": null,
+  "_liked_by": null,
+  "_user_tags": null,
   "default_value": null,
   "doc_type": "Batch",
   "docstatus": 0,
@@ -48,6 +80,30 @@
   "value": "1"
  },
  {
+  "_assign": null,
+  "_comments": null,
+  "_liked_by": null,
+  "_user_tags": null,
+  "default_value": null,
+  "doc_type": "Batch",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocType",
+  "field_name": null,
+  "modified": "2018-12-14 18:29:41.259162",
+  "name": "Batch-search_fields",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "search_fields",
+  "property_type": "Data",
+  "value": "item, expiry_date"
+ },
+ {
+  "_assign": null,
+  "_comments": null,
+  "_liked_by": null,
+  "_user_tags": null,
   "default_value": null,
   "doc_type": "Sales Invoice Item",
   "docstatus": 0,
@@ -64,6 +120,10 @@
   "value": "eval:doc.price_list_rate&&parent.discount_on_retail_price==0"
  },
  {
+  "_assign": null,
+  "_comments": null,
+  "_liked_by": null,
+  "_user_tags": null,
   "default_value": null,
   "doc_type": "Sales Invoice Item",
   "docstatus": 0,
@@ -80,6 +140,10 @@
   "value": "3"
  },
  {
+  "_assign": null,
+  "_comments": null,
+  "_liked_by": null,
+  "_user_tags": null,
   "default_value": null,
   "doc_type": "Sales Order Item",
   "docstatus": 0,
@@ -96,6 +160,10 @@
   "value": "3"
  },
  {
+  "_assign": null,
+  "_comments": null,
+  "_liked_by": null,
+  "_user_tags": null,
   "default_value": null,
   "doc_type": "Sales Order Item",
   "docstatus": 0,
@@ -112,6 +180,10 @@
   "value": "eval:doc.price_list_rate&&parent.discount_on_retail_price==0"
  },
  {
+  "_assign": null,
+  "_comments": null,
+  "_liked_by": null,
+  "_user_tags": null,
   "default_value": null,
   "doc_type": "Payment Entry Reference",
   "docstatus": 0,
@@ -126,37 +198,5 @@
   "property": "in_list_view",
   "property_type": "Check",
   "value": "0"
- },
- {
-  "default_value": null,
-  "doc_type": "Batch",
-  "docstatus": 0,
-  "doctype": "Property Setter",
-  "doctype_or_field": "DocField",
-  "field_name": "expiry_date",
-  "modified": "2019-05-11 23:55:45.984330",
-  "name": "Batch-expiry_date-bold",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
-  "property": "bold",
-  "property_type": "Check",
-  "value": "1"
- },
- {
-  "default_value": null,
-  "doc_type": "Batch",
-  "docstatus": 0,
-  "doctype": "Property Setter",
-  "doctype_or_field": "DocType",
-  "field_name": null,
-  "modified": "2019-05-11 23:52:53.617783",
-  "name": "Batch-search_fields",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
-  "property": "search_fields",
-  "property_type": "Data",
-  "value": "expiry_date"
  }
 ]
