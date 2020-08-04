@@ -14,11 +14,13 @@ export default function () {
         label: 'VAT Type',
         reqd: 1,
         options: [
-          { label: 'Standard Rated', value: 'standard' },
-          { label: 'Zero Rated', value: 'zero' },
-          { label: 'Exempted', value: 'exempt' },
+          'Standard Rated',
+          'Zero Rated',
+          'Exempted',
+          'Imported',
+          'Out of Scope',
         ],
-        default: 'standard',
+        default: 'Standard Rated',
       },
     ],
   };
