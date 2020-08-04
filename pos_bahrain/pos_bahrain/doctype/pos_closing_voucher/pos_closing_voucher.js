@@ -56,6 +56,7 @@ frappe.ui.form.on('POS Closing Voucher', {
   period_to: function(frm) {
     frm.trigger('set_report_details');
   },
+  set_report_details: async function (frm) {
     const { pos_profile, period_from } = frm.doc;
     if (pos_profile && period_from) {
       await frappe.call({
