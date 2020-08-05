@@ -105,20 +105,6 @@ class POSClosingVoucher(Document):
                 },
             )
 
-        def make_collection_payment(payment):
-            collected_amount = payment.get("amount")
-            return merge(
-                pick(["mode_of_payment"], payment),
-                {
-                    "mop_conversion_rate": 1,
-                    "collected_amount": collected_amount,
-                    "expected_amount": collected_amount,
-                    "difference_amount": 0,
-                    "mop_currency": frappe.defaults.get_global_default("currency"),
-                    "base_collected_amount": collected_amount
-                }
-            )
-
         make_tax = partial(pick, ["rate", "tax_amount"])
         get_employees = partial(pick, ["pb_sales_employee", "pb_sales_employee_name", "grand_total"])
 
@@ -134,10 +120,6 @@ class POSClosingVoucher(Document):
         self.tax_total = sum_by("tax_amount", taxes)
         self.discount_total = sum_by("discount_amount", sales)
         self.change_total = sum_by("change_amount", sales)
-
-        print(actual_payments)
-        print(collection_payments)
-
         self.total_collected = sum_by("amount", actual_payments) + sum_by("amount", collection_payments) - self.change_total
 
         self.invoices = []
@@ -167,12 +149,21 @@ class POSClosingVoucher(Document):
                 ),
             )
         for payment in collection_payments:
-            self.append(
-                "payments",
-                merge(
-                    make_payment(payment), get_form_collected(payment.mode_of_payment)
-                ),
-            )
+            collected_payment = merge(make_payment(payment), get_form_collected(payment.mode_of_payment))
+            existing_payment = list(
+                filter(
+                    lambda x: x.mode_of_payment == collected_payment['mode_of_payment'],
+                    self.payments
+                )
+            )[0]
+            if existing_payment:
+                for field in ['expected_amount', 'collected_amount', 'difference_amount', 'base_collected_amount']:
+                    existing_payment.set(field, sum([
+                        existing_payment.get(field),
+                        collected_payment.get(field, 0)
+                    ]))
+            else:
+                self.append("payments", collected_payment)
 
         self.taxes = []
         for tax in taxes:
