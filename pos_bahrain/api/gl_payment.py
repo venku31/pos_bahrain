@@ -18,7 +18,7 @@ def get_tax(company, template_type, tax_template):
     if len(rates) > 1:
         frappe.throw(frappe._("Rate can only be fetched for one tax"))
     if len(rates) == 0:
-        frappe.throw(frappe._("No tax found iis tax template"))
+        frappe.throw(frappe._("No tax found in tax template"))
     return rates[0]
 
 
