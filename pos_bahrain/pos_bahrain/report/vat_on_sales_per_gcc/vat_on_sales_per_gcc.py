@@ -12,6 +12,10 @@ from pos_bahrain.utils import pick
 from pos_bahrain.utils.report import make_column
 
 
+class VatCategoryNotFound(frappe.exceptions.ValidationError):
+    pass
+
+
 def execute(filters=None):
     return make_report("Sales Invoice", filters)
 
@@ -53,15 +57,15 @@ def _get_filters(doctype, filters):
             as_list=1,
         )
     ]
-    print([vat_exempt_accounts, filters])
     if not vat_exempt_accounts:
-        frappe.throw(
-            frappe._(
-                "Please setup {}: <em>VAT Tax Categories</em>".format(
-                    frappe.get_desk_link("POS Bahrain Settings", "")
-                )
-            )
+        msg = "Please setup {}: <em>VAT Tax Categories</em>".format(
+            frappe.get_desk_link("POS Bahrain Settings", "")
         )
+        if filters.get("hide_error_message"):
+            raise VatCategoryNotFound(msg)
+        else:
+            frappe.throw(msg, exc=VatCategoryNotFound)
+
     inv_clauses = [
         "d.docstatus = 1",
         "d.posting_date BETWEEN %(from_date)s AND %(to_date)s",
