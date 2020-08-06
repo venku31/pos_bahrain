@@ -7,9 +7,8 @@ from __future__ import unicode_literals
 import frappe
 from frappe.utils import get_datetime, flt, cint
 from frappe.model.document import Document
+from toolz import merge, compose, pluck, excepts, first, unique, concatv
 from functools import partial
-from toolz import merge, compose, pluck, excepts, first, concatv
-
 from pos_bahrain.utils import pick, sum_by
 
 
@@ -71,13 +70,17 @@ class POSClosingVoucher(Document):
         )
 
         sales, returns = _get_invoices(args)
-        actual_payments = _get_payments(args)
+        actual_payments, collection_payments = _get_payments(args)
         taxes = _get_taxes(args)
 
         def make_invoice(invoice):
             return merge(
                 pick(["grand_total", "paid_amount", "change_amount"], invoice),
-                {"invoice": invoice.name, "total_qty": invoice.pos_total_qty},
+                {
+                    "invoice": invoice.name,
+                    "total_quantity": invoice.pos_total_qty,
+                    "sales_employee": invoice.pb_sales_employee
+                },
             )
 
         def make_payment(payment):
@@ -103,6 +106,7 @@ class POSClosingVoucher(Document):
             )
 
         make_tax = partial(pick, ["rate", "tax_amount"])
+        get_employees = partial(pick, ["pb_sales_employee", "pb_sales_employee_name", "grand_total"])
 
         self.returns_total = sum_by("grand_total", returns)
         self.returns_net_total = sum_by("net_total", returns)
@@ -116,7 +120,7 @@ class POSClosingVoucher(Document):
         self.tax_total = sum_by("tax_amount", taxes)
         self.discount_total = sum_by("discount_amount", sales)
         self.change_total = sum_by("change_amount", sales)
-        self.total_collected = sum_by("amount", actual_payments) - self.change_total
+        self.total_collected = sum_by("amount", actual_payments) + sum_by("amount", collection_payments) - self.change_total
 
         self.invoices = []
         for invoice in sales:
@@ -144,9 +148,53 @@ class POSClosingVoucher(Document):
                     make_payment(payment), get_form_collected(payment.mode_of_payment)
                 ),
             )
+        for payment in collection_payments:
+            collected_payment = merge(make_payment(payment), get_form_collected(payment.mode_of_payment))
+            existing_payment = list(
+                filter(
+                    lambda x: x.mode_of_payment == collected_payment['mode_of_payment'],
+                    self.payments
+                )
+            )[0]
+            if existing_payment:
+                for field in ['expected_amount', 'collected_amount', 'difference_amount', 'base_collected_amount']:
+                    existing_payment.set(field, sum([
+                        existing_payment.get(field),
+                        collected_payment.get(field, 0)
+                    ]))
+            else:
+                self.append("payments", collected_payment)
+
         self.taxes = []
         for tax in taxes:
             self.append("taxes", make_tax(tax))
+
+        self.employees = []
+        employee_with_sales = compose(list, partial(map, get_employees))(sales)
+        employees = compose(
+            list,
+            unique,
+            partial(map, lambda x: x['pb_sales_employee'])
+        )(employee_with_sales)
+        for employee in employees:
+            sales_employee_name = compose(
+                first,
+                partial(
+                    filter,
+                    lambda x: x['pb_sales_employee'] == employee
+                )
+            )(employee_with_sales)['pb_sales_employee_name']
+            sales = compose(
+                list,
+                partial(map, lambda x: x['grand_total']),
+                partial(filter, lambda x: x['pb_sales_employee'] == employee)
+            )(employee_with_sales)
+            self.append("employees", {
+                'sales_employee': employee,
+                'sales_employee_name': sales_employee_name,
+                'invoices_count': len(sales),
+                'sales_total': sum(sales),
+            })
 
 
 def _get_clauses(args):
@@ -175,7 +223,9 @@ def _get_invoices(args):
                 si.base_discount_amount AS discount_amount,
                 si.outstanding_amount AS outstanding_amount,
                 si.paid_amount AS paid_amount,
-                si.change_amount AS change_amount
+                si.change_amount AS change_amount,
+                si.pb_sales_employee,
+                si.pb_sales_employee_name
             FROM `tabSales Invoice` AS si
             WHERE {clauses} AND is_return != 1
         """.format(
@@ -193,7 +243,9 @@ def _get_invoices(args):
                 si.base_net_total AS net_total,
                 si.base_discount_amount AS discount_amount,
                 si.paid_amount AS paid_amount,
-                si.change_amount AS change_amount
+                si.change_amount AS change_amount,
+                si.pb_sales_employee,
+                si.pb_sales_employee_name
             FROM `tabSales Invoice` As si
             WHERE {clauses} AND is_return = 1
         """.format(
@@ -206,7 +258,7 @@ def _get_invoices(args):
 
 
 def _get_payments(args):
-    payments = frappe.db.sql(
+    sales_payments = frappe.db.sql(
         """
             SELECT
                 sip.mode_of_payment AS mode_of_payment,
@@ -238,7 +290,23 @@ def _get_payments(args):
             "default": 1,
         },
     )
-    return _correct_mop_amounts(payments, default_mop)
+    collection_payments = frappe.db.sql(
+        """
+            SELECT
+                mode_of_payment,
+                SUM(paid_amount) AS amount
+            FROM `tabPayment Entry`
+            WHERE docstatus = 1
+            AND company = %(company)s
+            AND owner = %(user)s
+            AND TIMESTAMP(posting_date, pb_posting_time) BETWEEN %(period_from)s AND %(period_to)s
+            GROUP BY mode_of_payment
+        """,
+        values=args,
+        as_dict=1,
+    )
+
+    return _correct_mop_amounts(sales_payments, default_mop), _correct_mop_amounts(collection_payments, default_mop)
 
 
 def _correct_mop_amounts(payments, default_mop):
