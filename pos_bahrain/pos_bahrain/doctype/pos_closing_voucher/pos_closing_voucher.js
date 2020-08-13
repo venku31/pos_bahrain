@@ -8,7 +8,7 @@ frappe.ui.form.on('POS Closing Voucher', {
     if (frm.doc.docstatus === 0 && !frm.doc.period_to) {
       frm.set_value('period_to', period_to);
     }
-    ['payments', 'invoices', 'returns', 'taxes'].forEach(field => {
+    ['payments', 'invoices', 'returns', 'taxes', 'employees'].forEach(field => {
       frm.set_df_property(field, 'read_only', 1);
     });
   },
