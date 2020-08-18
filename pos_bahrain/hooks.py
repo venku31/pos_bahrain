@@ -115,7 +115,7 @@ fixtures = [
                     "Payment Entry Reference-pb_invoice_date",
                     "Item Price-pb_conversion_factor",
                     "Item Price-pb_customer_name",
-                    "Payment Entry-pb_posting_time"
+                    "Payment Entry-pb_posting_time",
                 ],
             ]
         ],
@@ -217,6 +217,10 @@ doc_events = {
     },
     "Item Price": {"before_save": "pos_bahrain.doc_events.item_price.before_save"},
     "Bin": {"on_update": "pos_bahrain.doc_events.bin.on_update"},
+    "Bank Reconciliation": {
+        "get_payment_entries": "pos_bahrain.doc_events.bank_reconciliation.get_payment_entries",
+        "update_clearance_date": "pos_bahrain.doc_events.bank_reconciliation.update_clearance_date",
+    },
 }
 
 boot_session = "pos_bahrain.doc_events.boot.boot_session"
