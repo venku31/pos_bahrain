@@ -4,10 +4,11 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
+import json
 import frappe
 from frappe.utils import get_datetime, flt, cint
 from frappe.model.document import Document
-from toolz import merge, compose, pluck, excepts, first, unique, concatv
+from toolz import merge, compose, pluck, excepts, first, unique, concatv, reduceby
 from functools import partial
 from pos_bahrain.utils import pick, sum_by
 
@@ -211,6 +212,10 @@ class POSClosingVoucher(Document):
                 },
             )
 
+        self.item_groups = []
+        for row in _get_item_groups(args):
+            self.append("item_groups", row)
+
 
 def _get_clauses(args):
 
@@ -371,3 +376,58 @@ def _get_taxes(args):
         as_dict=1,
     )
     return taxes
+
+
+def _get_item_groups(args):
+    def get_tax_rate(item_tax_rate):
+        try:
+            tax_rates = json.loads(item_tax_rate)
+            return sum([v for k, v in tax_rates.items()])
+        except TypeError:
+            0
+
+    def set_tax_and_total(row):
+        tax_amount = (
+            get_tax_rate(row.get("item_tax_rate")) * row.get("net_amount") / 100
+        )
+        return merge(
+            row,
+            {
+                "tax_amount": tax_amount,
+                "grand_total": tax_amount + row.get("net_amount"),
+            },
+        )
+
+    groups = reduceby(
+        "item_group",
+        lambda a, x: {
+            "qty": a.get("qty") + x.get("qty"),
+            "net_amount": a.get("net_amount") + x.get("net_amount"),
+            "tax_amount": a.get("tax_amount") + x.get("tax_amount"),
+            "grand_total": a.get("grand_total") + x.get("grand_total"),
+        },
+        (
+            set_tax_and_total(x)
+            for x in frappe.db.sql(
+                """
+            SELECT
+                sii.item_code,
+                sii.item_group,
+                sii.qty,
+                sii.net_amount,
+                sii.item_tax_rate
+            FROM `tabSales Invoice Item` AS sii
+            LEFT JOIN `tabSales Invoice` AS si ON
+                si.name = sii.parent
+            WHERE {clauses}
+        """.format(
+                    clauses=_get_clauses(args)
+                ),
+                values=args,
+                as_dict=1,
+            )
+        ),
+        {"qty": 0, "net_amount": 0, "tax_amount": 0, "grand_total": 0},
+    )
+    return [merge(v, {"item_group": k}) for k, v in groups.items()]
+
