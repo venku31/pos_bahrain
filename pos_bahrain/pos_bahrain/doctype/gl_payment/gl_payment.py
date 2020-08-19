@@ -71,7 +71,7 @@ class GLPayment(AccountsController):
         make_gl_entries(gl_entries, cancel=cancel)
 
     def _get_payment_gl_entries(self):
-        credit_or_debit = _get_direction(self.payment_type)
+        credit_or_debit = get_direction(self.payment_type)
         return [
             {
                 "account": self.payment_account,
@@ -82,7 +82,7 @@ class GLPayment(AccountsController):
         ]
 
     def _get_account_gl_entries(self):
-        credit_or_debit = _get_direction(self.payment_type, reverse=True)
+        credit_or_debit = get_direction(self.payment_type, reverse=True)
         list_concat = compose(list, concat)
         return list_concat(
             [
@@ -105,7 +105,7 @@ class GLPayment(AccountsController):
         )
 
 
-def _get_direction(payment_type, reverse=False):
+def get_direction(payment_type, reverse=False):
     if payment_type == "Incoming":
         return "debit" if not reverse else "credit"
     return "credit" if not reverse else "debit"
