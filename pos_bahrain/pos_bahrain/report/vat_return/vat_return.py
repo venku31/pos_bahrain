@@ -8,6 +8,7 @@ from toolz import compose, pluck, merge
 
 from pos_bahrain.pos_bahrain.report.vat_on_sales_per_gcc.vat_on_sales_per_gcc import (
     make_report,
+    VatCategoryNotFound,
 )
 from pos_bahrain.utils import sum_by
 from pos_bahrain.utils.report import make_column
@@ -35,14 +36,24 @@ def _get_filters(filters):
 
 
 def _get_data(filters):
-    sales_standard = _get_vat_row("Sales Invoice", filters, "standard")
-    sales_zero = _get_vat_row("Sales Invoice", filters, "zero")
-    sales_exempt = _get_vat_row("Sales Invoice", filters, "exempt")
+    sales_standard = _get_vat_row("Sales Invoice", filters, "Standard Rated")
+    sales_zero = _get_vat_row("Sales Invoice", filters, "Zero Rated")
+    sales_exempt = _get_vat_row("Sales Invoice", filters, "Exempted")
     sales_total = _merge_sum([sales_standard, sales_zero, sales_exempt])
-    purchase_standard = _get_vat_row("Purchase Invoice", filters, "standard")
-    purchase_zero = _get_vat_row("Purchase Invoice", filters, "zero")
-    purchase_exempt = _get_vat_row("Purchase Invoice", filters, "exempt")
-    purchase_total = _merge_sum([purchase_standard, purchase_zero, purchase_exempt])
+    purchase_standard = _get_vat_row("Purchase Invoice", filters, "Standard Rated")
+    purchase_zero = _get_vat_row("Purchase Invoice", filters, "Zero Rated")
+    purchase_exempt = _get_vat_row("Purchase Invoice", filters, "Exempted")
+    purchase_import = _get_vat_row("Purchase Invoice", filters, "Imported")
+    purchase_na = _get_vat_row("Purchase Invoice", filters, "Out of Scope")
+    purchase_total = _merge_sum(
+        [
+            purchase_standard,
+            purchase_zero,
+            purchase_exempt,
+            purchase_import,
+            purchase_na,
+        ]
+    )
     vat_total = sales_total.get("vat_amount", 0) - purchase_total.get("vat_amount", 0)
     return [
         {"description": frappe._("VAT on sales"), "bold": True},
@@ -74,12 +85,15 @@ def _get_data(filters):
             {"description": frappe._("Standard rated domestic purchases"), "indent": 1},
             purchase_standard,
         ),
-        {
-            "description": frappe._(
-                "Imports subject to VAT either paid at customs or deferred"
-            ),
-            "indent": 1,
-        },
+        merge(
+            {
+                "description": frappe._(
+                    "Imports subject to VAT either paid at customs or deferred"
+                ),
+                "indent": 1,
+            },
+            purchase_import,
+        ),
         {
             "description": frappe._(
                 "Imports subject to VAT accounted for through reverse charge mechanism"
@@ -99,7 +113,7 @@ def _get_data(filters):
                 ),
                 "indent": 1,
             },
-            _merge_sum([purchase_zero, purchase_exempt]),
+            _merge_sum([purchase_zero, purchase_exempt, purchase_na]),
         ),
         merge(
             {"description": frappe._("Total purchases"), "bold": True}, purchase_total,
@@ -124,10 +138,16 @@ def _get_data(filters):
 
 
 def _get_vat_row(doctype, filters, vat_type):
-    _, data = make_report(
-        doctype, frappe._dict(merge(filters, {"vat_type": vat_type})),
-    )
-    return _merge_sum(data)
+    try:
+        _, data = make_report(
+            doctype,
+            frappe._dict(
+                merge(filters, {"vat_type": vat_type, "hide_error_message": True})
+            ),
+        )
+        return _merge_sum(data)
+    except VatCategoryNotFound:
+        return {"taxable_amount": 0, "vat_amount": 0}
 
 
 def _merge_sum(data):
