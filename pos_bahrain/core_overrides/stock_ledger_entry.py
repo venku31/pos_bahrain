@@ -4,6 +4,10 @@ from frappe.utils import getdate
 from erpnext.stock.doctype.stock_ledger_entry.stock_ledger_entry import StockLedgerEntry
 
 
+# =====
+# Modified existing source code from
+# https://github.com/frappe/erpnext/blob/develop/erpnext/stock/doctype/stock_ledger_entry/stock_ledger_entry.py#L123
+# =====
 def _validate_batch(self):
     if self.batch_no and self.voucher_type != 'Stock Entry':
         purchase_return = _get_purchase_return(self.voucher_type, self.voucher_no)
