@@ -18,7 +18,7 @@ def execute(filters=None):
 
 
 def _extend_columns(columns):
-	return columns + ['Balance Qty:Float:90', 'Valuation Rate:Float:120']
+	return columns + ['Balance Qty:Float:90', 'Valuation Rate:Float:120', 'Total Valuation Rate:Float:120']
 
 
 def _get_clauses(filters):
@@ -40,7 +40,8 @@ def _extend_data(data, filters, item_idx):
 			x,
 			[
 				balance_qty.get(x[item_idx], 0.0),
-				valuation_rate.get(x[item_idx], 0.0)
+				valuation_rate.get(x[item_idx], 0.0),
+				balance_qty.get(x[item_idx], 0.00) * valuation_rate.get(x[item_idx], 0.00)
 			]
 		)
 	)
