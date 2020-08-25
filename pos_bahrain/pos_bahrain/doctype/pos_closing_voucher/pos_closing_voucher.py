@@ -4,10 +4,11 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
+import json
 import frappe
 from frappe.utils import get_datetime, flt, cint
 from frappe.model.document import Document
-from toolz import merge, compose, pluck, excepts, first, unique, concatv
+from toolz import merge, compose, pluck, excepts, first, unique, concatv, reduceby
 from functools import partial
 from pos_bahrain.utils import pick, sum_by
 
@@ -79,7 +80,7 @@ class POSClosingVoucher(Document):
                 {
                     "invoice": invoice.name,
                     "total_quantity": invoice.pos_total_qty,
-                    "sales_employee": invoice.pb_sales_employee
+                    "sales_employee": invoice.pb_sales_employee,
                 },
             )
 
@@ -106,7 +107,9 @@ class POSClosingVoucher(Document):
             )
 
         make_tax = partial(pick, ["rate", "tax_amount"])
-        get_employees = partial(pick, ["pb_sales_employee", "pb_sales_employee_name", "grand_total"])
+        get_employees = partial(
+            pick, ["pb_sales_employee", "pb_sales_employee_name", "grand_total"]
+        )
 
         self.returns_total = sum_by("grand_total", returns)
         self.returns_net_total = sum_by("net_total", returns)
@@ -120,7 +123,11 @@ class POSClosingVoucher(Document):
         self.tax_total = sum_by("tax_amount", taxes)
         self.discount_total = sum_by("discount_amount", sales)
         self.change_total = sum_by("change_amount", sales)
-        self.total_collected = sum_by("amount", actual_payments) + sum_by("amount", collection_payments) - self.change_total
+        self.total_collected = (
+            sum_by("amount", actual_payments)
+            + sum_by("amount", collection_payments)
+            - self.change_total
+        )
 
         self.invoices = []
         for invoice in sales:
@@ -149,19 +156,31 @@ class POSClosingVoucher(Document):
                 ),
             )
         for payment in collection_payments:
-            collected_payment = merge(make_payment(payment), get_form_collected(payment.mode_of_payment))
+            collected_payment = merge(
+                make_payment(payment), get_form_collected(payment.mode_of_payment)
+            )
             existing_payment = list(
                 filter(
-                    lambda x: x.mode_of_payment == collected_payment['mode_of_payment'],
-                    self.payments
+                    lambda x: x.mode_of_payment == collected_payment["mode_of_payment"],
+                    self.payments,
                 )
             )[0]
             if existing_payment:
-                for field in ['expected_amount', 'collected_amount', 'difference_amount', 'base_collected_amount']:
-                    existing_payment.set(field, sum([
-                        existing_payment.get(field),
-                        collected_payment.get(field, 0)
-                    ]))
+                for field in [
+                    "expected_amount",
+                    "collected_amount",
+                    "difference_amount",
+                    "base_collected_amount",
+                ]:
+                    existing_payment.set(
+                        field,
+                        sum(
+                            [
+                                existing_payment.get(field),
+                                collected_payment.get(field, 0),
+                            ]
+                        ),
+                    )
             else:
                 self.append("payments", collected_payment)
 
@@ -172,29 +191,30 @@ class POSClosingVoucher(Document):
         self.employees = []
         employee_with_sales = compose(list, partial(map, get_employees))(sales)
         employees = compose(
-            list,
-            unique,
-            partial(map, lambda x: x['pb_sales_employee'])
+            list, unique, partial(map, lambda x: x["pb_sales_employee"])
         )(employee_with_sales)
         for employee in employees:
             sales_employee_name = compose(
-                first,
-                partial(
-                    filter,
-                    lambda x: x['pb_sales_employee'] == employee
-                )
-            )(employee_with_sales)['pb_sales_employee_name']
+                first, partial(filter, lambda x: x["pb_sales_employee"] == employee)
+            )(employee_with_sales)["pb_sales_employee_name"]
             sales = compose(
                 list,
-                partial(map, lambda x: x['grand_total']),
-                partial(filter, lambda x: x['pb_sales_employee'] == employee)
+                partial(map, lambda x: x["grand_total"]),
+                partial(filter, lambda x: x["pb_sales_employee"] == employee),
             )(employee_with_sales)
-            self.append("employees", {
-                'sales_employee': employee,
-                'sales_employee_name': sales_employee_name,
-                'invoices_count': len(sales),
-                'sales_total': sum(sales),
-            })
+            self.append(
+                "employees",
+                {
+                    "sales_employee": employee,
+                    "sales_employee_name": sales_employee_name,
+                    "invoices_count": len(sales),
+                    "sales_total": sum(sales),
+                },
+            )
+
+        self.item_groups = []
+        for row in _get_item_groups(args):
+            self.append("item_groups", row)
 
 
 def _get_clauses(args):
@@ -306,7 +326,10 @@ def _get_payments(args):
         as_dict=1,
     )
 
-    return _correct_mop_amounts(sales_payments, default_mop), _correct_mop_amounts(collection_payments, default_mop)
+    return (
+        _correct_mop_amounts(sales_payments, default_mop),
+        _correct_mop_amounts(collection_payments, default_mop),
+    )
 
 
 def _correct_mop_amounts(payments, default_mop):
@@ -353,3 +376,58 @@ def _get_taxes(args):
         as_dict=1,
     )
     return taxes
+
+
+def _get_item_groups(args):
+    def get_tax_rate(item_tax_rate):
+        try:
+            tax_rates = json.loads(item_tax_rate)
+            return sum([v for k, v in tax_rates.items()])
+        except TypeError:
+            0
+
+    def set_tax_and_total(row):
+        tax_amount = (
+            get_tax_rate(row.get("item_tax_rate")) * row.get("net_amount") / 100
+        )
+        return merge(
+            row,
+            {
+                "tax_amount": tax_amount,
+                "grand_total": tax_amount + row.get("net_amount"),
+            },
+        )
+
+    groups = reduceby(
+        "item_group",
+        lambda a, x: {
+            "qty": a.get("qty") + x.get("qty"),
+            "net_amount": a.get("net_amount") + x.get("net_amount"),
+            "tax_amount": a.get("tax_amount") + x.get("tax_amount"),
+            "grand_total": a.get("grand_total") + x.get("grand_total"),
+        },
+        (
+            set_tax_and_total(x)
+            for x in frappe.db.sql(
+                """
+            SELECT
+                sii.item_code,
+                sii.item_group,
+                sii.qty,
+                sii.net_amount,
+                sii.item_tax_rate
+            FROM `tabSales Invoice Item` AS sii
+            LEFT JOIN `tabSales Invoice` AS si ON
+                si.name = sii.parent
+            WHERE {clauses}
+        """.format(
+                    clauses=_get_clauses(args)
+                ),
+                values=args,
+                as_dict=1,
+            )
+        ),
+        {"qty": 0, "net_amount": 0, "tax_amount": 0, "grand_total": 0},
+    )
+    return [merge(v, {"item_group": k}) for k, v in groups.items()]
+

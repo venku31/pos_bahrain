@@ -2,19 +2,26 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('POS Closing Voucher', {
-  onload: async function(frm) {
+  onload: async function (frm) {
     const { period_to = frappe.datetime.now_datetime() } =
       frappe.route_options || {};
     if (frm.doc.docstatus === 0 && !frm.doc.period_to) {
       frm.set_value('period_to', period_to);
     }
-    ['payments', 'invoices', 'returns', 'taxes', 'employees'].forEach(field => {
+    [
+      'payments',
+      'invoices',
+      'returns',
+      'taxes',
+      'employees',
+      'item_groups',
+    ].forEach((field) => {
       frm.set_df_property(field, 'read_only', 1);
     });
   },
-  refresh: function(frm) {
+  refresh: function (frm) {
     if (frm.doc.docstatus === 0) {
-      frm.add_custom_button('Fetch Invoices', function() {
+      frm.add_custom_button('Fetch Invoices', function () {
         frm.trigger('set_report_details');
       });
     }
@@ -22,7 +29,7 @@ frappe.ui.form.on('POS Closing Voucher', {
   before_submit(frm) {
     const unsynced_docs = (
       JSON.parse(localStorage.getItem('sales_invoice_doc')) || []
-    ).filter(x => {
+    ).filter((x) => {
       const { docstatus } = Object.values(x)[0];
       return docstatus === 1;
     });
@@ -35,10 +42,10 @@ frappe.ui.form.on('POS Closing Voucher', {
     }
     localStorage.setItem('sales_invoice_doc', '[]');
   },
-  user: function(frm) {
+  user: function (frm) {
     frm.trigger('set_report_details');
   },
-  pos_profile: async function(frm) {
+  pos_profile: async function (frm) {
     const { pos_profile } = frm.doc;
     if (pos_profile) {
       const { message: { company } = {} } = await frappe.db.get_value(
@@ -50,10 +57,10 @@ frappe.ui.form.on('POS Closing Voucher', {
     }
     frm.trigger('set_report_details');
   },
-  period_from: function(frm) {
+  period_from: function (frm) {
     frm.trigger('set_report_details');
   },
-  period_to: function(frm) {
+  period_to: function (frm) {
     frm.trigger('set_report_details');
   },
   set_report_details: async function (frm) {
@@ -67,10 +74,10 @@ frappe.ui.form.on('POS Closing Voucher', {
       frm.trigger('set_closing_amount');
     }
   },
-  opening_amount: function(frm) {
+  opening_amount: function (frm) {
     frm.trigger('set_closing_amount');
   },
-  set_closing_amount: function(frm) {
+  set_closing_amount: function (frm) {
     const { opening_amount } = frm.doc;
     const { collected_amount = 0 } =
       frm.doc.payments.find(({ is_default }) => is_default === 1) || {};
@@ -79,7 +86,7 @@ frappe.ui.form.on('POS Closing Voucher', {
 });
 
 frappe.ui.form.on('POS Voucher Payment', {
-  collected_amount: async function(frm, cdt, cdn) {
+  collected_amount: async function (frm, cdt, cdn) {
     const {
       collected_amount,
       expected_amount,
