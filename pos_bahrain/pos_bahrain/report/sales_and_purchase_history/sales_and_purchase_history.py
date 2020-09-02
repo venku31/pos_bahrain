@@ -43,9 +43,10 @@ def _get_filters(filters):
     clauses = concatv(
         ["sle.posting_date BETWEEN %(from_date)s AND %(to_date)s"],
         ["sle.item_code = %(item_code)s"],
+        ["sle.warehouse = %(warehouse)s"] if filters.warehouse else [],
     )
     values = merge(
-        pick(["item_code", "price_list"], filters),
+        pick(["item_code", "price_list", "warehouse"], filters),
         {"from_date": filters.date_range[0], "to_date": filters.date_range[1]},
     )
     return (
