@@ -18,5 +18,11 @@ frappe.query_reports['Sales and Purchase History'] = {
       reqd: 1,
       default: [frappe.datetime.month_start(), frappe.datetime.month_end()],
     },
+    {
+      fieldname: 'warehouse',
+      label: __('Warehouse'),
+      fieldtype: 'Link',
+      options: 'Warehouse',
+    },
   ],
 };
