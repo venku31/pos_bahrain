@@ -72,10 +72,12 @@ class GLPayment(AccountsController):
 
     def _get_payment_gl_entries(self):
         credit_or_debit = get_direction(self.payment_type)
+        in_account_currency = "{}_in_account_currency".format(credit_or_debit)
         return [
             {
                 "account": self.payment_account,
                 credit_or_debit: self.total_amount,
+                in_account_currency: self.total_amount,
                 "against": self.party,
                 "remarks": self.remarks,
             }
@@ -83,6 +85,7 @@ class GLPayment(AccountsController):
 
     def _get_account_gl_entries(self):
         credit_or_debit = get_direction(self.payment_type, reverse=True)
+        in_account_currency = "{}_in_account_currency".format(credit_or_debit)
         list_concat = compose(list, concat)
         return list_concat(
             [
@@ -90,6 +93,7 @@ class GLPayment(AccountsController):
                     {
                         "account": x.account,
                         credit_or_debit: x.net_amount,
+                        in_account_currency: x.net_amount,
                         "against": self.party,
                         "cost_center": self.cost_center,
                         "remarks": x.remarks,
@@ -97,6 +101,7 @@ class GLPayment(AccountsController):
                     {
                         "account": x.account_head,
                         credit_or_debit: x.tax_amount,
+                        in_account_currency: x.tax_amount,
                         "against": self.party,
                     },
                 ]
