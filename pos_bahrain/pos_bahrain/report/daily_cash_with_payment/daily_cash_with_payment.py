@@ -20,6 +20,7 @@ def execute(filters=None):
 
 def _get_columns(mop, filters):
 	summary_view = filters.get('summary_view')
+	show_customer_info = filters.get('show_customer_info')
 	columns = []
 
 	def make_column(key, label=None, type="Data", options=None, width=120):
@@ -42,6 +43,15 @@ def _get_columns(mop, filters):
 		columns.append(
 			make_column("posting_time", "Time", type="Time")
 		)
+
+	if show_customer_info:
+		columns.extend([
+			make_column("customer", "Customer", "Link", "Customer"),
+			make_column("customer_name", "Customer Name"),
+			make_column("mobile_no", "Mobile No")
+		])
+
+	print(columns)
 
 	def make_mop_column(row):
 		return make_column(
@@ -67,8 +77,13 @@ def _get_data(clauses, filters, mop):
 				si.posting_time AS posting_time,
 				si.change_amount AS change_amount,
 				sip.mode_of_payment AS mode_of_payment,
-				sip.amount AS amount
+				sip.amount AS amount,
+				si.customer AS customer,
+				si.customer_name AS customer_name,
+				c.mobile_no AS mobile_no
 			FROM `tabSales Invoice` AS si
+			JOIN `tabCustomer` AS c ON
+				c.name = si.customer
 			RIGHT JOIN `tabSales Invoice Payment` AS sip ON
 				sip.parent = si.name
 			LEFT JOIN `tabPOS Profile` AS pp ON
@@ -199,6 +214,12 @@ def _make_payment_row(mop_cols, _, row):
 		_['posting_date'] = row.get('posting_date')
 	if not _.get('posting_time'):
 		_['posting_time'] = row.get('posting_time')
+	if not _.get('customer'):
+		_['customer'] = row.get('customer')
+	if not _.get('customer_name'):
+		_['customer_name'] = row.get('customer_name')
+	if not _.get('mobile_no'):
+		_['mobile_no'] = row.get('mobile_no')
 
 	return _
 
@@ -218,7 +239,10 @@ def _new_invoice_payment(mop_cols):
 		'posting_date': None,
 		'posting_time': None,
 		'change': None,
-		'total': 0.00
+		'total': 0.00,
+		'customer': None,
+		'customer_name': None,
+		'mobile_no': None
 	}
 
 	for mop_col in mop_cols:
