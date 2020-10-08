@@ -7,11 +7,11 @@ from toolz import merge, concat
 
 
 @frappe.whitelist()
-def make_invoice(doc_list={}, email_queue_list={}, customers_list={}):
+def make_invoice(pos_profile, doc_list={}, email_queue_list={}, customers_list={}):
     from erpnext.accounts.doctype.sales_invoice.pos import make_invoice
 
     result = make_invoice(
-        doc_list=[], email_queue_list=email_queue_list, customers_list=customers_list,
+        pos_profile, doc_list=[], email_queue_list=email_queue_list, customers_list=customers_list
     )
 
     docs = json.loads(doc_list) if isinstance(doc_list, string_types) else doc_list
@@ -31,7 +31,7 @@ def make_invoice(doc_list={}, email_queue_list={}, customers_list={}):
     for doc_list_item in docs:
         for name, doc in doc_list_item.items():
             frappe.utils.background_jobs.enqueue(
-                make_invoice, job_name=name, doc_list=[{name: doc}]
+                make_invoice, job_name=name, doc_list=[{name: doc}], pos_profile=pos_profile
             )
 
     return merge(result, {"invoice": prev_synced_invoices})

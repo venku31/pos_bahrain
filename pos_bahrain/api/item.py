@@ -130,7 +130,7 @@ def _get_item_prices(price_list):
         """
             SELECT
                 item_code, currency, price_list_rate,
-                uom, customer, min_qty, valid_from, valid_upto
+                uom, customer, valid_from, valid_upto
             FROM `tabItem Price` WHERE price_list = %(price_list)s
         """,
         values={"price_list": price_list},
@@ -150,7 +150,6 @@ def _get_default_item_prices(price_list):
             WHERE ip.price_list = %(price_list)s AND
                 IFNULL(ip.customer, '') = '' AND
                 IFNULL(ip.uom, '') IN ('', i.stock_uom) AND
-                IFNULL(ip.min_qty, 0) <= 1 AND
                 %(transaction_date)s BETWEEN
                     IFNULL(ip.valid_from, '2000-01-01') AND
                     IFNULL(ip.valid_upto, '2500-12-31')

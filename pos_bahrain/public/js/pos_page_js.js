@@ -196,6 +196,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     const si_docs = this.get_submitted_invoice() || [];
     const email_queue_list = this.get_email_queue() || {};
     const customers_list = this.get_customers_details() || {};
+    const pos_profile = this.pos_profile_data || {};
 
     if (si_docs.length || email_queue_list || customers_list) {
       frappe.call({
@@ -203,8 +204,9 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
         freeze: true,
         args: {
           doc_list: si_docs,
-          email_queue_list: email_queue_list,
-          customers_list: customers_list
+          email_queue_list,
+          customers_list,
+          pos_profile
         },
         callback: function (r) {
           if (r.message) {
