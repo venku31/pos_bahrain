@@ -22,6 +22,24 @@ export default function () {
         ],
         default: 'Standard Rated',
       },
+      {
+        fieldtype: 'Link',
+        fieldname: 'warehouse',
+        label: 'Warehouse',
+        options: 'Warehouse'
+      },
+      {
+        fieldtype: 'Link',
+        fieldname: 'company',
+        label: 'Company',
+        options: 'Company'
+      },
+      {
+        fieldtype: 'Link',
+        fieldname: 'cost_center',
+        label: 'Cost Center',
+        options: 'Cost Center'
+      },
     ],
   };
 }

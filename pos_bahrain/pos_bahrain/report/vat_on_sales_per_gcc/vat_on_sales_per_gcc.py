@@ -66,12 +66,15 @@ def _get_filters(doctype, filters):
         else:
             frappe.throw(msg, exc=VatCategoryNotFound)
 
-    inv_clauses = [
-        "d.docstatus = 1",
-        "d.posting_date BETWEEN %(from_date)s AND %(to_date)s",
-        "IFNULL(dt.account_head, '') != ''",
-        "dt.account_head {} %(tax_accounts)s".format("IN" if is_include else "NOT IN"),
-    ]
+    inv_clauses = concatv(
+        ["d.docstatus = 1"],
+        ["d.posting_date BETWEEN %(from_date)s AND %(to_date)s"],
+        ["IFNULL(dt.account_head, '') != ''"],
+        ["dt.account_head {} %(tax_accounts)s".format("IN" if is_include else "NOT IN")],
+        ["d.company = %(company)s"] if filters.get('company') else [],
+        ["d.cost_center = %(cost_center)s"] if filters.get('cost_center') else [],
+        ["d.set_warehouse = %(warehouse)s"] if filters.get('warehouse') else [],
+    )
     glp_clauses = concatv(
         inv_clauses, ["d.payment_type IN %(payment_types)s", "a.account_type = 'Tax'"]
     )
@@ -85,6 +88,7 @@ def _get_filters(doctype, filters):
             if doctype == "Sales Invoice"
             else ["Outgoing", "Internal Transfer"],
         },
+        pick(["company", "cost_center", "warehouse"], filters),
     )
     return (
         {
