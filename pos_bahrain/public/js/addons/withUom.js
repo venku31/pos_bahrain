@@ -53,7 +53,7 @@ export default function withUom(Pos) {
       });
       $select.on('change', e => {
         e.stopPropagation();
-        this._set_item_price_from_uom(this.item_code, e.target.value);
+        this._set_item_price_from_uom(unescape(this.item_code), e.target.value);
         this.render_selected_item();
       });
     }
