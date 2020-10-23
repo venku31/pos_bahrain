@@ -43,7 +43,7 @@ export default function withUom(Pos) {
       `).prependTo(this.wrapper.find('.pos-selected-item-action'));
       const $select = this.wrapper.find('.pos-item-uom');
       const selected_item = this._get_active_item_ref_from_doc();
-      this.uom_details[this.item_code].forEach(({ uom }) => {
+      this.uom_details[unescape(this.item_code)].forEach(({ uom }) => {
         $('<option />', {
           value: uom,
           selected: selected_item && uom === selected_item.uom,
