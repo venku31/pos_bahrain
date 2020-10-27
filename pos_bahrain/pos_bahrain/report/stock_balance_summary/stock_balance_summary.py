@@ -64,5 +64,5 @@ def _get_data(data):
 def _merge_kv(data):
 	res = []
 	for key, value in data.items():
-		res.append([key, *value])
+		res.append(list(concatv([key], value)))
 	return res
