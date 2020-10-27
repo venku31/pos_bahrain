@@ -4,7 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
-from toolz.curried import concatv, merge, dissoc
+from toolz.curried import concatv, merge, dissoc, first
 
 from pos_bahrain.pos_bahrain.doctype.gl_payment.gl_payment import get_direction
 
@@ -136,6 +136,6 @@ def _get_conditions(*conditions):
                 "gp.posting_date >= %(from)s",
                 "gp.posting_date <= %(to)s",
             ],
-            [x[0] for x in conditions],
+            [first(x) for x in conditions],
         )
     )
