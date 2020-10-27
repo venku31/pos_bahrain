@@ -136,6 +136,6 @@ def _get_conditions(*conditions):
                 "gp.posting_date >= %(from)s",
                 "gp.posting_date <= %(to)s",
             ],
-            *conditions,
+            [x[0] for x in conditions],
         )
     )
