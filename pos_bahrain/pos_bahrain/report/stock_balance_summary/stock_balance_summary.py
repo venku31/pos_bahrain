@@ -52,7 +52,7 @@ def _get_data(data):
 	merged_data = _merge_kv(data_by_item_groups(data))
 	total_value = sum(list(map(lambda x: x[8], merged_data)))
 	merged_data_with_per = list(
-		map(lambda x: [*x, (x[8] / total_value) * 100], merged_data)
+		map(lambda x: list(concatv(x, [(x[8] / total_value) * 100])), merged_data)
 	)
 
 	return sorted(
