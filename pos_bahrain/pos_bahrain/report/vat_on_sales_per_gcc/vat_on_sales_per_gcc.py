@@ -78,8 +78,8 @@ def _get_filters(doctype, filters):
     values = merge(
         pick(["vat_type"], filters),
         {
-            "from_date": filters.date_range[0],
-            "to_date": filters.date_range[1],
+            "from_date": filters.from_date,
+            "to_date": filters.to_date,
             "tax_accounts": vat_exempt_accounts,
             "payment_types": ["Incoming"]
             if doctype == "Sales Invoice"
