@@ -17,6 +17,11 @@ def get_data():
         }
 
     return [
+        make_section('VAT Reports', [
+            make_item('report', 'VAT Return', 'VAT Return', True),
+            make_item('report', 'VAT on Purchase per GCC', 'VAT on Purchase per GCC', True),
+            make_item('report', 'VAT on Sales per GCC', 'VAT on Sales per GCC', True)
+        ]),
         make_section('Reports', [
             make_item('report', 'Item Consumption Report', 'Item Consumption Report', True),
             make_item('report', 'Batch-wise Expiry Report', 'Batch-wise Expiry Report', True),

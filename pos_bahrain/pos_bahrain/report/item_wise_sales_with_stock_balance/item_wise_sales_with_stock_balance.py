@@ -7,7 +7,7 @@ from pos_bahrain.pos_bahrain.report.item_wise_sales_register_with_employee.item_
 	execute as item_wise_sales_register_with_employee
 )
 
-from toolz import compose, concatv, first
+from toolz import compose, concatv, first, merge
 from toolz.curried import groupby, valmap
 
 
@@ -63,10 +63,7 @@ def _get_balance_qty(items, filters):
 				WHERE {clauses}
 				GROUP BY item_code
 			""".format(clauses=clauses),
-			values={
-				**filters,
-				'items': items
-			},
+			values=merge(filters, {'items': items}),
 			as_dict=1
 		)
 	)()
