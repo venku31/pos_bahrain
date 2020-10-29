@@ -17,6 +17,10 @@ def get_data():
         }
 
     return [
+        make_section('Custom Finance Reports', [
+            make_item('report', 'Balance Sheet Customized', 'Balance Sheet Customized', True),
+            make_item('report', 'Profit and Loss Statement Customized', 'Profit and Loss Statement Customized', True)
+        ]),
         make_section('VAT Reports', [
             make_item('report', 'VAT Return', 'VAT Return', True),
             make_item('report', 'VAT on Purchase per GCC', 'VAT on Purchase per GCC', True),
