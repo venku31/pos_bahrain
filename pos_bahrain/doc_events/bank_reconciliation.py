@@ -136,6 +136,6 @@ def _get_conditions(*conditions):
                 "gp.posting_date >= %(from)s",
                 "gp.posting_date <= %(to)s",
             ],
-            [first(x) for x in conditions],
+            [first(x) for x in filter(lambda x: x, conditions)],
         )
     )
