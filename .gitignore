@@ -11,3 +11,4 @@ __pycache__/
 node_modules/
 pos_bahrain/public/node_modules
 yarn.lock
+.idea
