@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from functools import partial
-from toolz import pluck, compose, concatv
+from toolz import pluck, compose, concatv, groupby, first, valmap
 from pos_bahrain.utils.report import make_column
 
 
@@ -67,7 +67,19 @@ def _get_data(data, columns):
             lambda: rows,
         )()
 
-    return get_merged_data(data)
+    data_by_item_group = compose(
+        partial(
+            valmap,
+            lambda x: [
+                sum(z) if isinstance(first(z), float) else first(z) for z in zip(*x)
+            ],
+        ),
+        partial(groupby, lambda x: x[2]),  # index 2 is item group
+    )
+
+    return compose(list, lambda x: x.values(), data_by_item_group, get_merged_data)(
+        data
+    )
 
 
 def _get_parent_item_groups(item_groups):
