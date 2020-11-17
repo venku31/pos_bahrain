@@ -49,6 +49,7 @@ def _get_columns():
 
 def _get_data(filters):
     items = _get_items()
+    warehouses = _get_warehouses()
 
     def get_gp_details():
         from erpnext.accounts.report.gross_profit.gross_profit import execute
@@ -70,21 +71,26 @@ def _get_data(filters):
             for x in gp_data
         }
 
+    def make_gp(data):
+        return merge({"qty_sold": 0.00, "sold_valuation": 0.00}, data)
+
+    def make_stock(data):
+        return merge({_get_key(x): 0.00 for x in warehouses}, data)
+
     gp_details = get_gp_details()
     item_barcodes = _get_item_barcodes()
-    item_stocks = compose(
-        partial(
-            valmap,
-            lambda x: {_get_key(z.get("warehouse")): z.get("actual_qty") for z in x},
-        ),
-        partial(groupby, "item_code"),
-        lambda: _get_item_stocks(),
-    )()
+    item_stocks = _get_item_stocks()
 
     data = compose(
         list,
-        partial(map, lambda x: merge(x, gp_details.get(x.get("name"), {}))),
-        partial(map, lambda x: merge(x, item_stocks.get(x.get("name"), {}))),
+        partial(
+            map,
+            lambda x: merge(x, make_gp(gp_details.get(x.get("name"), {}))),
+        ),
+        partial(
+            map,
+            lambda x: merge(x, make_stock(item_stocks.get(x.get("name"), {}))),
+        ),
         partial(map, lambda x: merge(x, {"barcode": item_barcodes.get(x.get("name"))})),
     )
 
@@ -113,7 +119,16 @@ def _get_item_barcodes():
 
 
 def _get_item_stocks():
-    return frappe.db.get_all("Bin", fields=["warehouse", "item_code", "actual_qty"])
+    item_stocks = frappe.db.get_all(
+        "Bin", fields=["warehouse", "item_code", "actual_qty"]
+    )
+    return compose(
+        partial(
+            valmap,
+            lambda x: {_get_key(z.get("warehouse")): z.get("actual_qty") for z in x},
+        ),
+        partial(groupby, "item_code"),
+    )(item_stocks)
 
 
 def _get_warehouses():
