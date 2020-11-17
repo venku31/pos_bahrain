@@ -12,7 +12,31 @@ def execute(filters=None):
     from erpnext.stock.report.stock_balance.stock_balance import execute
 
     columns, data = execute(filters)
-    return _get_columns(columns), _get_data(data, columns)
+    return _get_rearranged_data(_get_columns(columns), _get_data(data, columns))
+
+
+def _get_rearranged_data(columns, data):
+    column_fieldnames = list(pluck("fieldname", columns))
+
+    def get_column_data(column_name, row):
+        column_data = column_fieldnames.index(column_name)
+        return row[column_data]
+
+    def get_arrangement(rows):
+        return [
+            get_column_data("parent_item_group", rows),
+            get_column_data("item_group", rows),
+            get_column_data("sku_counts", rows),
+            get_column_data("bal_val", rows),
+            get_column_data("ret_val", rows),
+        ]
+
+    rearranged_data = compose(
+        list,
+        partial(map, get_arrangement),
+    )
+
+    return get_arrangement(columns), rearranged_data(data)
 
 
 def _get_columns(columns):
@@ -26,7 +50,8 @@ def _get_columns(columns):
                     "Link",
                     options="Item Group",
                 ),
-                make_column("retail_value", "Retail", "Currency"),
+                make_column("ret_val", "Retail", "Currency"),
+                make_column("sku_counts", "SKU Counts", "Float"),
             ],
         )
     )
@@ -60,6 +85,7 @@ def _get_data(data, columns):
                                 get_column_data("item_code", x), 0.00
                             )
                             * get_column_data("bal_qty", x),
+                            1.0,  # for number of sku
                         ],
                     )
                 ),
