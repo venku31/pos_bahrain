@@ -54,7 +54,10 @@ def get_data():
             make_item('report', 'Bank Reconciliation Statement PB', 'Bank Reconciliation Statement PB', True),
             make_item('report', 'Item-wise Sales with Stock Balance', 'Item-wise Sales with Stock Balance', True),
             make_item('report', 'Item-wise Sales Register with Employee', 'Item-wise Sales Register with Employee',
-                      True)
+                      True),
+            make_item('report', 'Stock Item Cost', 'Stock Item Cost',
+                      True),
+            make_item('report', 'Stock Cost Summary', 'Stock Cost Summary', True)
         ]),
         make_section('Documents', [
             make_item('doctype', 'Opening Cash', 'Opening Cash'),
