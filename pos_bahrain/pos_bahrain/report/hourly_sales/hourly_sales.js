@@ -46,5 +46,31 @@ frappe.query_reports['Hourly Sales'] = {
       ],
       default: 'All',
     },
+    {
+      fieldname: 'cost_centers',
+      label: __('Cost Centers'),
+      fieldtype: 'MultiSelect',
+      get_data: function() {
+        const names = frappe.query_report.get_filter_value('cost_centers') || '';
+        const values = names.split(/\s*,\s*/).filter(d => d);
+        const txt = names.match(/[^,\s*]*$/)[0] || '';
+        let data = [];
+        frappe.call({
+          type: 'GET',
+          method: 'frappe.desk.search.search_link',
+          async: false,
+          no_spinner: true,
+          args: {
+            doctype: 'Cost Center',
+            txt: txt,
+            filters: { name: ['not in', values] },
+          },
+          callback: function({ results }) {
+            data = results;
+          },
+        });
+        return data;
+      },
+    },
   ],
 };

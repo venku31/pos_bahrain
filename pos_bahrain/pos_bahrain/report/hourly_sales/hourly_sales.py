@@ -93,14 +93,34 @@ def _get_clauses(filters):
         "posting_date BETWEEN %(from_date)s AND %(to_date)s",
         "posting_time BETWEEN %(start_time)s AND %(end_time)s",
     ]
+
     sales_option = filters.get("sales_option")
     if sales_option != "All":
         clauses.append("is_pos = %(is_pos)s")
+
+    cost_centers = filters.get("cost_centers")
+    if cost_centers:
+        clauses.append("cost_center IN %(cost_centers)s")
+
     return " AND ".join(clauses)
 
 
 def _get_values(filters):
-    return merge(filters, {"is_pos": filters.get("sales_option") == "POS Sales"})
+    cost_centers = (
+        compose(
+            list,
+            partial(filter, lambda x: x),
+            partial(map, lambda x: x.strip()),
+            lambda x: x.split(","),
+        )(filters.cost_centers)
+        if filters.cost_centers
+        else None
+    )
+    return merge(
+        filters,
+        {"is_pos": filters.get("sales_option") == "POS Sales"},
+        {"cost_centers": cost_centers} if cost_centers else {},
+    )
 
 
 def _get_invoices(filters):
