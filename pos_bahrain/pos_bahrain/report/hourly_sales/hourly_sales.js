@@ -5,12 +5,46 @@
 frappe.query_reports['Hourly Sales'] = {
   filters: [
     {
-      fieldname: 'posting_date',
-      label: __('Posting Date'),
+      fieldname: 'from_date',
+      label: __('From Date'),
+      fieldtype: 'Date',
+      width: '80',
+      reqd: 1,
+      default: frappe.datetime.add_months(frappe.datetime.get_today(), -1),
+    },
+    {
+      fieldname: 'to_date',
+      label: __('To Date'),
       fieldtype: 'Date',
       width: '80',
       reqd: 1,
       default: frappe.datetime.get_today(),
+    },
+    {
+      fieldname: 'start_time',
+      label: __('Start Time'),
+      fieldtype: 'Time',
+      width: '80',
+      default: '00:00:00',
+    },
+    {
+      fieldname: 'end_time',
+      label: __('End Time'),
+      fieldtype: 'Time',
+      width: '80',
+      default: '23:59:59',
+    },
+    {
+      fieldname: 'sales_option',
+      label: __('Sales Option'),
+      fieldtype: 'Select',
+      width: '80',
+      options: [
+        'All',
+        'POS Sales',
+        'Invoice Sales',
+      ],
+      default: 'All',
     },
   ],
 };
