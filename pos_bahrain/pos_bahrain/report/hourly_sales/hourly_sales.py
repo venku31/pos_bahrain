@@ -87,6 +87,22 @@ def _get_data(filters):
     return data(_get_invoices(filters))
 
 
+def _get_clauses(filters):
+    clauses = [
+        "docstatus = 1",
+        "posting_date BETWEEN %(from_date)s AND %(to_date)s",
+        "posting_time BETWEEN %(start_time)s AND %(end_time)s",
+    ]
+    sales_option = filters.get("sales_option")
+    if sales_option != "All":
+        clauses.append("is_pos = %(is_pos)s")
+    return " AND ".join(clauses)
+
+
+def _get_values(filters):
+    return merge(filters, {"is_pos": filters.get("sales_option") == "POS Sales"})
+
+
 def _get_invoices(filters):
     return frappe.db.sql(
         """
@@ -99,12 +115,12 @@ def _get_invoices(filters):
             discount_amount,
             grand_total
         FROM `tabSales Invoice`
-        WHERE docstatus = 1
-        AND posting_date BETWEEN %(from_date)s AND %(to_date)s
-        AND posting_time BETWEEN %(start_time)s AND %(end_time)s
+        WHERE {clauses}
         ORDER BY CONCAT(posting_date, ' ', posting_time)
-    """,
-        filters,
+    """.format(
+            clauses=_get_clauses(filters)
+        ),
+        _get_values(filters),
         as_dict=1,
     )
 
