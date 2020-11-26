@@ -79,7 +79,6 @@ def _item_price_clauses(alias):
         IFNULL({alias}.uom, '') IN ('', i.stock_uom) AND
         IFNULL({alias}.customer, '') = '' AND
         IFNULL({alias}.supplier, '') = '' AND
-        IFNULL({alias}.min_qty, 0) <= 1 AND
         %(query_date)s BETWEEN
             IFNULL({alias}.valid_from, '2000-01-01') AND
             IFNULL({alias}.valid_upto, '2500-12-31')
