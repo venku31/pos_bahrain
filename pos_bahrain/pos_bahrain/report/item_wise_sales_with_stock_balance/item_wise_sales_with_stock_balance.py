@@ -66,13 +66,13 @@ def _get_balance_qty(items, filters):
         groupby("item_code"),
         lambda: frappe.db.sql(
             """
-				SELECT
-					item_code,
-					SUM(actual_qty) as qty
-				FROM `tabBin`
-				WHERE {clauses}
-				GROUP BY item_code
-			""".format(
+                SELECT
+                    item_code,
+                    SUM(actual_qty) as qty
+                FROM `tabBin`
+                WHERE {clauses}
+                GROUP BY item_code
+            """.format(
                 clauses=clauses
             ),
             values={**filters, "items": items},
