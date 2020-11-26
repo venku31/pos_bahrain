@@ -16,7 +16,8 @@ def execute(filters=None):
 
 def extend_report(base_execute, filters):
     _validate_filters(filters)
-    columns, data = base_execute(filters)
+    results = iter(base_execute(filters))
+    columns, data = next(results), next(results)
     inv_idx = next(x for x, v in enumerate(columns) if "Invoice" in v.get("label"))
     emp_idx = len(columns)
     return (

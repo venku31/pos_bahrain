@@ -1,9 +1,5 @@
 [
  {
-  "_assign": null,
-  "_comments": null,
-  "_liked_by": null,
-  "_user_tags": null,
   "default_value": null,
   "doc_type": "Batch",
   "docstatus": 0,
@@ -20,10 +16,6 @@
   "value": "0"
  },
  {
-  "_assign": null,
-  "_comments": null,
-  "_liked_by": null,
-  "_user_tags": null,
   "default_value": null,
   "doc_type": "Batch",
   "docstatus": 0,
@@ -40,10 +32,6 @@
   "value": "1"
  },
  {
-  "_assign": null,
-  "_comments": null,
-  "_liked_by": null,
-  "_user_tags": null,
   "default_value": null,
   "doc_type": "Batch",
   "docstatus": 0,
@@ -60,10 +48,6 @@
   "value": "1"
  },
  {
-  "_assign": null,
-  "_comments": null,
-  "_liked_by": null,
-  "_user_tags": null,
   "default_value": null,
   "doc_type": "Batch",
   "docstatus": 0,
@@ -80,10 +64,6 @@
   "value": "1"
  },
  {
-  "_assign": null,
-  "_comments": null,
-  "_liked_by": null,
-  "_user_tags": null,
   "default_value": null,
   "doc_type": "Batch",
   "docstatus": 0,
@@ -100,10 +80,6 @@
   "value": "item, expiry_date"
  },
  {
-  "_assign": null,
-  "_comments": null,
-  "_liked_by": null,
-  "_user_tags": null,
   "default_value": null,
   "doc_type": "Sales Invoice Item",
   "docstatus": 0,
@@ -120,10 +96,6 @@
   "value": "eval:doc.price_list_rate&&parent.discount_on_retail_price==0"
  },
  {
-  "_assign": null,
-  "_comments": null,
-  "_liked_by": null,
-  "_user_tags": null,
   "default_value": null,
   "doc_type": "Sales Invoice Item",
   "docstatus": 0,
@@ -140,10 +112,6 @@
   "value": "3"
  },
  {
-  "_assign": null,
-  "_comments": null,
-  "_liked_by": null,
-  "_user_tags": null,
   "default_value": null,
   "doc_type": "Sales Order Item",
   "docstatus": 0,
@@ -160,10 +128,6 @@
   "value": "3"
  },
  {
-  "_assign": null,
-  "_comments": null,
-  "_liked_by": null,
-  "_user_tags": null,
   "default_value": null,
   "doc_type": "Sales Order Item",
   "docstatus": 0,
@@ -180,10 +144,6 @@
   "value": "eval:doc.price_list_rate&&parent.discount_on_retail_price==0"
  },
  {
-  "_assign": null,
-  "_comments": null,
-  "_liked_by": null,
-  "_user_tags": null,
   "default_value": null,
   "doc_type": "Payment Entry Reference",
   "docstatus": 0,
