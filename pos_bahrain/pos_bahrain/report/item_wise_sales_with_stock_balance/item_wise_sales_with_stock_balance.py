@@ -3,6 +3,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from pos_bahrain.pos_bahrain.report.item_wise_sales_register_with_employee.item_wise_sales_register_with_employee import (
 	execute as item_wise_sales_register_with_employee
 )
@@ -13,7 +14,7 @@ from toolz.curried import groupby, valmap
 
 def execute(filters=None):
 	columns, data = item_wise_sales_register_with_employee(filters)
-	item_idx = next(x for x, v in enumerate(columns) if 'Item Code' in v)
+	item_idx = next(x for x, v in enumerate(columns) if 'Item Code' in v.get("label"))
 	return _extend_columns(columns), _extend_data(data, filters, item_idx)
 
 
@@ -32,6 +33,10 @@ def _get_clauses(filters):
 
 def _extend_data(data, filters, item_idx):
 	items = list(set(map(lambda x: x[item_idx], data)))
+	if not items:
+		frappe.msgprint(_('No records found'))
+		return
+
 	balance_qty = _get_balance_qty(items, filters)
 	valuation_rate = _get_valuation_rate(items)
 	set_valuation_rate = compose(
