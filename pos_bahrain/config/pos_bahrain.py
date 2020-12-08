@@ -46,6 +46,8 @@ def get_data():
             make_item('report', 'Bank Reconciliation Statement PB', 'Bank Reconciliation Statement PB', True),
             make_item('report', 'Item-wise Sales with Stock Balance', 'Item-wise Sales with Stock Balance', True),
             make_item('report', 'Item-wise Sales Register with Employee', 'Item-wise Sales Register with Employee',
+                      True),
+            make_item('report', 'Hourly Sales', 'Hourly Sales',
                       True)
         ]),
         make_section('Documents', [
