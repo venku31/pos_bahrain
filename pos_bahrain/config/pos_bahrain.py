@@ -161,6 +161,7 @@ def get_data():
                 ),
                 make_item("report", "Stock Item Cost", "Stock Item Cost", True),
                 make_item("report", "Stock Cost Summary", "Stock Cost Summary", True),
+                make_item("report", "Hourly Sales", "Hourly Sales", True),
             ],
         ),
         make_section(
