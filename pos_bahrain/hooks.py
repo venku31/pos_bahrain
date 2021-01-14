@@ -48,6 +48,7 @@ doctype_js = {
     "Purchase Invoice": [
         "public/js/set_retail_price.js",
         "public/js/includes/scan_barcode.js",
+        "public/js/batch_no_qty.js",
     ],
     "Purchase Order": "public/js/set_retail_price.js",
     "Purchase Receipt": "public/js/includes/scan_barcode.js",
