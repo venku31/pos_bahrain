@@ -232,6 +232,11 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       this.set_opening_entry();
     }
   },
+  edit_record: function() {
+    this._super();
+    this.frm.doc.posting_date = frappe.datetime.get_today();
+    this.frm.doc.posting_time = frappe.datetime.now_time();
+  }
 });
 
 erpnext.pos.PointOfSale = pos_bahrain.addons.extend_pos(
