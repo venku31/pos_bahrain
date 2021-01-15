@@ -119,11 +119,13 @@ export default function withBarcodeUom(Pos) {
           const toggle = this.toggle_sales_employee_field.get_value();
           const sales_employee = this.sales_employee_field.get_value();
           if (!sales_employee) {
+            this.toggle_sales_employee_field.set_value(0);
             frappe.throw(__('A valid Sales Employee is required.'));
           }
           this.sales_employee_field.df.read_only = toggle;
           this.sales_employee_field.refresh();
         });
+        this.toggle_sales_employee_field.$wrapper.css('margin-bottom', 0);
       }
     }
   };
