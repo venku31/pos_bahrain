@@ -16,17 +16,32 @@ export default function withBarcodeUom(Pos) {
       this.use_sales_employee = !!cint(use_sales_employee);
       this.sales_employee_details = sales_employee_details;
       this._make_sales_employee_field();
+      this._make_toggle_sales_employee_field();
       return pos_data;
     }
     make_control() {
       super.make_control();
       this._make_sales_employee_field();
+      this._make_toggle_sales_employee_field();
     }
     create_new() {
       super.create_new();
       if (this.sales_employee_field) {
-        this.sales_employee_field.$input.val('');
-        this.sales_employee_field.set_description('');
+        let toggle = 0;
+        if (this.toggle_sales_employee_field) {
+          toggle = this.toggle_sales_employee_field.get_value();
+        }
+        if (toggle) {
+          this.frm.doc.pb_sales_employee = this.sales_employee_field.get_value();
+          const { employee_name } =
+            this.sales_employee_details.find(
+              ({ name }) => name === this.frm.doc.pb_sales_employee
+            ) || {};
+          this.frm.doc.pb_sales_employee_name = employee_name;
+        } else {
+          this.sales_employee_field.$input.val('');
+          this.sales_employee_field.set_description('');
+        }
       }
     }
     edit_record() {
@@ -87,6 +102,28 @@ export default function withBarcodeUom(Pos) {
           .includes(sales_employee)
       ) {
         frappe.throw(__('A valid Sales Employee is required.'));
+      }
+    }
+    _make_toggle_sales_employee_field() {
+      if (!this.toggle_sales_employee_field) {
+        this.toggle_sales_employee_field = new frappe.ui.form.ControlCheck({
+          parent: $('<div style="margin-left: 1em; display: flex; align-items: center" />').appendTo(
+            this.page.wrapper.find('.page-title')
+          ),
+          df: {
+            placeholder: __('Toggle'),
+          },
+        });
+        this.toggle_sales_employee_field.refresh();
+        this.toggle_sales_employee_field.$input.on('change', () => {
+          const toggle = this.toggle_sales_employee_field.get_value();
+          const sales_employee = this.sales_employee_field.get_value();
+          if (!sales_employee) {
+            frappe.throw(__('A valid Sales Employee is required.'));
+          }
+          this.sales_employee_field.df.read_only = toggle;
+          this.sales_employee_field.refresh();
+        });
       }
     }
   };
