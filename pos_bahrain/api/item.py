@@ -40,12 +40,26 @@ def get_pos_data():
         )
         return [merge(x, max_discounts_by_item.get(x.get("name")), {}) for x in items]
 
+    def get_pricing_rule_item_groups(pricing_rules):
+        names = compose(list, partial(pluck, "name"))(pricing_rules)
+        item_groups_by_parent = compose(partial(key_by, "parent"), frappe.db.sql)(
+            """
+                SELECT parent, item_group, uom 
+                FROM `tabPricing Rule Item Group`
+                WHERE parent IN %(names)s
+            """,
+            values={"names": names},
+            as_dict=1,
+        )
+        return [merge(x, item_groups_by_parent.get(x.get("name")), {}) for x in pricing_rules]
+
     data = get_pos_data()
 
     return merge(
         data,
         {"price_list_data": get_price_list_data(data.get("doc").selling_price_list)},
         {"items": add_discounts(data.get("items"))},
+        {"pricing_rules": get_pricing_rule_item_groups(data.get("pricing_rules"))},
     )
 
 
