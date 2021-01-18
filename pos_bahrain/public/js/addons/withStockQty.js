@@ -12,6 +12,11 @@ export default function withStockQty(Pos) {
           const bin_qty = bin_data[item.warehouse];
           const qty = item.qty * item.conversion_factor;
           me.bin_data[item.item_code][item.warehouse] = bin_qty - qty;
+          const batch_details = me.batch_no_details[item.item_code];
+          const batch_detail = batch_details.find(batch => batch.name === item.batch_no);
+          if (batch_detail) {
+            batch_detail.qty = batch_detail.qty - qty;
+          }
         }
       });
       this.items = this.get_items();
