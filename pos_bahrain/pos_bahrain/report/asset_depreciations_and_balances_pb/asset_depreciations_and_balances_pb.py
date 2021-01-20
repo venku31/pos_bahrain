@@ -13,6 +13,96 @@ def execute(filters=None):
     return columns, data
 
 
+def _get_columns(filters):
+    return [
+        {
+            "label": _("Asset"),
+            "fieldname": "name",
+            "fieldtype": "Link",
+            "options": "Asset",
+            "width": 120,
+        },
+        {
+            "label": _("Asset Name"),
+            "fieldname": "asset_name",
+            "fieldtype": "Data",
+            "width": 120,
+        },
+        {
+            "label": _("Cost as on") + " " + formatdate(filters.day_before_from_date),
+            "fieldname": "cost_as_on_from_date",
+            "fieldtype": "Currency",
+            "width": 140,
+        },
+        {
+            "label": _("Cost of New Purchase"),
+            "fieldname": "cost_of_new_purchase",
+            "fieldtype": "Currency",
+            "width": 140,
+        },
+        {
+            "label": _("Cost of Sold Asset"),
+            "fieldname": "cost_of_sold_asset",
+            "fieldtype": "Currency",
+            "width": 140,
+        },
+        {
+            "label": _("Cost of Scrapped Asset"),
+            "fieldname": "cost_of_scrapped_asset",
+            "fieldtype": "Currency",
+            "width": 140,
+        },
+        {
+            "label": _("Cost as on") + " " + formatdate(filters.to_date),
+            "fieldname": "cost_as_on_to_date",
+            "fieldtype": "Currency",
+            "width": 140,
+        },
+        {
+            "label": _("Accumulated Depreciation as on")
+            + " "
+            + formatdate(filters.day_before_from_date),
+            "fieldname": "accumulated_depreciation_as_on_from_date",
+            "fieldtype": "Currency",
+            "width": 270,
+        },
+        {
+            "label": _("Depreciation Amount during the period"),
+            "fieldname": "depreciation_amount_during_the_period",
+            "fieldtype": "Currency",
+            "width": 240,
+        },
+        {
+            "label": _("Depreciation Eliminated due to disposal of assets"),
+            "fieldname": "depreciation_eliminated_during_the_period",
+            "fieldtype": "Currency",
+            "width": 300,
+        },
+        {
+            "label": _("Accumulated Depreciation as on")
+            + " "
+            + formatdate(filters.to_date),
+            "fieldname": "accumulated_depreciation_as_on_to_date",
+            "fieldtype": "Currency",
+            "width": 270,
+        },
+        {
+            "label": _("Net Asset value as on")
+            + " "
+            + formatdate(filters.day_before_from_date),
+            "fieldname": "net_asset_value_as_on_from_date",
+            "fieldtype": "Currency",
+            "width": 200,
+        },
+        {
+            "label": _("Net Asset value as on") + " " + formatdate(filters.to_date),
+            "fieldname": "net_asset_value_as_on_to_date",
+            "fieldtype": "Currency",
+            "width": 200,
+        },
+    ]
+
+
 def _get_data(filters):
     data = []
     assets = _get_assets(filters)
@@ -173,93 +263,3 @@ def _get_assets(filters):
         filters,
         as_dict=1,
     )
-
-
-def _get_columns(filters):
-    return [
-        {
-            "label": _("Asset"),
-            "fieldname": "name",
-            "fieldtype": "Link",
-            "options": "Asset",
-            "width": 120,
-        },
-        {
-            "label": _("Asset Name"),
-            "fieldname": "asset_name",
-            "fieldtype": "Data",
-            "width": 120,
-        },
-        {
-            "label": _("Cost as on") + " " + formatdate(filters.day_before_from_date),
-            "fieldname": "cost_as_on_from_date",
-            "fieldtype": "Currency",
-            "width": 140,
-        },
-        {
-            "label": _("Cost of New Purchase"),
-            "fieldname": "cost_of_new_purchase",
-            "fieldtype": "Currency",
-            "width": 140,
-        },
-        {
-            "label": _("Cost of Sold Asset"),
-            "fieldname": "cost_of_sold_asset",
-            "fieldtype": "Currency",
-            "width": 140,
-        },
-        {
-            "label": _("Cost of Scrapped Asset"),
-            "fieldname": "cost_of_scrapped_asset",
-            "fieldtype": "Currency",
-            "width": 140,
-        },
-        {
-            "label": _("Cost as on") + " " + formatdate(filters.to_date),
-            "fieldname": "cost_as_on_to_date",
-            "fieldtype": "Currency",
-            "width": 140,
-        },
-        {
-            "label": _("Accumulated Depreciation as on")
-            + " "
-            + formatdate(filters.day_before_from_date),
-            "fieldname": "accumulated_depreciation_as_on_from_date",
-            "fieldtype": "Currency",
-            "width": 270,
-        },
-        {
-            "label": _("Depreciation Amount during the period"),
-            "fieldname": "depreciation_amount_during_the_period",
-            "fieldtype": "Currency",
-            "width": 240,
-        },
-        {
-            "label": _("Depreciation Eliminated due to disposal of assets"),
-            "fieldname": "depreciation_eliminated_during_the_period",
-            "fieldtype": "Currency",
-            "width": 300,
-        },
-        {
-            "label": _("Accumulated Depreciation as on")
-            + " "
-            + formatdate(filters.to_date),
-            "fieldname": "accumulated_depreciation_as_on_to_date",
-            "fieldtype": "Currency",
-            "width": 270,
-        },
-        {
-            "label": _("Net Asset value as on")
-            + " "
-            + formatdate(filters.day_before_from_date),
-            "fieldname": "net_asset_value_as_on_from_date",
-            "fieldtype": "Currency",
-            "width": 200,
-        },
-        {
-            "label": _("Net Asset value as on") + " " + formatdate(filters.to_date),
-            "fieldname": "net_asset_value_as_on_to_date",
-            "fieldtype": "Currency",
-            "width": 200,
-        },
-    ]
