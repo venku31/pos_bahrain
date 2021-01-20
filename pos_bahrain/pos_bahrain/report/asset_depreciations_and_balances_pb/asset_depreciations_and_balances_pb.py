@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import formatdate, flt, add_days
+from toolz import merge
 
 
 def execute(filters=None):
@@ -16,10 +17,17 @@ def execute(filters=None):
 def _get_columns(filters):
     return [
         {
+            "label": _("DocType"),
+            "fieldname": "doctype",
+            "fieldtype": "Link",
+            "options": "DocType",
+            "width": 120,
+        },
+        {
             "label": _("Asset"),
             "fieldname": "name",
-            "fieldtype": "Link",
-            "options": "Asset",
+            "fieldtype": "Dynamic Link",
+            "options": "doctype",
             "width": 120,
         },
         {
@@ -137,7 +145,18 @@ def _get_data(filters):
             row.accumulated_depreciation_as_on_to_date
         )
 
-        data.append(row)
+        data.append(merge(row, {'doctype': 'Asset'}))
+
+    depreciation_gl_entries = _get_depreciation_gl_entries(filters)
+    if depreciation_gl_entries:
+        data.append({})
+
+    for gl_entry in depreciation_gl_entries:
+        data.append({
+            'name': gl_entry.get('name'),
+            'depreciation_amount_during_the_period': gl_entry.get('debit'),
+            'doctype': 'GL Entry',
+        })
 
     return data
 
@@ -261,5 +280,25 @@ def _get_assets(filters):
             ac_clause=ac_clause
         ),
         filters,
+        as_dict=1,
+    )
+
+
+def _get_depreciation_gl_entries(filters):
+    depreciation_account = frappe.db.get_single_value(
+        "POS Bahrain Settings", "depreciation_account"
+    )
+    return frappe.db.sql(
+        """
+        SELECT name, debit FROM `tabGL Entry`
+        WHERE account = %(account)s
+        AND against_voucher_type IS NULL
+        AND posting_date BETWEEN %(from_date)s AND %(to_date)s
+    """,
+        {
+            "account": depreciation_account,
+            "from_date": filters.get("from_date"),
+            "to_date": filters.get("to_date"),
+        },
         as_dict=1,
     )
