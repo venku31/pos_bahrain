@@ -132,6 +132,9 @@ def get_data():
                     True,
                 ),
                 make_item("report", "Hourly Sales", "Hourly Sales", True),
+                make_item("report", "VAT Return", "VAT Return", True),
+                make_item("report", "VAT on Sales per GCC", "VAT on Sales per GCC", True),
+                make_item("report", "VAT on Purchase per GCC", "VAT on Purchase per GCC", True),
             ],
         ),
         make_section(
