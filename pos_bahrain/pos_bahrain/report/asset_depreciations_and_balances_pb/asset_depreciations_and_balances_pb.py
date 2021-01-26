@@ -19,7 +19,7 @@ def _get_columns(filters):
         {
             "label": _("DocType"),
             "fieldname": "doctype",
-            "fieldtype": "Link",
+            "fieldtype": "Data",
             "options": "DocType",
             "width": 120,
         },
