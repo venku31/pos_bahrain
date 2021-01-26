@@ -22,6 +22,9 @@ export default {
     frm.set_query('account', 'vat_tax_categories', {
       filters: { account_type: 'Tax', is_group: 0 },
     });
+    frm.set_query('depreciation_account', {
+      filters: { account_type: 'Depreciation', is_group: 0 },
+    });
   },
   discount_on_retail: handle_price_list_fields,
   use_daily_email: handle_daily_email,

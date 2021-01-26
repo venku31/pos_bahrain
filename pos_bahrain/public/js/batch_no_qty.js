@@ -9,6 +9,18 @@ const TransactionController = erpnext.TransactionController.extend({
       return {
         filters: { item: item.item_code },
       };
+    } else if (doc.doctype == 'Purchase Invoice') {
+      let filters = { item_code: item.item_code };
+
+      filters['posting_date'] =
+        me.frm.doc.posting_date || frappe.datetime.nowdate();
+
+      if (item.warehouse) filters['warehouse'] = item.warehouse;
+
+      return {
+        query: 'pos_bahrain.api.batch.get_batch_no',
+        filters: filters,
+      };
     } else {
       let filters = { item_code: item.item_code };
 
