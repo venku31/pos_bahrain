@@ -145,28 +145,30 @@ def _get_data(filters):
             row.accumulated_depreciation_as_on_to_date
         )
 
-        data.append(merge(row, {'doctype': 'Asset'}))
+        data.append(merge(row, {"doctype": "Asset"}))
 
     depreciation_gl_entries = _get_depreciation_gl_entries(filters)
     if depreciation_gl_entries:
         data.append({})
 
     for gl_entry in depreciation_gl_entries:
-        data.append({
-            'name': gl_entry.get('name'),
-            'cost_as_on_from_date': 0,
-            'cost_of_new_purchase': 0,
-            'cost_of_sold_asset': 0,
-            'cost_of_scrapped_asset': 0,
-            'cost_as_on_to_date': 0,
-            'accumulated_depreciation_as_on_from_date': 0,
-            'depreciation_amount_during_the_period': gl_entry.get('debit'),
-            'depreciation_eliminated_during_the_period': 0,
-            'accumulated_depreciation_as_on_to_date': 0,
-            'net_asset_value_as_on_from_date': 0,
-            'net_asset_value_as_on_to_date': 0,
-            'doctype': 'GL Entry',
-        })
+        data.append(
+            {
+                "name": gl_entry.get("name"),
+                "cost_as_on_from_date": 0,
+                "cost_of_new_purchase": 0,
+                "cost_of_sold_asset": 0,
+                "cost_of_scrapped_asset": 0,
+                "cost_as_on_to_date": 0,
+                "accumulated_depreciation_as_on_from_date": 0,
+                "depreciation_amount_during_the_period": gl_entry.get("debit"),
+                "depreciation_eliminated_during_the_period": 0,
+                "accumulated_depreciation_as_on_to_date": 0,
+                "net_asset_value_as_on_from_date": 0,
+                "net_asset_value_as_on_to_date": 0,
+                "doctype": "GL Entry",
+            }
+        )
 
     return data
 
