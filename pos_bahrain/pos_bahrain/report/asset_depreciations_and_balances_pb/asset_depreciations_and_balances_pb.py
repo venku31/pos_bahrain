@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import formatdate, flt, add_days
-from toolz import merge
+from toolz import merge, pluck
 
 
 def execute(filters=None):
@@ -153,18 +153,25 @@ def _get_data(filters):
         data.append({})
 
     for gl_entry in depreciation_gl_entries:
+        accumulated_depreciation_as_on_from_date = 0
+        depreciation_amount_during_the_period = gl_entry.get("amount")
+        accumulated_depreciation_as_on_to_date = (
+            accumulated_depreciation_as_on_from_date
+            + depreciation_amount_during_the_period
+        )
         data.append(
             {
                 "name": gl_entry.get("name"),
+                "asset_name": gl_entry.get("account"),
                 "cost_as_on_from_date": 0,
                 "cost_of_new_purchase": 0,
                 "cost_of_sold_asset": 0,
                 "cost_of_scrapped_asset": 0,
                 "cost_as_on_to_date": 0,
-                "accumulated_depreciation_as_on_from_date": 0,
-                "depreciation_amount_during_the_period": gl_entry.get("debit"),
+                "accumulated_depreciation_as_on_from_date": accumulated_depreciation_as_on_from_date,
+                "depreciation_amount_during_the_period": gl_entry.get("amount"),
                 "depreciation_eliminated_during_the_period": 0,
-                "accumulated_depreciation_as_on_to_date": 0,
+                "accumulated_depreciation_as_on_to_date": accumulated_depreciation_as_on_to_date,
                 "net_asset_value_as_on_from_date": 0,
                 "net_asset_value_as_on_to_date": 0,
                 "doctype": "GL Entry",
@@ -375,18 +382,25 @@ def _get_assets(filters):
 
 
 def _get_depreciation_gl_entries(filters):
-    depreciation_account = frappe.db.get_single_value(
-        "POS Bahrain Settings", "depreciation_account"
+    accounts = frappe.get_all(
+        "Asset Category Account",
+        filters={"parent": filters.get("asset_category")},
+        fields=["accumulated_depreciation_account"],
     )
     return frappe.db.sql(
         """
-        SELECT name, debit FROM `tabGL Entry`
-        WHERE account = %(account)s
-        AND against_voucher_type IS NULL
-        AND posting_date BETWEEN %(from_date)s AND %(to_date)s
+        SELECT 
+            name,
+            account,
+            credit AS amount
+            FROM `tabGL Entry`
+        WHERE 
+            account IN %(account)s
+            AND against_voucher_type IS NULL
+            AND posting_date BETWEEN %(from_date)s AND %(to_date)s
     """,
         {
-            "account": depreciation_account,
+            "account": list(pluck("accumulated_depreciation_account", accounts)),
             "from_date": filters.get("from_date"),
             "to_date": filters.get("to_date"),
         },
