@@ -115,6 +115,7 @@ def _get_data(filters):
     data = []
     assets = _get_assets(filters)
     asset_costs = _get_asset_costs(filters)
+
     for asset_cost in asset_costs:
         row = frappe._dict(asset_cost)
 
@@ -181,50 +182,78 @@ def _get_asset_costs(filters):
     )
     return frappe.db.sql(
         """
-        SELECT asset_name, name,
-			   ifnull(sum(case when purchase_date < %(from_date)s then
-							   case when ifnull(disposal_date, 0) = 0 or disposal_date >= %(from_date)s then
-									gross_purchase_amount
-							   else
-									0
-							   end
-						   else
-								0
-						   end), 0) as cost_as_on_from_date,
-			   ifnull(sum(case when purchase_date >= %(from_date)s then
-			   						gross_purchase_amount
-			   				   else
-			   				   		0
-			   				   end), 0) as cost_of_new_purchase,
-			   ifnull(sum(case when ifnull(disposal_date, 0) != 0
-			   						and disposal_date >= %(from_date)s
-			   						and disposal_date <= %(to_date)s then
-							   case when status = "Sold" then
-							   		gross_purchase_amount
-							   else
-							   		0
-							   end
-						   else
-								0
-						   end), 0) as cost_of_sold_asset,
-			   ifnull(sum(case when ifnull(disposal_date, 0) != 0
-			   						and disposal_date >= %(from_date)s
-			   						and disposal_date <= %(to_date)s then
-							   case when status = "Scrapped" then
-							   		gross_purchase_amount
-							   else
-							   		0
-							   end
-						   else
-								0
-						   end), 0) as cost_of_scrapped_asset
-		from `tabAsset`
-		where docstatus=1 
-		and company=%(company)s 
-		and purchase_date <= %(to_date)s
-		{ac_clause}
-		group by name
-	""".format(
+        SELECT 
+            asset_name, 
+            name,
+            IFNULL(
+                SUM(
+                    CASE 
+                        WHEN purchase_date < %(from_date)s 
+                        THEN 
+                            CASE 
+                                WHEN 
+                                    IFNULL(disposal_date, 0) = 0 
+                                    OR disposal_date >= %(from_date)s 
+                                THEN gross_purchase_amount
+                                ELSE 0
+                            END
+                        ELSE 0
+                    END
+                ),
+                0
+            ) AS cost_as_on_from_date,
+            IFNULL(
+                SUM(
+                    CASE 
+                        WHEN purchase_date >= %(from_date)s 
+                        THEN gross_purchase_amount
+                        ELSE 0 
+                    END
+                ),
+                0
+            ) AS cost_of_new_purchase,
+            IFNULL(
+                SUM(
+                    CASE 
+                        WHEN IFNULL(disposal_date, 0) != 0
+                        AND disposal_date >= %(from_date)s
+                        AND disposal_date <= %(to_date)s 
+                        THEN
+                            CASE 
+                                WHEN status = "Sold" 
+                                THEN gross_purchase_amount
+                                ELSE 0
+                            END
+                        ELSE 0
+                    END
+                ),
+                0
+            ) as cost_of_sold_asset,
+            IFNULL(
+                SUM(
+                    CASE 
+                        WHEN 
+                            IFNULL(disposal_date, 0) != 0
+                            AND disposal_date >= %(from_date)s
+                            AND disposal_date <= %(to_date)s 
+                        THEN 
+                            CASE 
+                                WHEN status = "Scrapped" 
+                                THEN gross_purchase_amount
+                                ELSE 0
+                            END
+                        ELSE 0
+                    END
+                ),
+                0
+            ) AS cost_of_scrapped_asset
+        FROM `tabAsset`
+        WHERE docstatus=1 
+        AND company=%(company)s 
+        AND purchase_date <= %(to_date)s
+        {ac_clause}
+        GROUP BY name
+    """.format(
             ac_clause=ac_clause
         ),
         filters,
@@ -233,65 +262,114 @@ def _get_asset_costs(filters):
 
 
 def _get_assets(filters):
-    ac_clause = (
-        "WHERE results.asset_category = %(asset_category)s"
-        if filters.get("asset_category")
-        else ""
-    )
+    # ac_clause = (
+    #     "WHERE results.asset_category = %(asset_category)s"
+    #     if filters.get("asset_category")
+    #     else ""
+    # )
     return frappe.db.sql(
         """
-		SELECT results.name, results.asset_category,
-			   sum(results.accumulated_depreciation_as_on_from_date) as accumulated_depreciation_as_on_from_date,
-			   sum(results.depreciation_eliminated_during_the_period) as depreciation_eliminated_during_the_period,
-			   sum(results.depreciation_amount_during_the_period) as depreciation_amount_during_the_period
-		from (SELECT a.name, a.asset_category,
-				   ifnull(sum(a.opening_accumulated_depreciation +
-							  case when ds.schedule_date < %(from_date)s and
-										(ifnull(a.disposal_date, 0) = 0 or a.disposal_date >= %(from_date)s) then
-								   ds.depreciation_amount
-							  else
-								   0
-							  end), 0) as accumulated_depreciation_as_on_from_date,
-				   ifnull(sum(case when ifnull(a.disposal_date, 0) != 0 and a.disposal_date >= %(from_date)s
-										and a.disposal_date <= %(to_date)s and ds.schedule_date <= a.disposal_date then
-								   ds.depreciation_amount
-							  else
-								   0
-							  end), 0) as depreciation_eliminated_during_the_period,
-
-				   ifnull(sum(case when ds.schedule_date >= %(from_date)s and ds.schedule_date <= %(to_date)s
-										and (ifnull(a.disposal_date, 0) = 0 or ds.schedule_date <= a.disposal_date) then
-								   ds.depreciation_amount
-							  else
-								   0
-							  end), 0) as depreciation_amount_during_the_period
-			from `tabAsset` a, `tabDepreciation Schedule` ds
-			where a.docstatus=1 and a.company=%(company)s and a.purchase_date <= %(to_date)s and a.name = ds.parent
-			group by a.name
-			union
-			SELECT a.name, a.asset_category,
-				   ifnull(sum(case when ifnull(a.disposal_date, 0) != 0
-										and (a.disposal_date < %(from_date)s or a.disposal_date > %(to_date)s) then
-									0
-							   else
-									a.opening_accumulated_depreciation
-							   end), 0) as accumulated_depreciation_as_on_from_date,
-				   ifnull(sum(case when a.disposal_date >= %(from_date)s and a.disposal_date <= %(to_date)s then
-								   a.opening_accumulated_depreciation
-							  else
-								   0
-							  end), 0) as depreciation_eliminated_during_the_period,
-				   0 as depreciation_amount_during_the_period
-			from `tabAsset` a
-			where a.docstatus=1 and a.company=%(company)s and a.purchase_date <= %(to_date)s
-			and not exists(select * from `tabDepreciation Schedule` ds where a.name = ds.parent)
-			group by a.name) as results
-        {ac_clause}
-		group by results.name
-		""".format(
-            ac_clause=ac_clause
-        ),
-        filters,
+            SELECT 
+                results.name,
+                results.asset_category,
+                SUM(results.accumulated_depreciation_as_on_from_date) AS accumulated_depreciation_as_on_from_date,
+                SUM(results.depreciation_eliminated_during_the_period) AS depreciation_eliminated_during_the_period,
+                SUM(results.depreciation_amount_during_the_period) AS depreciation_amount_during_the_period
+            FROM 
+            (
+                SELECT
+                    a.name,
+                    a.asset_category,
+                    IFNULL(
+                        SUM(
+                            CASE 
+                                WHEN 
+                                    ds.schedule_date < %(from_date)s 
+                                    AND (ifnull(a.disposal_date, 0) = 0 OR a.disposal_date >= %(from_date)s) 
+                                THEN ds.depreciation_amount 
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) as accumulated_depreciation_as_on_from_date,
+                    IFNULL(
+                        SUM(
+                            CASE 
+                                WHEN 
+                                    ifnull(a.disposal_date, 0) != 0 
+                                    AND a.disposal_date >= %(from_date)s
+                                    AND a.disposal_date <= %(to_date)s 
+                                    AND ds.schedule_date <= a.disposal_date 
+                                THEN ds.depreciation_amount
+                                ELSE 0 
+                            END
+                        ), 
+                    0) as depreciation_eliminated_during_the_period,
+                    IFNULL(
+                        SUM(
+                            CASE 
+                                WHEN 
+                                    ds.schedule_date >= %(from_date)s 
+                                    AND ds.schedule_date <= %(to_date)s
+                                    AND (IFNULL(a.disposal_date, 0) = 0 OR ds.schedule_date <= a.disposal_date) 
+                                THEN ds.depreciation_amount
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS depreciation_amount_during_the_period
+                FROM 
+                    `tabAsset` a,
+                    `tabDepreciation Schedule` ds
+                WHERE 
+                    a.docstatus=1 
+                    AND a.company=%(company)s 
+                    AND a.purchase_date <= %(to_date)s 
+                    AND a.name = ds.parent 
+                    AND ifnull(ds.journal_entry, '') != ''
+                GROUP BY a.name
+                UNION
+                SELECT 
+                    a.name,
+                    a.asset_category,
+                    IFNULL(
+                        SUM(
+                            CASE 
+                                WHEN 
+                                    IFNULL(a.disposal_date, 0) != 0 
+                                    AND (a.disposal_date < %(from_date)s OR a.disposal_date > %(to_date)s) 
+                                THEN 0
+                                ELSE a.opening_accumulated_depreciation
+                            END
+                        ),
+                        0
+                    ) AS accumulated_depreciation_as_on_from_date,
+                    IFNULL(
+                        SUM(
+                            CASE 
+                                WHEN 
+                                    a.disposal_date >= %(from_date)s 
+                                    AND a.disposal_date <= %(to_date)s 
+                                    THEN a.opening_accumulated_depreciation
+                                ELSE 0
+                            END
+                        ), 
+                        0) AS depreciation_eliminated_during_the_period,
+                        0 AS depreciation_amount_during_the_period
+                FROM `tabAsset` a
+                WHERE
+                    a.docstatus=1 
+                    AND a.company=%(company)s 
+                    AND a.purchase_date <= %(to_date)s
+                GROUP BY a.name
+            ) AS results
+            GROUP BY results.name
+            """,
+        {
+            "to_date": filters.to_date,
+            "from_date": filters.from_date,
+            "company": filters.company,
+        },
         as_dict=1,
     )
 
