@@ -23,6 +23,7 @@ app_include_js = [
     "/assets/js/jmi.min.js",
     "/assets/js/pos_bahrain.min.js",
     "/assets/pos_bahrain/js/batch_quick_entry.js",
+    "/assets/pos_bahrain/js/report.js"
 ]
 
 # include js, css files in header of web template
