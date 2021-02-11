@@ -68,15 +68,17 @@ const BackportedStockReconciliation = erpnext.stock.StockController.extend({
     let scan_barcode_field = this.frm.fields_dict['scan_barcode'];
 
     let show_description = function (idx, exist = null) {
+      let message = '';
       if (exist) {
-        scan_barcode_field.set_new_description(
-          __('Row #{0}: Qty increased by 1', [idx])
-        );
+        message = __('Row #{0}: Qty increased by 1', [idx]);
       } else {
-        scan_barcode_field.set_new_description(
-          __('Row #{0}: Item added', [idx])
-        );
+        message = __('Row #{0}: Item added', [idx]);
       }
+      scan_barcode_field.set_new_description(message);
+      frappe.show_alert({
+        message: message,
+        indicator: 'green',
+      });
     };
 
     if (this.frm.doc.scan_barcode) {
@@ -92,6 +94,10 @@ const BackportedStockReconciliation = erpnext.stock.StockController.extend({
             scan_barcode_field.set_new_description(
               __('Cannot find Item with this barcode')
             );
+            frappe.show_alert({
+              message: 'Cannot find Item with this barcode',
+              indicator: 'red',
+            });
             return;
           }
 
@@ -99,7 +105,8 @@ const BackportedStockReconciliation = erpnext.stock.StockController.extend({
 
           let row_to_modify = null;
           const existing_item_row = this.frm.doc.items.find(
-            (d) => d.item_code === data.item_code
+            (d) =>
+              d.item_code === data.item_code && d.batch_no === data.batch_no
           );
           const blank_item_row = this.frm.doc.items.find((d) => !d.item_code);
 
@@ -140,8 +147,17 @@ const BackportedStockReconciliation = erpnext.stock.StockController.extend({
             }
           });
 
+          if (this.frm.doc.warehouse) {
+            frappe.model.set_value(
+              row_to_modify.doctype,
+              row_to_modify.name,
+              'warehouse',
+              this.frm.doc.warehouse
+            );
+          }
+
           scan_barcode_field.set_value('');
-          refresh_field("items");
+          refresh_field('items');
         });
     }
     return false;
@@ -156,6 +172,7 @@ const BackportedStockReconciliation = erpnext.stock.StockController.extend({
   },
 
   items_add: function (doc, cdt, cdn) {
+    this.frm.from_barcode = false;
     if (!this.frm.doc.warehouse) {
       return;
     }

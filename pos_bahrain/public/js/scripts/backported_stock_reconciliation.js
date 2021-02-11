@@ -28,7 +28,11 @@ function set_valuation_rate_and_qty(frm, cdt, cdn) {
         batch_no: d.batch_no,
       },
       callback: function (r) {
-        frappe.model.set_value(cdt, cdn, 'qty', r.message.qty);
+        let qty = d.qty;
+        if (!frm.from_barcode) {
+          frappe.model.set_value(cdt, cdn, 'qty', r.message.qty);
+          qty = r.message.qty;
+        }
         frappe.model.set_value(cdt, cdn, 'valuation_rate', r.message.rate);
         frappe.model.set_value(cdt, cdn, 'current_qty', r.message.qty);
         frappe.model.set_value(
@@ -41,14 +45,9 @@ function set_valuation_rate_and_qty(frm, cdt, cdn) {
           cdt,
           cdn,
           'current_amount',
-          r.message.rate * r.message.qty
+          r.message.rate * qty
         );
-        frappe.model.set_value(
-          cdt,
-          cdn,
-          'amount',
-          r.message.rate * r.message.qty
-        );
+        frappe.model.set_value(cdt, cdn, 'amount', r.message.rate * qty);
         frappe.model.set_value(
           cdt,
           cdn,
@@ -88,14 +87,14 @@ const backported_stock_reconciliation_item = {
   barcode: set_item_code,
   warehouse: function (frm, cdt, cdn) {
     var child = locals[cdt][cdn];
-    if (child.batch_no) {
+    if (child.batch_no && !frm.from_barcode) {
       frappe.model.set_value(child.cdt, child.cdn, 'batch_no', '');
     }
     set_valuation_rate_and_qty(frm, cdt, cdn);
   },
   item_code: function (frm, cdt, cdn) {
     var child = locals[cdt][cdn];
-    if (child.batch_no) {
+    if (child.batch_no && !frm.from_barcode) {
       frappe.model.set_value(cdt, cdn, 'batch_no', '');
     }
     set_valuation_rate_and_qty(frm, cdt, cdn);
