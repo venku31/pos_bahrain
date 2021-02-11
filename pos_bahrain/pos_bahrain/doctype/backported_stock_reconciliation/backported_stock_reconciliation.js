@@ -44,6 +44,11 @@ const BackportedStockReconciliation = erpnext.stock.StockController.extend({
         };
       }
     };
+    this.frm.fields_dict['warehouse'].get_query = function () {
+      return {
+        filters: { company: me.frm.doc.company },
+      };
+    };
   },
 
   refresh: function () {
@@ -139,6 +144,21 @@ const BackportedStockReconciliation = erpnext.stock.StockController.extend({
         });
     }
     return false;
+  },
+
+  company: function () {
+    this.frm.set_query('warehouse', () => {
+      return {
+        filters: { company: this.frm.doc.company },
+      };
+    });
+  },
+
+  items_add: function (doc, cdt, cdn) {
+    if (!this.frm.doc.warehouse) {
+      return;
+    }
+    frappe.model.set_value(cdt, cdn, 'warehouse', doc.warehouse);
   },
 });
 
