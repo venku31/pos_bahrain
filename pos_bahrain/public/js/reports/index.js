@@ -6,3 +6,4 @@ export { default as vat_return } from './vat_return';
 export { default as sales_register_with_employee } from './sales_register_with_employee';
 export { default as item_wise_sales_register_with_employee } from './item_wise_sales_register_with_employee';
 export { default as bank_reconciliation_statement_pb } from './bank_reconciliation_statement_pb';
+export { default as item_wise_sales_register_pb } from './item_wise_sales_register_pb';
