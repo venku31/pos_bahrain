@@ -141,6 +141,7 @@ const BackportedStockReconciliation = erpnext.stock.StockController.extend({
           });
 
           scan_barcode_field.set_value('');
+          refresh_field("items");
         });
     }
     return false;
