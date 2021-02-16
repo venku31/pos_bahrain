@@ -83,12 +83,14 @@ def _extend_data(filters, data):
     )
     employees = get_employee_map() if invoices else {}
     set_employee = compose(lambda x: merge(x, employees.get(x.get("invoice"))))
+
+    commission_rate = filters.get("commission_rate")
     set_commission = compose(
         lambda x: merge(
             x,
             {
-                "net_sales_commission": x.get("net_total")
-                * frappe.utils.flt(filters.commission_rate)
+                "net_sales_commission": x.get("net_total", 0.00)
+                * frappe.utils.flt(commission_rate)
                 / 100
             },
         ),
