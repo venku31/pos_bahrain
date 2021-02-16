@@ -23,7 +23,7 @@ app_include_js = [
     "/assets/js/jmi.min.js",
     "/assets/js/pos_bahrain.min.js",
     "/assets/pos_bahrain/js/batch_quick_entry.js",
-    "/assets/pos_bahrain/js/report.js"
+    # "/assets/pos_bahrain/js/report.js"
 ]
 
 # include js, css files in header of web template
@@ -117,7 +117,8 @@ fixtures = [
                     "Item Price-pb_conversion_factor",
                     "Item Price-pb_customer_name",
                     "Payment Entry-pb_posting_time",
-                    "Sales Invoice Item-salesman_name"
+                    "Sales Invoice Item-salesman_name",
+                    "Sales Invoice Item-salesman"
                 ],
             ]
         ],

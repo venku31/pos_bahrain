@@ -6,11 +6,11 @@ import frappe
 from erpnext.accounts.report.sales_register.sales_register import (
     execute as sales_register,
 )
-from toolz.curried import groupby, first, compose, valmap, concatv
+from toolz.curried import groupby, first, compose, valmap, concatv, merge
 
 
 def execute(filters=None):
-    filters.net_amount_col_idx = 18
+    filters.net_amount_col = "net_total"
     return extend_report(sales_register, filters)
 
 
@@ -18,11 +18,9 @@ def extend_report(base_execute, filters):
     _validate_filters(filters)
     results = iter(base_execute(filters))
     columns, data = next(results), next(results)
-    inv_idx = next(x for x, v in enumerate(columns) if "Invoice" in v.get("label"))
-    emp_idx = len(columns)
     return (
         _extend_columns(filters, columns),
-        _extend_data(filters, data, inv_idx, emp_idx),
+        _extend_data(filters, data),
     )
 
 
@@ -33,20 +31,46 @@ def _validate_filters(filters):
 
 def _extend_columns(filters, columns):
     return (
-        columns
-        + ["Sales Employee:Link/Employee:120", "Sales Employee Name::150"]
+        [
+            {
+                "label": frappe._("Sales Employee"),
+                "fieldname": "sales_employee",
+                "fieldtype": "Link",
+                "options": "Employee",
+                "width": 120,
+            },
+            {
+                "label": frappe._("Sales Employee Name"),
+                "fieldname": "sales_employee_name",
+                "fieldtype": "Data",
+                "width": 150,
+            },
+        ]
+        + columns
         + [
-            "{}% Commission on Net Sales:Currency:120".format(
-                frappe.utils.flt(filters.commission_rate)
-            )
+            {
+                "label": frappe._(
+                    "{}% Commission on Net Sales".format(
+                        frappe.utils.flt(filters.commission_rate)
+                    )
+                ),
+                "fieldname": "net_sales_commission",
+                "fieldtype": "Currency",
+                "width": 120,
+            },
         ]
     )
 
 
-def _extend_data(filters, data, inv_idx, emp_idx):
-    invoices = [x[inv_idx] for x in data]
+def _extend_data(filters, data):
+    invoices = [x.get("invoice") for x in data]
     get_employee_map = compose(
-        valmap(lambda x: [x.get("pb_sales_employee"), x.get("pb_sales_employee_name")]),
+        valmap(
+            lambda x: {
+                "sales_employee": x.get("pb_sales_employee"),
+                "sales_employee_name": x.get("pb_sales_employee_name"),
+            }
+        ),
         valmap(first),
         groupby("name"),
         lambda: frappe.db.sql(
@@ -59,16 +83,17 @@ def _extend_data(filters, data, inv_idx, emp_idx):
         ),
     )
     employees = get_employee_map() if invoices else {}
-    set_employee = compose(list, lambda x: concatv(x, employees[x[inv_idx]]))
+    set_employee = compose(lambda x: merge(x, employees.get(x.get("invoice"))))
+
+    commission_rate = filters.get("commission_rate")
     set_commission = compose(
-        list,
-        lambda x: concatv(
+        lambda x: merge(
             x,
-            [
-                x[filters.net_amount_col_idx]
-                * frappe.utils.flt(filters.commission_rate)
+            {
+                "net_sales_commission": x.get(filters.net_amount_col, 0.00)
+                * frappe.utils.flt(commission_rate)
                 / 100
-            ],
+            },
         ),
     )
 
@@ -78,4 +103,4 @@ def _extend_data(filters, data, inv_idx, emp_idx):
     if not filters.sales_employee:
         return extended
 
-    return [x for x in extended if x[emp_idx] == filters.sales_employee]
+    return [x for x in extended if x.get("sales_employee") == filters.sales_employee]
