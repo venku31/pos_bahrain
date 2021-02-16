@@ -10,6 +10,7 @@ from toolz.curried import groupby, first, compose, valmap, concatv, merge
 
 
 def execute(filters=None):
+    filters.net_amount_col = "net_total"
     return extend_report(sales_register, filters)
 
 
@@ -89,7 +90,7 @@ def _extend_data(filters, data):
         lambda x: merge(
             x,
             {
-                "net_sales_commission": x.get("net_total", 0.00)
+                "net_sales_commission": x.get(filters.net_amount_col, 0.00)
                 * frappe.utils.flt(commission_rate)
                 / 100
             },
