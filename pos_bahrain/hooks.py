@@ -117,6 +117,8 @@ fixtures = [
                     "Item Price-pb_conversion_factor",
                     "Item Price-pb_customer_name",
                     "Payment Entry-pb_posting_time",
+                    "Sales Invoice Item-salesman_name",
+                    "Sales Invoice Item-salesman",
                     "Warehouse-pb_cost_center"
                 ],
             ]

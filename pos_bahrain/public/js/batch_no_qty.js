@@ -1,4 +1,4 @@
-const TransactionController = erpnext.TransactionController.extend({
+erpnext.TransactionController = erpnext.TransactionController.extend({
   set_query_for_batch: function (doc, cdt, cdn) {
     var me = this;
     var item = frappe.get_doc(cdt, cdn);
@@ -42,5 +42,3 @@ const TransactionController = erpnext.TransactionController.extend({
     }
   },
 });
-
-$.extend(cur_frm.cscript, new TransactionController({ frm: cur_frm }));

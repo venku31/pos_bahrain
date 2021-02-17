@@ -32,8 +32,8 @@ def _validate_filters(filters):
 
 def _extend_columns(filters, columns):
     return (
-        columns
-        + ["Sales Employee:Link/Employee:120", "Sales Employee Name::150"]
+        ["Sales Employee:Link/Employee:120", "Sales Employee Name::150"]
+        + columns
         + [
             "{}% Commission on Net Sales:Currency:120".format(
                 frappe.utils.flt(filters.commission_rate)
@@ -58,7 +58,7 @@ def _extend_data(filters, data, inv_idx, emp_idx):
         ),
     )
     employees = get_employee_map() if invoices else {}
-    set_employee = compose(list, lambda x: concatv(x, employees[x[inv_idx]]))
+    set_employee = compose(list, lambda x: concatv(employees[x[inv_idx]], x))
     set_commission = compose(
         list,
         lambda x: concatv(
@@ -71,7 +71,7 @@ def _extend_data(filters, data, inv_idx, emp_idx):
         ),
     )
 
-    make_row = compose(set_commission, set_employee)
+    make_row = compose(set_employee, set_commission)
     extended = [make_row(x) for x in data]
 
     if not filters.sales_employee:

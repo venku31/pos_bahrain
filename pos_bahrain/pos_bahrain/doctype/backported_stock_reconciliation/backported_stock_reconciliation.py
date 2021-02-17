@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from frappe import _
 import erpnext
 from erpnext.stock.doctype.stock_reconciliation.stock_reconciliation import (
     StockReconciliation,
@@ -25,6 +26,7 @@ class BackportedStockReconciliation(StockReconciliation):
         super().validate()
         if self._action == "submit":
             self.make_batches("warehouse")
+        _validate_warehouse(self)
 
     def on_submit(self):
         super().on_submit()
@@ -228,8 +230,8 @@ class BackportedStockReconciliation(StockReconciliation):
             )
 
     def update_stock_ledger(self):
-        """    find difference between current and expected entries
-            and create stock ledger entries based on the difference"""
+        """find difference between current and expected entries
+        and create stock ledger entries based on the difference"""
         from erpnext.stock.stock_ledger import get_previous_sle
 
         sl_entries = []
@@ -309,7 +311,9 @@ class BackportedStockReconciliation(StockReconciliation):
 
             if row.current_serial_no:
                 args.update(
-                    {"qty_after_transaction": 0,}
+                    {
+                        "qty_after_transaction": 0,
+                    }
                 )
 
             sl_entries.append(args)
@@ -412,8 +416,8 @@ class BackportedStockReconciliation(StockReconciliation):
         return data
 
     def delete_and_repost_sle(self):
-        """    Delete Stock Ledger Entries related to this voucher
-            and repost future Stock Ledger Entries"""
+        """Delete Stock Ledger Entries related to this voucher
+        and repost future Stock Ledger Entries"""
 
         existing_entries = frappe.db.sql(
             """select distinct item_code, warehouse
@@ -677,3 +681,18 @@ def _update_serial_nos_after_submit(controller, parentfield):
                     update_rejected_serial_nos = False
                     if accepted_serial_nos_updated:
                         break
+
+
+def _validate_warehouse(controller):
+    if not controller.warehouse:
+        return
+
+    for item in controller.items:
+        if controller.warehouse != item.warehouse:
+            frappe.throw(
+                _(
+                    "Row {} should have Warehouse {}".format(
+                        item.idx, controller.warehouse
+                    )
+                )
+            )
