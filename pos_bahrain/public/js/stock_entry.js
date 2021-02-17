@@ -4,15 +4,18 @@
 frappe.ui.form.off('Stock Entry Detail', 'item_code');
 frappe.ui.form.on('Stock Entry Detail', {
   item_code: pos_bahrain.scripts.extensions.stock_entry_item_code,
+  s_warehouse: function (frm, cdt, cdn) {
+    _set_cost_center('s_warehouse', cdt, cdn);
+  },
   t_warehouse: function (frm, cdt, cdn) {
-    _set_cost_center(frm, cdt, cdn);
+    _set_cost_center('t_warehouse', cdt, cdn);
   },
 });
 
 
-function _set_cost_center(frm, cdt, cdn) {
+function _set_cost_center(fieldname, cdt, cdn) {
   const data = locals[cdt][cdn];
-  _get_cost_center(data.t_warehouse).then((cost_center) => {
+  _get_cost_center(data[fieldname]).then((cost_center) => {
     if (cost_center) {
       frappe.model.set_value(cdt, cdn, 'cost_center', cost_center);
     }
