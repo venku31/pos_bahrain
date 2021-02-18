@@ -51,15 +51,23 @@ def get_pos_data():
             values={"names": names},
             as_dict=1,
         )
-        return [merge(x, item_groups_by_parent.get(x.get("name")), {}) for x in pricing_rules]
+        return [
+            merge(x, item_groups_by_parent.get(x.get("name")), {})
+            for x in pricing_rules
+        ]
 
     data = get_pos_data()
+    pricing_rules = (
+        get_pricing_rule_item_groups(data.get("pricing_rules"))
+        if data.get("pricing_rules")
+        else []
+    )
 
     return merge(
         data,
         {"price_list_data": get_price_list_data(data.get("doc").selling_price_list)},
         {"items": add_discounts(data.get("items"))},
-        {"pricing_rules": get_pricing_rule_item_groups(data.get("pricing_rules"))},
+        {"pricing_rules": pricing_rules},
     )
 
 
@@ -326,7 +334,8 @@ def get_item_rate(item_code, uom, price_list="Standard Selling"):
     )
 
     return get_price(
-        {"price_list": price_list, "uom": uom, "transaction_date": today()}, item_code,
+        {"price_list": price_list, "uom": uom, "transaction_date": today()},
+        item_code,
     )
 
 
