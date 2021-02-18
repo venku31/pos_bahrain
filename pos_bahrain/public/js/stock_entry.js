@@ -2,10 +2,10 @@
 // For license information, please see license.txt
 
 // check backported_stock_reconciliation for duplication
-//frappe.ui.form.off('Stock Entry', 'scan_barcode');
+frappe.ui.form.off('Stock Entry', 'scan_barcode');
 frappe.ui.form.on('Stock Entry', {
-  pb_scan_barcode: function (frm) {
-    let scan_barcode_field = frm.fields_dict['pb_scan_barcode'];
+  scan_barcode: function (frm) {
+    let scan_barcode_field = frm.fields_dict['scan_barcode'];
 
     let show_description = function (idx, exist = null) {
       let message = '';
@@ -21,12 +21,12 @@ frappe.ui.form.on('Stock Entry', {
       });
     };
 
-    if (frm.doc.pb_scan_barcode) {
+    if (frm.doc.scan_barcode) {
       frappe
         .call({
           method:
             'erpnext.selling.page.point_of_sale.point_of_sale.search_serial_or_batch_or_barcode_number',
-          args: { search_value: frm.doc.pb_scan_barcode },
+          args: { search_value: frm.doc.scan_barcode },
         })
         .then((r) => {
           const data = r && r.message;
