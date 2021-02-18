@@ -33,70 +33,72 @@ class BackportedStockReconciliation(StockReconciliation):
         _update_serial_nos_after_submit(self, "items")
 
     def remove_items_with_no_change(self):
-        """Remove items if qty or rate is not changed"""
-        self.difference_amount = 0.0
-
-        def _changed(item):
-            item_dict = get_stock_balance_for(
-                item.item_code,
-                item.warehouse,
-                self.posting_date,
-                self.posting_time,
-                batch_no=item.batch_no,
-            )
-
-            if (
-                (item.qty is None or item.qty == item_dict.get("qty"))
-                and (
-                    item.valuation_rate is None
-                    or item.valuation_rate == item_dict.get("rate")
-                )
-                and (
-                    not item.serial_no
-                    or (item.serial_no == item_dict.get("serial_nos"))
-                )
-            ):
-                return False
-            else:
-                # set default as current rates
-                if item.qty is None:
-                    item.qty = item_dict.get("qty")
-
-                if item.valuation_rate is None:
-                    item.valuation_rate = item_dict.get("rate")
-
-                if item_dict.get("serial_nos"):
-                    item.current_serial_no = item_dict.get("serial_nos")
-
-                item.current_qty = item_dict.get("qty")
-                item.current_valuation_rate = item_dict.get("rate")
-                self.difference_amount += frappe.utils.flt(
-                    item.qty, item.precision("qty")
-                ) * frappe.utils.flt(
-                    item.valuation_rate or item_dict.get("rate"),
-                    item.precision("valuation_rate"),
-                ) - frappe.utils.flt(
-                    item_dict.get("qty"), item.precision("qty")
-                ) * frappe.utils.flt(
-                    item_dict.get("rate"), item.precision("valuation_rate")
-                )
-                return True
-
-        items = list(filter(lambda d: _changed(d), self.items))
-
-        if not items:
-            frappe.throw(
-                frappe._("None of the items have any change in quantity or value."),
-                EmptyStockReconciliationItemsError,
-            )
-
-        elif len(items) != len(self.items):
-            self.items = items
-            for i, item in enumerate(self.items):
-                item.idx = i + 1
-            frappe.msgprint(
-                frappe._("Removed items with no change in quantity or value.")
-            )
+        pass
+        #
+        # """Remove items if qty or rate is not changed"""
+        # self.difference_amount = 0.0
+        #
+        # def _changed(item):
+        #     item_dict = get_stock_balance_for(
+        #         item.item_code,
+        #         item.warehouse,
+        #         self.posting_date,
+        #         self.posting_time,
+        #         batch_no=item.batch_no,
+        #     )
+        #
+        #     if (
+        #         (item.qty is None or item.qty == item_dict.get("qty"))
+        #         and (
+        #             item.valuation_rate is None
+        #             or item.valuation_rate == item_dict.get("rate")
+        #         )
+        #         and (
+        #             not item.serial_no
+        #             or (item.serial_no == item_dict.get("serial_nos"))
+        #         )
+        #     ):
+        #         return False
+        #     else:
+        #         # set default as current rates
+        #         if item.qty is None:
+        #             item.qty = item_dict.get("qty")
+        #
+        #         if item.valuation_rate is None:
+        #             item.valuation_rate = item_dict.get("rate")
+        #
+        #         if item_dict.get("serial_nos"):
+        #             item.current_serial_no = item_dict.get("serial_nos")
+        #
+        #         item.current_qty = item_dict.get("qty")
+        #         item.current_valuation_rate = item_dict.get("rate")
+        #         self.difference_amount += frappe.utils.flt(
+        #             item.qty, item.precision("qty")
+        #         ) * frappe.utils.flt(
+        #             item.valuation_rate or item_dict.get("rate"),
+        #             item.precision("valuation_rate"),
+        #         ) - frappe.utils.flt(
+        #             item_dict.get("qty"), item.precision("qty")
+        #         ) * frappe.utils.flt(
+        #             item_dict.get("rate"), item.precision("valuation_rate")
+        #         )
+        #         return True
+        #
+        # items = list(filter(lambda d: _changed(d), self.items))
+        #
+        # if not items:
+        #     frappe.throw(
+        #         frappe._("None of the items have any change in quantity or value."),
+        #         EmptyStockReconciliationItemsError,
+        #     )
+        #
+        # elif len(items) != len(self.items):
+        #     self.items = items
+        #     for i, item in enumerate(self.items):
+        #         item.idx = i + 1
+        #     frappe.msgprint(
+        #         frappe._("Removed items with no change in quantity or value.")
+        #     )
 
     def validate_data(self):
         def _get_msg(row_num, msg):
