@@ -2,6 +2,48 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Repack Request', {
+  onload: function (frm) {
+    frm.add_fetch('item_code', 'item_name', 'item_name');
+
+    // item_code
+    ['items', 'to_items'].forEach((item_table) => {
+      frm.set_query('item_code', item_table, function (doc, cdt, cdn) {
+        return {
+          query: 'erpnext.controllers.queries.item_query',
+          filters: {
+            is_stock_item: 1,
+          },
+        };
+      });
+      frm.fields_dict[item_table].grid.get_field(
+        'warehouse'
+      ).get_query = function (doc) {
+        return {
+          filters: { company: doc.company },
+        };
+      };
+    });
+
+    if (frm.doc.company) {
+      erpnext.queries.setup_queries(frm, 'Warehouse', function () {
+        return erpnext.queries.warehouse(frm.doc);
+      });
+    }
+  },
+  refresh: function (frm) {
+    if (frm.doc.company) {
+      frm.trigger('toggle_display_account_head');
+    }
+  },
+  toggle_display_account_head: function (frm) {
+    frm.toggle_display(
+      ['expense_account', 'cost_center'],
+      erpnext.is_perpetual_inventory_enabled(frm.doc.company)
+    );
+  },
+  company: function (frm) {
+    frm.trigger('toggle_display_account_head');
+  },
   scan_barcode: function (frm) {
     _scan_barcode(frm, 'scan_barcode', 'items');
   },
@@ -9,6 +51,51 @@ frappe.ui.form.on('Repack Request', {
     _scan_barcode(frm, 'to_scan_barcode', 'to_items');
   },
 });
+
+const item_script = {
+  qty: function (frm, doctype, name) {
+    var d = locals[doctype][name];
+    if (flt(d.qty) < flt(d.min_order_qty)) {
+      frappe.msgprint(
+        __('Warning: Material Requested Qty is less than Minimum Order Qty')
+      );
+    }
+    const item = locals[doctype][name];
+    // _get_item_data(frm, item);
+  },
+
+  rate: function (frm, doctype, name) {
+    const item = locals[doctype][name];
+    // _get_item_data(frm, item);
+  },
+
+  item_code: function (frm, doctype, name) {
+    const item = locals[doctype][name];
+    item.rate = 0;
+    _set_schedule_date(frm);
+    // _get_item_data(frm, item);
+  },
+
+  schedule_date: function (frm, cdt, cdn) {
+    var row = locals[cdt][cdn];
+    if (row.schedule_date) {
+      if (!frm.doc.schedule_date) {
+        erpnext.utils.copy_value_in_all_rows(
+          frm.doc,
+          cdt,
+          cdn,
+          'items',
+          'schedule_date'
+        );
+      } else {
+        _set_schedule_date(frm);
+      }
+    }
+  },
+};
+
+frappe.ui.form.on('Repack Request Item From', item_script);
+frappe.ui.form.on('Repack Request Item To', item_script);
 
 function _scan_barcode(frm, barcode_field, child_table) {
   let scan_barcode_field = frm.fields_dict[barcode_field];
@@ -106,4 +193,17 @@ function _scan_barcode(frm, barcode_field, child_table) {
       });
   }
   return false;
+}
+
+// https://github.com/frappe/erpnext/blob/version-11/erpnext/stock/doctype/material_request/material_request.js#L361
+function _set_schedule_date(frm) {
+  if (frm.doc.schedule_date) {
+    erpnext.utils.copy_value_in_all_rows(
+      frm.doc,
+      frm.doc.doctype,
+      frm.doc.name,
+      'items',
+      'schedule_date'
+    );
+  }
 }
