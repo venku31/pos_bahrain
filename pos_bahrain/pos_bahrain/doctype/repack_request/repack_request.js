@@ -44,6 +44,9 @@ frappe.ui.form.on('Repack Request', {
   company: function (frm) {
     frm.trigger('toggle_display_account_head');
   },
+  schedule_date: function (frm) {
+    _set_schedule_date(frm);
+  },
   scan_barcode: function (frm) {
     _scan_barcode(frm, 'scan_barcode', 'items');
   },
@@ -61,19 +64,19 @@ const item_script = {
       );
     }
     const item = locals[doctype][name];
-    // _get_item_data(frm, item);
+    _get_item_data(frm, item);
   },
 
   rate: function (frm, doctype, name) {
     const item = locals[doctype][name];
-    // _get_item_data(frm, item);
+    _get_item_data(frm, item);
   },
 
   item_code: function (frm, doctype, name) {
     const item = locals[doctype][name];
     item.rate = 0;
     _set_schedule_date(frm);
-    // _get_item_data(frm, item);
+    _get_item_data(frm, item);
   },
 
   schedule_date: function (frm, cdt, cdn) {
@@ -206,4 +209,39 @@ function _set_schedule_date(frm) {
       'schedule_date'
     );
   }
+}
+
+function _get_item_data(frm, item) {
+  frm.call({
+    method:
+      'pos_bahrain.pos_bahrain.doctype.repack_request.repack_request.get_item_details',
+    child: item,
+    args: {
+      args: {
+        item_code: item.item_code,
+        warehouse: item.warehouse,
+        doctype: frm.doc.doctype,
+        child_doctype: item.doctype,
+        buying_price_list: frappe.defaults.get_default('buying_price_list'),
+        currency: frappe.defaults.get_default('Currency'),
+        name: frm.doc.name,
+        qty: item.qty || 1,
+        stock_qty: item.stock_qty,
+        company: frm.doc.company,
+        conversion_rate: 1,
+        material_request_type: frm.doc.material_request_type,
+        plc_conversion_rate: 1,
+        rate: item.rate,
+        conversion_factor: item.conversion_factor,
+      },
+    },
+    callback: function (r) {
+      const d = item;
+      if (!r.exc) {
+        $.each(r.message, function (k, v) {
+          if (!d[k]) d[k] = v;
+        });
+      }
+    },
+  });
 }
