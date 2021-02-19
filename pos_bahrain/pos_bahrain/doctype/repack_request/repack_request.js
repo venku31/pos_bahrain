@@ -201,13 +201,15 @@ function _scan_barcode(frm, barcode_field, child_table) {
 // https://github.com/frappe/erpnext/blob/version-11/erpnext/stock/doctype/material_request/material_request.js#L361
 function _set_schedule_date(frm) {
   if (frm.doc.schedule_date) {
-    erpnext.utils.copy_value_in_all_rows(
-      frm.doc,
-      frm.doc.doctype,
-      frm.doc.name,
-      'items',
-      'schedule_date'
-    );
+    ['items', 'to_items'].forEach((item_table) => {
+      erpnext.utils.copy_value_in_all_rows(
+        frm.doc,
+        frm.doc.doctype,
+        frm.doc.name,
+        item_table,
+        'schedule_date'
+      );
+    });
   }
 }
 
