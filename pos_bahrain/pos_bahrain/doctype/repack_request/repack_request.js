@@ -34,6 +34,7 @@ frappe.ui.form.on('Repack Request', {
     if (frm.doc.company) {
       frm.trigger('toggle_display_account_head');
     }
+    _make_custom_buttons(frm);
   },
   toggle_display_account_head: function (frm) {
     frm.toggle_display(
@@ -196,6 +197,18 @@ function _scan_barcode(frm, barcode_field, child_table) {
       });
   }
   return false;
+}
+
+function _make_custom_buttons(frm) {
+  if (frm.doc.docstatus === 1) {
+    frm.add_custom_button(__('Repack Entry'), () => {
+      frappe.model.open_mapped_doc({
+        method:
+          'pos_bahrain.pos_bahrain.doctype.repack_request.repack_request.make_stock_entry',
+        frm: frm,
+      });
+    });
+  }
 }
 
 // https://github.com/frappe/erpnext/blob/version-11/erpnext/stock/doctype/material_request/material_request.js#L361
