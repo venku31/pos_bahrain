@@ -21,6 +21,7 @@ from erpnext.stock.get_item_details import (
 )
 from erpnext.stock.doctype.item.item import get_item_defaults
 from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
+from erpnext.setup.doctype.brand.brand import get_brand_defaults
 
 
 class RepackRequest(Document):
@@ -59,6 +60,9 @@ def make_stock_entry(source_name, target_doc=None):
         {
             "Repack Request": {
                 "doctype": "Stock Entry",
+                "field_map": {
+                    "material_request_type": "stock_entry_type",
+                },
                 "validation": {
                     "docstatus": ["=", 1],
                     "material_request_type": [
@@ -161,6 +165,7 @@ def _get_basic_details(args, item):
 
     item_defaults = get_item_defaults(item.name, args.company)
     item_group_defaults = get_item_group_defaults(item.name, args.company)
+    brand_defaults = get_brand_defaults(item.name, args.company)
 
     warehouse = (
         args.get("set_warehouse")
@@ -187,20 +192,17 @@ def _get_basic_details(args, item):
             "image": cstr(item.image).strip(),
             "warehouse": warehouse,
             "income_account": get_default_income_account(
-                args, item_defaults, item_group_defaults
+                args, item_defaults, item_group_defaults, brand_defaults
             ),
             "expense_account": get_default_expense_account(
-                args, item_defaults, item_group_defaults
+                args, item_defaults, item_group_defaults, brand_defaults
             ),
             "cost_center": get_default_cost_center(
-                args, item_defaults, item_group_defaults
+                args, item_defaults, item_group_defaults, brand_defaults
             ),
             "has_serial_no": item.has_serial_no,
             "has_batch_no": item.has_batch_no,
             "batch_no": None,
-            "item_tax_rate": json.dumps(
-                dict(([d.tax_type, d.tax_rate] for d in item.get("taxes")))
-            ),
             "uom": args.uom,
             "min_order_qty": flt(item.min_order_qty),
             "qty": args.qty or 1.0,
@@ -214,7 +216,9 @@ def _get_basic_details(args, item):
             "net_rate": 0.0,
             "net_amount": 0.0,
             "discount_percentage": 0.0,
-            "supplier": get_default_supplier(args, item_defaults, item_group_defaults),
+            "supplier": get_default_supplier(
+                args, item_defaults, item_group_defaults, brand_defaults
+            ),
             "update_stock": args.get("update_stock")
             if args.get("doctype") in ["Sales Invoice", "Purchase Invoice"]
             else 0,
