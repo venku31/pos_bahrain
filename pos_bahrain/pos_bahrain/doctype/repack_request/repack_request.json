@@ -77,7 +77,8 @@
    "fieldname": "warehouse",
    "fieldtype": "Link",
    "label": "Warehouse",
-   "options": "Warehouse"
+   "options": "Warehouse",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_2",
@@ -285,7 +286,7 @@
  ],
  "icon": "fa fa-ticket",
  "is_submittable": 1,
- "modified": "2021-02-22 14:51:41.996891",
+ "modified": "2021-02-22 15:14:26.257867",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "Repack Request",
