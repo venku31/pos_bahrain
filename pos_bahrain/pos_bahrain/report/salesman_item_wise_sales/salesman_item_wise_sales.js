@@ -2,7 +2,7 @@
 // For license information, please see license.txt
 /* eslint-disable */
 
-frappe.query_reports['Sales Person Item-wise Sales'] = {
+frappe.query_reports["Salesman Item-wise Sales"] = {
   filters: [
     {
       fieldname: 'from_date',
@@ -36,4 +36,4 @@ frappe.query_reports['Sales Person Item-wise Sales'] = {
     }
     return default_formatter(value, row, column, data);
   },
-};
+}
