@@ -31,8 +31,16 @@ async function show_prices(frm) {
   `);
 }
 
+async function hide_storage_location(frm) {
+  const use_item_storage_location = await frappe.db.get_single_value('POS Bahrain Settings', 'use_item_storage_location');
+  if (!use_item_storage_location) {
+    frm.set_df_property('pb_storage_location_sb', 'hidden', 1);
+  }
+}
+
 export default {
   refresh: function(frm) {
     show_prices(frm);
+    hide_storage_location(frm);
   },
 };
