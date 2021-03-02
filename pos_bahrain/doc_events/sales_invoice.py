@@ -71,8 +71,19 @@ def on_submit(doc, method):
                 flt(payment.base_amount) / flt(conversion_rate),
             )
 
+    set_outstanding_pos_invoice(doc)
+
 
 def set_cost_center(doc):
     if doc.pb_set_cost_center:
         for row in doc.items:
             row.cost_center = doc.pb_set_cost_center
+
+
+def set_outstanding_pos_invoice(doc):
+    zero_out_outstanding_pos_invoice = frappe.db.get_single_value(
+        "POS Bahrain Settings", "zero_out_outstanding_pos_invoice"
+    )
+    if zero_out_outstanding_pos_invoice:
+        frappe.db.set_value("Sales Invoice", doc.name, "outstanding_amount", 0.00)
+        frappe.db.set_value("Sales Invoice", doc.name, "status", "Paid")
