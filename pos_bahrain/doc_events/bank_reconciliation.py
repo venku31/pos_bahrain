@@ -4,7 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
-from toolz.curried import concatv, merge, dissoc, first
+from toolz.curried import concatv, merge, dissoc, first, filter
 
 from pos_bahrain.pos_bahrain.doctype.gl_payment.gl_payment import get_direction
 
@@ -106,8 +106,15 @@ def get_payment_entries(doc, method):
         ]
     )
 
+    filter_sip_credit = filter(
+        lambda x: not (
+            x.get("payment_document") == "Sales Invoice Payment"
+            and "Cr" in x.get("amount")
+        )
+    )
+
     payment_entries = sorted(
-        [dissoc(x.as_dict(), "idx") for x in doc.payment_entries]
+        [dissoc(x.as_dict(), "idx") for x in filter_sip_credit(doc.payment_entries)]
         + [make_row(x) for x in gl_payments],
         key=lambda k: k["posting_date"] or frappe.utils.getdate(frappe.utils.nowdate()),
     )
