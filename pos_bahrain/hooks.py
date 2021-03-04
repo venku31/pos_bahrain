@@ -44,8 +44,9 @@ doctype_js = {
     "Sales Invoice": [
         "public/js/alternate_discount.js",
         "public/js/includes/scan_barcode.js",
+        "public/js/price_list.js",
     ],
-    "Sales Order": "public/js/alternate_discount.js",
+    "Sales Order": ["public/js/alternate_discount.js", "public/js/price_list.js"],
     "Purchase Invoice": [
         "public/js/set_retail_price.js",
         "public/js/includes/scan_barcode.js",
@@ -122,6 +123,8 @@ fixtures = [
                     "Warehouse-pb_cost_center",
                     "Item-pb_storage_location_sb",
                     "Item-pb_storage_location",
+                    "Sales Order Item-pb_price_list",
+                    "Sales Invoice Item-pb_price_list",
                 ],
             ]
         ],
