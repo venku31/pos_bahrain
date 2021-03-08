@@ -31,7 +31,7 @@ async function calc_and_set_total_amount(frm, cdt, cdn) {
 
 async function set_source_branch(frm) {
   const { message: branch } = await frappe.call({
-    method: 'optic_store.api.customer.get_user_branch',
+    method: 'pos_bahrain.api.customer.get_user_branch',
   });
   frm.set_value('source_branch', branch);
 }
@@ -137,7 +137,7 @@ function toggle_incoming_datetime(frm) {
 
 async function toggle_cancel_action(frm) {
   const { message: branch } = await frappe.call({
-    method: 'optic_store.api.customer.get_user_branch',
+    method: 'pos_bahrain.api.customer.get_user_branch',
   });
   frm.page.actions
     .find('a.grey-link:contains("Cancel")')
