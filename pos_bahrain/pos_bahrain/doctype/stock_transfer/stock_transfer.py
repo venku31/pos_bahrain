@@ -161,7 +161,7 @@ class StockTransfer(Document):
 
     def get_warehouses(self, incoming=False):
         transit_warehouse = frappe.db.get_single_value(
-            "Optical Store Settings", "transit_warehouse"
+            "POS Bahrain Settings", "transit_warehouse"
         )
         return (
             {"from_warehouse": self.source_warehouse, "to_warehouse": transit_warehouse}
@@ -219,7 +219,7 @@ def _make_stock_entry(args):
         merge(
             {
                 "doctype": "Stock Entry",
-                "purpose": "Material Transfer",
+                "stock_entry_type": "Material Transfer",
                 "set_posting_time": 1,
             },
             args,

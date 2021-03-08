@@ -151,6 +151,7 @@ fixtures = [
                     "Branch-os_nhra_expiry",
                     "Branch-os_cr_no",
                     "Branch-os_cr_expiry",
+                    "Stock Entry-os_reference_stock_transfer",
                 ],
             ]
         ],
