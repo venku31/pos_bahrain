@@ -71,7 +71,7 @@ class StockTransfer(Document):
                     warehouses,
                     {
                         "items": _map_items(warehouses, accounts)(self.items),
-                        "os_reference_stock_transfer": self.name,
+                        "pb_reference_stock_transfer": self.name,
                     },
                     _destruct_datetime(self.outgoing_datetime),
                 )
@@ -103,7 +103,7 @@ class StockTransfer(Document):
                     warehouses,
                     {
                         "items": _map_items(warehouses, accounts)(self.items),
-                        "os_reference_stock_transfer": self.name,
+                        "pb_reference_stock_transfer": self.name,
                     },
                     _destruct_datetime(self.incoming_datetime),
                 )
