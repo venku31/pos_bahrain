@@ -63,11 +63,34 @@ def get_pos_data():
         else []
     )
 
+    def get_tax_data(tax_data, company):
+        tax_accounts = [
+            x.get("name")
+            for x in frappe.db.sql(
+                """
+                SELECT name FROM `tabAccount`
+                WHERE account_type = "Tax"
+                AND is_group = 0
+                AND company = %(company)s
+            """,
+                values={"company": company},
+                as_dict=1,
+            )
+        ]
+        return valmap(
+            lambda x: {k: v for k, v in x.items() if k in tax_accounts}, tax_data
+        )
+
     return merge(
         data,
         {"price_list_data": get_price_list_data(data.get("doc").selling_price_list)},
         {"items": add_discounts(data.get("items"))},
         {"pricing_rules": pricing_rules},
+        {
+            "tax_data": get_tax_data(
+                data.get("tax_data"), data.get("pos_profile").company
+            )
+        },
     )
 
 

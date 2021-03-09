@@ -36,7 +36,9 @@
   "reports_col",
   "vat_tax_categories",
   "section_break_17",
-  "payments"
+  "payments",
+  "item_section",
+  "transit_warehouse"
  ],
  "fields": [
   {
@@ -233,10 +235,21 @@
    "fieldname": "use_item_storage_location",
    "fieldtype": "Check",
    "label": "Use Item Storage Location"
+  },
+  {
+   "fieldname": "item_section",
+   "fieldtype": "Section Break",
+   "label": "Item"
+  },
+  {
+   "fieldname": "transit_warehouse",
+   "fieldtype": "Link",
+   "label": "Transit Warehouse",
+   "options": "Warehouse"
   }
  ],
  "issingle": 1,
- "modified": "2021-03-03 13:12:06.639470",
+ "modified": "2021-03-08 19:13:44.636462",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "POS Bahrain Settings",

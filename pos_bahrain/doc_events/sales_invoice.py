@@ -76,3 +76,5 @@ def set_cost_center(doc):
     if doc.pb_set_cost_center:
         for row in doc.items:
             row.cost_center = doc.pb_set_cost_center
+        for row in doc.taxes:
+            row.cost_center = doc.pb_set_cost_center
