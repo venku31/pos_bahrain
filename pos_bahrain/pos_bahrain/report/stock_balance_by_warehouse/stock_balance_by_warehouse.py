@@ -3,7 +3,7 @@
 
 from __future__ import unicode_literals
 import frappe
-from toolz import merge, concat, compose
+from toolz import merge, concat, compose, groupby, valmap
 from functools import partial
 
 warehouse_cols = [
@@ -62,11 +62,12 @@ def _get_columns(columns, warehouses):
         )
     )
 
+    ignore_cols = list(concat([warehouse_cols, ["warehouse"]]))
     return list(
         concat(
             [
                 filter(
-                    lambda x: x.get("fieldname") not in warehouse_cols,
+                    lambda x: x.get("fieldname") not in ignore_cols,
                     columns,
                 ),
                 columns_by_warehouse,
@@ -80,11 +81,19 @@ def _get_data(data, columns, warehouses):
         row_iter = iter(row)
         return {x: next(row_iter) for x in column_fieldnames}
 
-    def make_col(warehouse_col, x):
+    def make_col(warehouse_col, warehouse):
         return "_".join(
             [
                 warehouse_col,
-                warehouses.get(x.get("warehouse")),
+                warehouses.get(warehouse),
+            ]
+        )
+
+    def fill_warehouse_cols():
+        return merge(
+            *[
+                {make_col(col, warehouse): 0 for col in warehouse_cols}
+                for warehouse in warehouses.keys()
             ]
         )
 
@@ -92,11 +101,22 @@ def _get_data(data, columns, warehouses):
 
     by_warehouse_cols = partial(
         map,
-        lambda x: merge(x, {make_col(col, x): x.get(col) for col in warehouse_cols}),
+        lambda x: merge(
+            x,
+            fill_warehouse_cols(),
+            {make_col(col, x.get("warehouse")): x.get(col) for col in warehouse_cols},
+        ),
+    )
+
+    merge_by_item_code = compose(
+        list,
+        lambda x: x.values(),
+        partial(valmap, lambda x: merge(*x)),
+        partial(groupby, "item_code"),
     )
 
     make_data = compose(
-        list,
+        merge_by_item_code,
         by_warehouse_cols,
         partial(map, fix_data),
         lambda: data,
