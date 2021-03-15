@@ -59,6 +59,7 @@ def make_stock_entry(source_name, target_doc=None):
 
     def set_missing_values(source, target):
         target.purpose = source.material_request_type
+        target.pb_repack_request = source.name
         target.run_method("calculate_rate_and_amount")
         target.set_job_card_data()
 
