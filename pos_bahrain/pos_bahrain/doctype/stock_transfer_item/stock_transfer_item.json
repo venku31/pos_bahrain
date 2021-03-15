@@ -20,7 +20,10 @@
   "serial_batch_sec",
   "serial_no",
   "column_break_10",
-  "batch_no"
+  "batch_no",
+  "section_break_18",
+  "material_request",
+  "material_request_item"
  ],
  "fields": [
   {
@@ -145,10 +148,24 @@
    "fieldtype": "Link",
    "label": "Batch No",
    "options": "Batch"
+  },
+  {
+   "fieldname": "section_break_18",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "material_request",
+   "fieldtype": "Data",
+   "label": "Material Request"
+  },
+  {
+   "fieldname": "material_request_item",
+   "fieldtype": "Data",
+   "label": "Material Request Item"
   }
  ],
  "istable": 1,
- "modified": "2021-03-08 18:00:09.311560",
+ "modified": "2021-03-15 14:33:28.747199",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "Stock Transfer Item",
