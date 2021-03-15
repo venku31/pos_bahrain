@@ -153,6 +153,7 @@ fixtures = [
                     "Branch-pb_cr_no",
                     "Branch-pb_cr_expiry",
                     "Stock Entry-pb_reference_stock_transfer",
+                    "Stock Entry-pb_repack_request",
                 ],
             ]
         ],
