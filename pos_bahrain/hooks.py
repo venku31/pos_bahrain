@@ -52,6 +52,7 @@ doctype_js = {
     ],
     "Purchase Order": "public/js/set_retail_price.js",
     "Purchase Receipt": "public/js/includes/scan_barcode.js",
+    "Material Request": "public/js/material_request.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
