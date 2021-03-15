@@ -25,12 +25,19 @@ from erpnext.setup.doctype.brand.brand import get_brand_defaults
 
 
 class RepackRequest(Document):
-    pass
+    def validate(self):
+        self.set_status()
+
+    def set_status(self):
+        if self.is_new():
+            if self.get("amended_from"):
+                self.status = "Draft"
+            return
+
+        self.status = "Pending"
 
 
 # https://github.com/frappe/erpnext/blob/version-11/erpnext/stock/get_item_details.py
-
-
 @frappe.whitelist()
 def make_stock_entry(source_name, target_doc=None):
     def update_item(obj, target, source_parent):
