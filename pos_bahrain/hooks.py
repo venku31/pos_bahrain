@@ -251,7 +251,10 @@ doc_events = {
     },
     "Stock Entry": {
         "before_save": "pos_bahrain.doc_events.stock_entry.before_validate",
-        "on_submit": "pos_bahrain.doc_events.purchase_receipt.set_batch_references",
+        "on_submit": [
+            "pos_bahrain.doc_events.purchase_receipt.set_batch_references",
+            "pos_bahrain.doc_events.stock_entry.on_submit",
+        ],
     },
     "Item Price": {"before_save": "pos_bahrain.doc_events.item_price.before_save"},
     "Bin": {"on_update": "pos_bahrain.doc_events.bin.on_update"},
