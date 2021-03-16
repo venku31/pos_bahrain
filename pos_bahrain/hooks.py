@@ -53,6 +53,7 @@ doctype_js = {
     ],
     "Purchase Order": "public/js/set_retail_price.js",
     "Purchase Receipt": "public/js/includes/scan_barcode.js",
+    "Material Request": "public/js/material_request.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -152,6 +153,7 @@ fixtures = [
                     "Branch-pb_cr_no",
                     "Branch-pb_cr_expiry",
                     "Stock Entry-pb_reference_stock_transfer",
+                    "Stock Entry-pb_repack_request",
                 ],
             ]
         ],
@@ -249,7 +251,10 @@ doc_events = {
     },
     "Stock Entry": {
         "before_save": "pos_bahrain.doc_events.stock_entry.before_validate",
-        "on_submit": "pos_bahrain.doc_events.purchase_receipt.set_batch_references",
+        "on_submit": [
+            "pos_bahrain.doc_events.purchase_receipt.set_batch_references",
+            "pos_bahrain.doc_events.stock_entry.on_submit",
+        ],
     },
     "Item Price": {"before_save": "pos_bahrain.doc_events.item_price.before_save"},
     "Bin": {"on_update": "pos_bahrain.doc_events.bin.on_update"},

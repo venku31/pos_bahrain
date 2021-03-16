@@ -86,6 +86,7 @@
   },
   {
    "allow_on_submit": 1,
+   "default": "now",
    "fieldname": "schedule_date",
    "fieldtype": "Date",
    "label": "Required Date"
@@ -202,7 +203,7 @@
    "no_copy": 1,
    "oldfieldname": "status",
    "oldfieldtype": "Select",
-   "options": "\nDraft\nSubmitted\nStopped\nCancelled\nPending\nPartially Ordered\nOrdered\nIssued\nTransferred",
+   "options": "\nDraft\nPending\nCompleted",
    "print_hide": 1,
    "print_width": "100px",
    "read_only": 1,
@@ -286,7 +287,7 @@
  ],
  "icon": "fa fa-ticket",
  "is_submittable": 1,
- "modified": "2021-02-22 15:14:26.257867",
+ "modified": "2021-03-15 14:46:56.310218",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "Repack Request",
