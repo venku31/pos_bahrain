@@ -155,17 +155,20 @@
   },
   {
    "fieldname": "material_request",
-   "fieldtype": "Data",
-   "label": "Material Request"
+   "fieldtype": "Link",
+   "label": "Material Request",
+   "options": "Material Request",
+   "read_only": 1
   },
   {
    "fieldname": "material_request_item",
    "fieldtype": "Data",
-   "label": "Material Request Item"
+   "label": "Material Request Item",
+   "read_only": 1
   }
  ],
  "istable": 1,
- "modified": "2021-03-15 14:33:28.747199",
+ "modified": "2021-03-16 09:47:57.713249",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "Stock Transfer Item",
