@@ -24,7 +24,16 @@ from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 
 
 class RepackRequest(Document):
-    pass
+    def validate(self):
+        self.set_status()
+
+    def set_status(self):
+        if self.is_new():
+            if self.get("amended_from"):
+                self.status = "Draft"
+            return
+
+        self.status = "Pending"
 
 
 # https://github.com/frappe/erpnext/blob/version-11/erpnext/stock/get_item_details.py
@@ -50,6 +59,7 @@ def make_stock_entry(source_name, target_doc=None):
 
     def set_missing_values(source, target):
         target.purpose = source.material_request_type
+        target.pb_repack_request = source.name
         target.run_method("calculate_rate_and_amount")
         target.set_job_card_data()
 
