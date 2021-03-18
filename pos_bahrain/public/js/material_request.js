@@ -1,10 +1,18 @@
 frappe.ui.form.on("Material Request", {
   refresh: function (frm) {
-    if (frm.doc.material_request_type === "Material Transfer") {
-      frm.add_custom_button(__("Stock Transfer"), () => _make_stock_transfer(frm));
-    }
+    _make_custom_buttons(frm);
   },
 });
+
+
+function _make_custom_buttons(frm) {
+  if (frm.doc.docstatus !== 1) {
+    return;
+  }
+  if (frm.doc.material_request_type === "Material Transfer") {
+    frm.add_custom_button(__("Stock Transfer"), () => _make_stock_transfer(frm));
+  }
+}
 
 
 function _make_stock_transfer(frm) {
