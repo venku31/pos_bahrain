@@ -1,6 +1,8 @@
 import frappe
+from frappe import _
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt
+from toolz import first
 
 
 @frappe.whitelist()
@@ -21,11 +23,7 @@ def make_stock_entry(source_name, target_doc=None):
             target.s_warehouse = obj.warehouse
 
     def set_missing_values(source, target):
-        target.purpose = source.material_request_type
-        if source.job_card:
-            target.purpose = "Material Transfer for Manufacture"
-
-        target.run_method("calculate_rate_and_amount")
+        target.target_branch = _get_branch_by_warehouse(source.pb_to_warehouse)
 
     doclist = get_mapped_doc(
         "Material Request",
@@ -57,3 +55,17 @@ def make_stock_entry(source_name, target_doc=None):
     )
 
     return doclist
+
+
+def _get_branch_by_warehouse(warehouse):
+    data = frappe.db.sql(
+        """
+        SELECT name FROM `tabBranch`
+        WHERE warehouse = %s
+        """,
+        warehouse,
+        as_dict=1
+    )
+    if not data:
+        frappe.throw(_("No branch is associated with Warehouse {}".format(warehouse)))
+    return first(data).get("name")
