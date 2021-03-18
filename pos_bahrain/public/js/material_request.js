@@ -1,4 +1,14 @@
 frappe.ui.form.on("Material Request", {
+  setup: function (frm) {
+    frm.set_query("pb_to_warehouse", function () {
+      return {
+        filters: {
+          company: frm.doc.company,
+          is_group: 0,
+        },
+      };
+    });
+  },
   refresh: function (frm) {
     _make_custom_buttons(frm);
   },
