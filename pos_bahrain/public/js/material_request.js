@@ -12,6 +12,9 @@ frappe.ui.form.on("Material Request", {
   refresh: function (frm) {
     _make_custom_buttons(frm);
   },
+  pb_to_warehouse: function (frm) {
+    _set_items_warehouse(frm);
+  },
 });
 
 
@@ -30,4 +33,11 @@ function _make_stock_transfer(frm) {
       method: "pos_bahrain.api.material_request.make_stock_entry",
       frm: frm
   });
+}
+
+
+function _set_items_warehouse(frm) {
+  for (const item of frm.doc.items) {
+    frappe.model.set_value(item.doctype, item.name, "warehouse", frm.doc.pb_to_warehouse);
+  }
 }
