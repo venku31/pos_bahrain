@@ -1,5 +1,5 @@
 from functools import partial
-from toolz import keyfilter, compose, curry, reduceby, merge
+from toolz import keyfilter, compose, curry, reduceby, merge, concatv
 from pymysql.err import ProgrammingError
 
 
@@ -28,3 +28,4 @@ def key_by(key, items):
 
 mapf = compose(list, map)
 filterf = compose(list, filter)
+concatvf = compose(list, concatv)

@@ -8,10 +8,10 @@ from frappe import _
 from frappe.utils import now, get_datetime, flt, cint
 from frappe.model.document import Document
 from functools import partial
-from toolz import merge, compose
+from toolz import merge, compose, concatv
 
 from pos_bahrain.api.customer import get_user_branch
-from pos_bahrain.utils import pick, sum_by, mapf, filterf
+from pos_bahrain.utils import pick, sum_by, mapf, filterf, concatvf
 
 DISPATCH = "Dispatch"
 RECEIVE = "Receive"
@@ -102,7 +102,7 @@ class StockTransfer(Document):
                     pick(["company"], self.as_dict()),
                     warehouses,
                     {
-                        "items": _map_items(warehouses, accounts)(self.items),
+                        "items": _map_items(warehouses, accounts, True)(self.items),
                         "pb_reference_stock_transfer": self.name,
                     },
                     _destruct_datetime(self.incoming_datetime),
@@ -185,7 +185,7 @@ def _destruct_datetime(dt):
     return {"posting_date": _dt.date(), "posting_time": _dt.time()}
 
 
-def _map_items(warehouses, accounts):
+def _map_items(warehouses, accounts, incoming=False):
     make_item = compose(
         partial(
             merge,
@@ -198,16 +198,19 @@ def _map_items(warehouses, accounts):
         ),
         partial(
             pick,
-            [
-                "item_code",
-                "qty",
-                "uom",
-                "basic_rate",
-                "amount",
-                "valuation_rate",
-                "serial_no",
-                "batch_no",
-            ],
+            concatvf(
+                [
+                    "item_code",
+                    "qty",
+                    "uom",
+                    "basic_rate",
+                    "amount",
+                    "valuation_rate",
+                    "serial_no",
+                    "batch_no",
+                ],
+                ["material_request", "material_request_item"] if incoming else [],
+            ),
         ),
         lambda x: x.as_dict(),
     )
@@ -215,6 +218,7 @@ def _map_items(warehouses, accounts):
 
 
 def _make_stock_entry(args):
+    print(args.items)
     doc = frappe.get_doc(
         merge(
             {
