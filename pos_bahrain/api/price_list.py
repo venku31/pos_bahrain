@@ -1,20 +1,13 @@
 import frappe
-from toolz import first
+from toolz import first, merge
 
 
 @frappe.whitelist()
 def get_selling_rate(item, price_list, currency):
-    item_price = frappe.get_all(
-        "Item Price",
-        filters={
-            "item_code": item,
-            "price_list": price_list,
-            "currency": currency,
-            "selling": 1,
-        },
-        fields=["price_list_rate"],
+    return merge(
+        _get_selling_rate(item, price_list, currency),
+        _get_default_selling_rate(item, currency),
     )
-    return first(item_price)
 
 
 @frappe.whitelist()
@@ -32,9 +25,41 @@ def price_list_query(doctype, txt, searchfield, start, page_len, filters):
         AND pl.selling = %(selling)s
         LIMIT {start}, {page_len}
     """.format(
-        txt=frappe.db.escape("%{0}%".format(txt)),
-        start=start,
-        page_len=page_len
+        txt=frappe.db.escape("%{0}%".format(txt)), start=start, page_len=page_len
     )
 
     return frappe.db.sql(query, filters)
+
+
+def _get_default_selling_rate(item, currency):
+    item_defaults = frappe.get_all(
+        "Item Default",
+        filters={"parent": item},
+        fields=["default_price_list"],
+    )
+
+    if item_defaults:
+        item_default = first(item_defaults)
+        return {
+            "default_price_list_rate": _get_selling_rate(
+                item,
+                item_default.get("default_price_list"),
+                currency,
+            ).get("price_list_rate")
+        }
+
+    return {}
+
+
+def _get_selling_rate(item, price_list, currency):
+    item_price = frappe.get_all(
+        "Item Price",
+        filters={
+            "item_code": item,
+            "price_list": price_list,
+            "currency": currency,
+            "selling": 1,
+        },
+        fields=["price_list_rate"],
+    )
+    return first(item_price)
