@@ -218,7 +218,6 @@ def _map_items(warehouses, accounts, incoming=False):
 
 
 def _make_stock_entry(args):
-    print(args.items)
     doc = frappe.get_doc(
         merge(
             {

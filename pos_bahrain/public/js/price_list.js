@@ -16,23 +16,25 @@ function _setup_queries(frm) {
 
 function _set_price_list_rate(frm, cdt, cdn) {
   const child = locals[cdt][cdn];
-  _get_selling_rate(
+  _get_selling_rates(
     child.item_code,
     child.pb_price_list,
     frm.doc.currency
-  ).then((selling_rate) => {
-    if (selling_rate) {
-      frappe.model.set_value(cdt, cdn, 'price_list_rate', selling_rate);
+  ).then((selling_rates) => {
+    if (selling_rates) {
+      const discount_amount = selling_rates.default_price_list_rate - selling_rates.price_list_rate;
+      frappe.model.set_value(cdt, cdn, 'discount_amount', discount_amount);
+      frappe.model.set_value(cdt, cdn, 'price_list_rate', selling_rates.price_list_rate);
     }
   });
 }
 
-async function _get_selling_rate(item, price_list, currency) {
+async function _get_selling_rates(item, price_list, currency) {
   const { message: data } = await frappe.call({
     method: 'pos_bahrain.api.price_list.get_selling_rate',
     args: { item, price_list, currency },
   });
-  return data.price_list_rate;
+  return data;
 }
 
 frappe.ui.form.on('Sales Order', { onload: _setup_queries });
