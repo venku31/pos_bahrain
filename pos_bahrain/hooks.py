@@ -155,6 +155,8 @@ fixtures = [
                     "Stock Entry-pb_reference_stock_transfer",
                     "Stock Entry-pb_repack_request",
                     "Material Request-pb_to_warehouse",
+                    "Sales Order-pb_branch",
+                    "Sales Invoice-pb_branch",
                 ],
             ]
         ],
