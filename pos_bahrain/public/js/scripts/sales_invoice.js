@@ -100,7 +100,7 @@ export async function set_item_cost_center(frm, cdt, cdn) {
 export async function set_fields(frm) {
   const [{ message: warehouse }, { message: branch }] = await Promise.all([
     frappe.call({
-      method: 'pos_bahrain.api.sales_order.get_warehouse',
+      method: 'pos_bahrain.api.customer.get_warehouse',
       args: { user: frappe.session.user },
     }),
     frappe.call({
