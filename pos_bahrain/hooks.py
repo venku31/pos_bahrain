@@ -309,3 +309,10 @@ override_whitelisted_methods = {
     "erpnext.accounts.doctype.sales_invoice.pos.make_invoice": "pos_bahrain.api.pos.make_invoice",  # noqa
     "erpnext.selling.page.point_of_sale.point_of_sale.search_serial_or_batch_or_barcode_number": "pos_bahrain.api.item.search_serial_or_batch_or_barcode_number",  # noqa
 }
+
+
+jenv = {
+    "methods": [
+        "get_workflow_user_received:pos_bahrain.api.stock_transfer.get_workflow_user_received",
+    ]
+}
