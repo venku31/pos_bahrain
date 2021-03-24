@@ -10,3 +10,9 @@ def get_user_branch(user=None):
     if employee:
         return frappe.db.get_value("Employee", employee, "branch")
     return None
+
+
+@frappe.whitelist()
+def get_user_warehouse():
+    branch = get_user_branch()
+    return frappe.db.get_value("Branch", branch, "warehouse") if branch else None
