@@ -231,6 +231,9 @@ fixtures = [
 # Hook on document methods and events
 
 doc_events = {
+    "*": {
+        "validate": "pos_bahrain.doc_events.sales_controller.validate",
+    },
     "Sales Invoice": {
         "validate": "pos_bahrain.doc_events.sales_invoice.validate",
         "before_save": "pos_bahrain.doc_events.sales_invoice.before_save",
