@@ -238,6 +238,9 @@ doc_events = {
     "*": {
         "validate": "pos_bahrain.doc_events.sales_controller.validate",
     },
+    "Sales Order": {
+        "before_save": "pos_bahrain.doc_events.sales_order.before_save",
+    },
     "Sales Invoice": {
         "validate": "pos_bahrain.doc_events.sales_invoice.validate",
         "before_save": "pos_bahrain.doc_events.sales_invoice.before_save",

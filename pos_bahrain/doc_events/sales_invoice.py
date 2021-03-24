@@ -41,6 +41,7 @@ def validate(doc, method):
 
 def before_save(doc, method):
     set_cost_center(doc)
+    set_location(doc)
 
 
 def on_submit(doc, method):
@@ -84,6 +85,11 @@ def set_cost_center(doc):
             row.cost_center = doc.pb_set_cost_center
 
 
+def set_location(doc):
+    for row in doc.items:
+        row.pb_location = _get_location(row.item_code, row.warehouse)
+
+
 def set_rate_by_item_price_list(doc):
     has_set = False
     for item in doc.items:
@@ -117,3 +123,17 @@ def _get_item_price_list_rate(item_code, price_list):
     if not item_price:
         frappe.throw(_("Unable to find Item Price of {} under {}".format(item_code, price_list)))
     return first(item_price).get("price_list_rate")
+
+
+def _get_location(item_code, warehouse):
+    locations = frappe.get_all(
+        "Item Storage Location",
+        filters={"parent": item_code, "warehouse": warehouse},
+        fields=["storage_location"]
+    )
+
+    location = None
+    if locations:
+        location = first(locations).get("storage_location")
+
+    return location
