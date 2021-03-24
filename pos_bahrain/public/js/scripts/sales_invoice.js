@@ -97,6 +97,20 @@ export async function set_item_cost_center(frm, cdt, cdn) {
   }
 }
 
+export async function set_fields(frm) {
+  const [{ message: warehouse }, { message: branch }] = await Promise.all([
+    frappe.call({
+      method: 'pos_bahrain.api.sales_order.get_warehouse',
+      args: { user: frappe.session.user },
+    }),
+    frappe.call({
+      method: 'pos_bahrain.api.customer.get_user_branch',
+    }),
+  ]);
+  frm.set_value('set_warehouse', warehouse);
+  frm.set_value('pb_branch', branch);
+}
+
 const sales_invoice_item = {
   item_code: set_item_cost_center,
   batch_no: set_rate_from_batch,
@@ -105,6 +119,11 @@ const sales_invoice_item = {
 
 export default {
   sales_invoice_item,
+  onload: async function (frm) {
+    if (frm.is_new()) {
+      await set_fields(frm);
+    }
+  },
   setup: function (frm) {
     set_uom_query(frm);
     set_cost_center_query(frm);
