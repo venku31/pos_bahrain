@@ -9,7 +9,7 @@ def validate(doc, method):
         )
         if use_minimum_price_list:
             _validate_minimum_price_list(doc)
-    except:
+    except Exception as e:
         pass
 
 
