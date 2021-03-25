@@ -159,6 +159,8 @@ fixtures = [
                     "Sales Invoice-pb_branch",
                     "Sales Order Item-pb_location",
                     "Sales Invoice Item-pb_location",
+                    "Sales Order Item-pb_price_list_rate",
+                    "Sales Invoice Item-pb_price_list_rate",
                 ],
             ]
         ],
