@@ -200,7 +200,7 @@ function _scan_barcode(frm, barcode_field, child_table) {
 }
 
 function _make_custom_buttons(frm) {
-  if (frm.doc.docstatus === 1) {
+  if (frm.doc.docstatus === 1 && frappe.user.has_role('Stock Manager')) {
     frm.add_custom_button(__('Repack Entry'), () => {
       frappe.model.open_mapped_doc({
         method:
