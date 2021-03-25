@@ -13,6 +13,13 @@ frappe.ui.form.on('Stock Entry Detail', {
 });
 
 
+frappe.ui.form.on('Stock Entry', {
+  refresh: function (frm) {
+    _set_repack_warehouses_read_only(frm);
+  },
+});
+
+
 function _set_cost_center(fieldname, cdt, cdn) {
   const data = locals[cdt][cdn];
   _get_cost_center(data[fieldname]).then((cost_center) => {
@@ -28,3 +35,10 @@ async function _get_cost_center(warehouse) {
   return data.pb_cost_center ? data.pb_cost_center : null;
 }
 
+
+function _set_repack_warehouses_read_only(frm) {
+  if (frm.doc.pb_repack_request) {
+    frm.fields_dict["items"].grid.toggle_enable("s_warehouse", 0);
+    frm.fields_dict["items"].grid.toggle_enable("t_warehouse", 0);
+  }
+}

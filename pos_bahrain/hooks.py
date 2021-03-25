@@ -155,6 +155,12 @@ fixtures = [
                     "Stock Entry-pb_reference_stock_transfer",
                     "Stock Entry-pb_repack_request",
                     "Material Request-pb_to_warehouse",
+                    "Sales Order-pb_branch",
+                    "Sales Invoice-pb_branch",
+                    "Sales Order Item-pb_location",
+                    "Sales Invoice Item-pb_location",
+                    "Sales Order Item-pb_price_list_rate",
+                    "Sales Invoice Item-pb_price_list_rate",
                 ],
             ]
         ],
@@ -234,6 +240,9 @@ doc_events = {
     "*": {
         "validate": "pos_bahrain.doc_events.sales_controller.validate",
     },
+    "Sales Order": {
+        "before_save": "pos_bahrain.doc_events.sales_order.before_save",
+    },
     "Sales Invoice": {
         "validate": "pos_bahrain.doc_events.sales_invoice.validate",
         "before_save": "pos_bahrain.doc_events.sales_invoice.before_save",
@@ -308,4 +317,11 @@ override_whitelisted_methods = {
     "erpnext.accounts.doctype.sales_invoice.pos.get_pos_data": "pos_bahrain.api.item.get_pos_data",  # noqa
     "erpnext.accounts.doctype.sales_invoice.pos.make_invoice": "pos_bahrain.api.pos.make_invoice",  # noqa
     "erpnext.selling.page.point_of_sale.point_of_sale.search_serial_or_batch_or_barcode_number": "pos_bahrain.api.item.search_serial_or_batch_or_barcode_number",  # noqa
+}
+
+
+jenv = {
+    "methods": [
+        "get_workflow_user_received:pos_bahrain.api.stock_transfer.get_workflow_user_received",
+    ]
 }

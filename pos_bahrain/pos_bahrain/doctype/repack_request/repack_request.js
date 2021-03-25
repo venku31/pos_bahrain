@@ -54,6 +54,10 @@ frappe.ui.form.on('Repack Request', {
   to_scan_barcode: function (frm) {
     _scan_barcode(frm, 'to_scan_barcode', 'to_items');
   },
+  warehouse: function (frm) {
+    frm.doc.items.forEach((item) => _set_warehouse(frm, item.doctype, item.name));
+    frm.doc.to_items.forEach((item) => _set_warehouse(frm, item.doctype, item.name));
+  },
 });
 
 const item_script = {
@@ -100,6 +104,7 @@ const item_script = {
 
 frappe.ui.form.on('Repack Request Item From', item_script);
 frappe.ui.form.on('Repack Request Item To', item_script);
+
 
 function _scan_barcode(frm, barcode_field, child_table) {
   let scan_barcode_field = frm.fields_dict[barcode_field];
@@ -199,8 +204,9 @@ function _scan_barcode(frm, barcode_field, child_table) {
   return false;
 }
 
+
 function _make_custom_buttons(frm) {
-  if (frm.doc.docstatus === 1) {
+  if (frm.doc.docstatus === 1 && frm.doc.status != "Stopped" && frappe.user.has_role('Stock Manager')) {
     frm.add_custom_button(__('Repack Entry'), () => {
       frappe.model.open_mapped_doc({
         method:
@@ -208,8 +214,13 @@ function _make_custom_buttons(frm) {
         frm: frm,
       });
     });
+    frm.add_custom_button(__('Stop'), () => _update_status(frm, 'Stopped'));
+  }
+  if (frm.doc.docstatus == 1 && frm.doc.status == 'Stopped') {
+    frm.add_custom_button(__('Re-open'), () => _update_status(frm, 'Pending'));
   }
 }
+
 
 // https://github.com/frappe/erpnext/blob/version-11/erpnext/stock/doctype/material_request/material_request.js#L361
 function _set_schedule_date(frm) {
@@ -225,6 +236,7 @@ function _set_schedule_date(frm) {
     });
   }
 }
+
 
 function _get_item_data(frm, item) {
   frm.call({
@@ -258,5 +270,23 @@ function _get_item_data(frm, item) {
         });
       }
     },
+  });
+}
+
+
+function _set_warehouse(frm, cdt, cdn) {
+  frappe.model.set_value(cdt, cdn, 'warehouse', frm.doc.warehouse);
+};
+
+
+function _update_status(frm, status) {
+  frappe.call({
+    method: 'pos_bahrain.api.repack_request.update_status',
+    args: { name: frm.doc.name, status },
+    callback: function (r) {
+      if (!r.exc) {
+        frm.reload_doc();
+      }
+    }
   });
 }

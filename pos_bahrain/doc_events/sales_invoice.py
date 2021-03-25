@@ -4,7 +4,6 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe import _
 from frappe.utils import flt
 from erpnext.setup.utils import get_exchange_rate
 from toolz import first
@@ -36,11 +35,10 @@ def validate(doc, method):
                     "Reference Date necessary in payment row #{}".format(payment.idx)
                 )
 
-    set_rate_by_item_price_list(doc)
-
 
 def before_save(doc, method):
     set_cost_center(doc)
+    set_location(doc)
 
 
 def on_submit(doc, method):
@@ -84,36 +82,20 @@ def set_cost_center(doc):
             row.cost_center = doc.pb_set_cost_center
 
 
-def set_rate_by_item_price_list(doc):
-    has_set = False
-    for item in doc.items:
-        if item.pb_price_list:
-            price_list_rate = _get_item_price_list_rate(item.item_code, item.pb_price_list)
-            item.rate = price_list_rate
-            item.price_list_rate = price_list_rate
-            item.discount_amount = 0
-            item.discount_percentage = 0
-            has_set = True
-
-    if has_set:
-        doc.calculate_taxes_and_totals()
-        frappe.msgprint(_("Some items are updated based on Price List set on Item row"))
+def set_location(doc):
+    for row in doc.items:
+        row.pb_location = _get_location(row.item_code, row.warehouse)
 
 
-def _get_item_price_list_rate(item_code, price_list):
-    item_price = frappe.db.sql(
-        """
-        SELECT price_list_rate FROM `tabItem Price`
-        WHERE item_code=%(item_code)s
-        AND price_list=%(price_list)s
-        AND selling=1
-        """,
-        {
-            "item_code": item_code,
-            "price_list": price_list
-        },
-        as_dict=True
+def _get_location(item_code, warehouse):
+    locations = frappe.get_all(
+        "Item Storage Location",
+        filters={"parent": item_code, "warehouse": warehouse},
+        fields=["storage_location"]
     )
-    if not item_price:
-        frappe.throw(_("Unable to find Item Price of {} under {}".format(item_code, price_list)))
-    return first(item_price).get("price_list_rate")
+
+    location = None
+    if locations:
+        location = first(locations).get("storage_location")
+
+    return location

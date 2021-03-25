@@ -3,8 +3,8 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
-import json
 import frappe
+from frappe import _
 from frappe.utils import cstr, flt
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
@@ -27,14 +27,28 @@ from erpnext.setup.doctype.brand.brand import get_brand_defaults
 class RepackRequest(Document):
     def validate(self):
         self.set_status()
+        self.set_items_warehouse()
 
-    def set_status(self):
+    def set_status(self, update=False, status=None):
         if self.is_new():
             if self.get("amended_from"):
                 self.status = "Draft"
             return
 
-        self.status = "Pending"
+        # Newly submitted is Pending
+        if self.status == "Draft":
+            self.status = "Pending"
+
+        # Current status is not equal
+        if self.status != status and update:
+            self.add_comment("Label", _(status))
+            self.db_set("status", status, update_modified=True)
+
+    def set_items_warehouse(self):
+        for item in self.items:
+            item.warehouse = self.warehouse
+        for item in self.to_items:
+            item.warehouse = self.warehouse
 
 
 # https://github.com/frappe/erpnext/blob/version-11/erpnext/stock/get_item_details.py

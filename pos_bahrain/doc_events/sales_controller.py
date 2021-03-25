@@ -3,11 +3,14 @@ from frappe import _
 
 
 def validate(doc, method):
-    use_minimum_price_list = frappe.db.get_single_value(
-        "POS Bahrain Settings", "use_minimum_price_list"
-    )
-    if use_minimum_price_list:
-        _validate_minimum_price_list(doc)
+    try:
+        use_minimum_price_list = frappe.db.get_single_value(
+            "POS Bahrain Settings", "use_minimum_price_list"
+        )
+        if use_minimum_price_list:
+            _validate_minimum_price_list(doc)
+    except Exception as e:
+        pass
 
 
 def _validate_minimum_price_list(doc):
