@@ -27,6 +27,7 @@ from erpnext.setup.doctype.brand.brand import get_brand_defaults
 class RepackRequest(Document):
     def validate(self):
         self.set_status()
+        self.set_items_warehouse()
 
     def set_status(self):
         if self.is_new():
@@ -35,6 +36,12 @@ class RepackRequest(Document):
             return
 
         self.status = "Pending"
+
+    def set_items_warehouse(self):
+        for item in self.items:
+            item.warehouse = self.warehouse
+        for item in self.to_items:
+            item.warehouse = self.warehouse
 
 
 # https://github.com/frappe/erpnext/blob/version-11/erpnext/stock/get_item_details.py

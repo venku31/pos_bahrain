@@ -54,6 +54,10 @@ frappe.ui.form.on('Repack Request', {
   to_scan_barcode: function (frm) {
     _scan_barcode(frm, 'to_scan_barcode', 'to_items');
   },
+  warehouse: function (frm) {
+    frm.doc.items.forEach((item) => _set_warehouse(frm, item.doctype, item.name));
+    frm.doc.to_items.forEach((item) => _set_warehouse(frm, item.doctype, item.name));
+  },
 });
 
 const item_script = {
@@ -260,3 +264,7 @@ function _get_item_data(frm, item) {
     },
   });
 }
+
+function _set_warehouse(frm, cdt, cdn) {
+  frappe.model.set_value(cdt, cdn, 'warehouse', frm.doc.warehouse);
+};
