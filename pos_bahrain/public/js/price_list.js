@@ -24,7 +24,7 @@ function _set_price_list_rate(frm, cdt, cdn) {
     if (selling_rates) {
       const discount_amount = selling_rates.default_price_list_rate - selling_rates.price_list_rate;
       frappe.model.set_value(cdt, cdn, 'discount_amount', discount_amount);
-      frappe.model.set_value(cdt, cdn, 'price_list_rate', selling_rates.price_list_rate);
+      frappe.model.set_value(cdt, cdn, 'pb_price_list_rate', selling_rates.price_list_rate);
     }
   });
 }
