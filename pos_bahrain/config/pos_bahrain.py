@@ -177,6 +177,8 @@ def get_data():
                 make_item("doctype", "Payment Entry PB", "Payment Entry PB"),
                 make_item("doctype", "POS Closing Voucher", "POS Closing Voucher"),
                 make_item("doctype", "Batch Recall", "Batch Recall"),
+                make_item("doctype", "Stock Transfer", "Stock Transfer"),
+                make_item("doctype", "Repack Request", "Repack Request"),
             ],
         ),
         make_section(
