@@ -80,6 +80,7 @@
   },
   {
    "fetch_from": "company.cost_center",
+   "fetch_if_empty": 1,
    "fieldname": "cost_center",
    "fieldtype": "Link",
    "label": "Cost Center",
@@ -217,7 +218,7 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2021-03-29 16:31:28.695649",
+ "modified": "2021-03-29 16:32:30.102373",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "GL Payment",
