@@ -41,6 +41,7 @@ doctype_js = {
     "Mode of Payment": "public/js/mode_of_payment.js",
     "Stock Entry": ["public/js/includes/scan_barcode.js", "public/js/stock_entry.js"],
     "Company": "public/js/company.js",
+    "Quotation": "public/js/price_list.js",
     "Sales Invoice": [
         "public/js/alternate_discount.js",
         "public/js/includes/scan_barcode.js",
@@ -161,6 +162,9 @@ fixtures = [
                     "Sales Invoice Item-pb_location",
                     "Sales Order Item-pb_price_list_rate",
                     "Sales Invoice Item-pb_price_list_rate",
+                    "Quotation Item-pb_price_list_cb",
+                    "Quotation Item-pb_price_list",
+                    "Quotation Item-pb_price_list_rate",
                 ],
             ]
         ],
