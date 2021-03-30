@@ -46,8 +46,13 @@ doctype_js = {
         "public/js/alternate_discount.js",
         "public/js/includes/scan_barcode.js",
         "public/js/price_list.js",
+        "public/js/branch.js",
     ],
-    "Sales Order": ["public/js/alternate_discount.js", "public/js/price_list.js"],
+    "Sales Order": [
+        "public/js/alternate_discount.js",
+        "public/js/price_list.js",
+        "public/js/branch.js",
+    ],
     "Purchase Invoice": [
         "public/js/set_retail_price.js",
         "public/js/includes/scan_barcode.js",
