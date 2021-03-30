@@ -11,3 +11,4 @@ def boot_session(bootinfo):
     settings = frappe.get_single("POS Bahrain Settings")
     bootinfo.pos_bahrain.use_batch_price = settings.use_batch_price
     bootinfo.pos_bahrain.use_barcode_uom = settings.use_barcode_uom
+    bootinfo.pos_bahrain.disable_standard_pf = settings.disable_standard_pf
