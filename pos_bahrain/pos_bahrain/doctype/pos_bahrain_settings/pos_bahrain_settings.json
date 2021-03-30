@@ -11,6 +11,7 @@
   "use_item_storage_location",
   "gen_col",
   "show_sales_employee",
+  "disable_standard_pf",
   "default_supplier_items_limit",
   "price_list_section",
   "discount_on_retail",
@@ -278,10 +279,16 @@
    "fieldname": "minimum_doc",
    "fieldtype": "Table",
    "options": "POS Bahrain Settings Minimum Doc"
+  },
+  {
+   "default": "0",
+   "fieldname": "disable_standard_pf",
+   "fieldtype": "Check",
+   "label": "Disable Standard Print Format"
   }
  ],
  "issingle": 1,
- "modified": "2021-03-23 15:29:45.400418",
+ "modified": "2021-03-30 15:30:01.282345",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "POS Bahrain Settings",
