@@ -29,4 +29,5 @@ async function _get_data(branch, item) {
 
 frappe.ui.form.on('Sales Order', { onload: _setup_queries });
 frappe.ui.form.on('Sales Invoice', { onload: _setup_queries });
-
+frappe.ui.form.on('Sales Order Item', { pb_branch: _set_data });
+frappe.ui.form.on('Sales Invoice Item', { pb_branch: _set_data });
