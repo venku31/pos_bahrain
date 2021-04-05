@@ -10,6 +10,7 @@ from frappe.model.document import Document
 from functools import partial
 from toolz import merge, compose, concatv
 
+from pos_bahrain.api.branch import get_branch_qty
 from pos_bahrain.api.customer import get_user_branch
 from pos_bahrain.utils import pick, sum_by, mapf, filterf, concatvf
 
@@ -51,6 +52,9 @@ class StockTransfer(Document):
                 filterf(lambda x: x, item.serial_no.split("\n"))
             ) != cint(item.qty):
                 frappe.throw(_("Serial No missing for row {}".format(item.idx)))
+            if not item.branch and self.source_branch:
+                item.branch = self.source_branch
+            item.branch_qty = get_branch_qty(item.branch, item.item_code)
 
     def before_save(self):
         if not self.outgoing_datetime:
