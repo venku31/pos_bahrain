@@ -22,6 +22,9 @@
   "column_break_10",
   "batch_no",
   "section_break_18",
+  "branch",
+  "branch_qty",
+  "column_break_21",
   "material_request",
   "material_request_item"
  ],
@@ -165,10 +168,26 @@
    "fieldtype": "Data",
    "label": "Material Request Item",
    "read_only": 1
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "options": "Branch"
+  },
+  {
+   "fieldname": "branch_qty",
+   "fieldtype": "Float",
+   "label": "Branch Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_21",
+   "fieldtype": "Column Break"
   }
  ],
  "istable": 1,
- "modified": "2021-03-16 09:47:57.713249",
+ "modified": "2021-04-05 13:29:27.296852",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "Stock Transfer Item",
