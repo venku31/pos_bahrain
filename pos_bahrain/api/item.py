@@ -77,6 +77,7 @@ def get_more_pos_data(profile, company):
         "use_stock_validator": settings.use_stock_validator,
         "use_sales_employee": settings.show_sales_employee,
         "override_sync_limit": settings.override_sync_limit,
+        "customer_contacts": _get_customer_contacts(),
         "sales_employee_details": _get_employees()
         if settings.show_sales_employee
         else None,
@@ -313,7 +314,8 @@ def get_item_rate(item_code, uom, price_list="Standard Selling"):
     )
 
     return get_price(
-        {"price_list": price_list, "uom": uom, "transaction_date": today()}, item_code,
+        {"price_list": price_list, "uom": uom, "transaction_date": today()},
+        item_code,
     )
 
 
@@ -410,3 +412,33 @@ def get_item_cost_center(item_code=None, company=None, project=None, customer=No
         "cost_center": cost_center,
     }
     return get_default_cost_center(args, item_defaults, item_group_defaults, company)
+
+
+def _get_customer_contacts():
+    dynamic_links = {
+        x.get("parent"): x.get("link_name")
+        for x in frappe.db.sql(
+            """
+            SELECT parent, link_name FROM `tabDynamic Link`
+            WHERE link_doctype = 'Customer'
+            AND parenttype = 'Contact'
+            """,
+            as_dict=1,
+        )
+    }
+
+    phone_contacts = {
+        x.get("name"): x.get("phone", "")
+        for x in frappe.db.sql(
+            """
+            SELECT name, phone 
+            FROM `tabContact`
+            """,
+            as_dict=1,
+        )
+    }
+
+    return {
+        customer: phone_contacts.get(contact, "")
+        for contact, customer in dynamic_links.items()
+    }
