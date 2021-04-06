@@ -5,12 +5,10 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe.model.document import Document
 from erpnext.controllers.accounts_controller import AccountsController
-from erpnext.accounts.doctype.sales_invoice.sales_invoice import get_bank_cash_account
 from erpnext.accounts.general_ledger import make_gl_entries
 from functools import partial
-from toolz import compose, concat
+from toolz import compose, concat, merge
 
 
 class GLPayment(AccountsController):
@@ -61,6 +59,11 @@ class GLPayment(AccountsController):
                 else "",
             ]
         )
+
+    def get_gl_dict(self, x):
+        gl_dict = super().get_gl_dict(x)
+        gl_dict['cost_center'] = self.cost_center
+        return gl_dict
 
     def _make_gl_entries(self, cancel=0):
         gl_entries = [
