@@ -14,7 +14,15 @@ function set_queries(frm) {
     const { item_code } = frappe.get_doc(cdt, cdn) || {};
     return { filters: { item: item_code } };
   });
+  frm.set_query('branch', 'items', function(_, cdt, cdn) {
+    const child = locals[cdt][cdn];
+    return {
+      query: 'pos_bahrain.api.branch.branch_query',
+      filters: { item_code: child.item_code },
+    };
+  });
 }
+
 
 function calc_and_set_row_amount(frm, cdt, cdn) {
   const { qty = 0, basic_rate = 0 } = frappe.model.get_doc(cdt, cdn) || {};
@@ -23,11 +31,13 @@ function calc_and_set_row_amount(frm, cdt, cdn) {
   frappe.model.set_value(cdt, cdn, 'valuation_rate', amount / qty);
 }
 
+
 async function calc_and_set_total_amount(frm, cdt, cdn) {
   const items = frm.fields_dict.items.grid.grid_rows.map(({ doc }) => doc);
   frm.set_value('total_value', sumBy(items, 'amount'));
   return frm.set_value('total_qty', sumBy(items, 'qty'));
 }
+
 
 async function set_source_branch(frm) {
   const { message: branch } = await frappe.call({
@@ -35,6 +45,7 @@ async function set_source_branch(frm) {
   });
   frm.set_value('source_branch', branch);
 }
+
 
 function render_dashboard_data(frm) {
   if (!frm.doc.__islocal) {
@@ -52,6 +63,26 @@ function render_dashboard_data(frm) {
     });
   }
 }
+
+
+function _set_data(frm, cdt, cdn) {
+  const child = locals[cdt][cdn];
+  _get_data(child.branch, child.item_code).then((item_data) => {
+    if (item_data) {
+      frappe.model.set_value(cdt, cdn, 'branch_qty', item_data.qty);
+    }
+  });
+}
+
+
+async function _get_data(branch, item) {
+  const { message: data } = await frappe.call({
+    method: 'pos_bahrain.api.branch.get_branch_qty',
+    args: { branch, item },
+  });
+  return data;
+}
+
 
 export const stock_transfer_item = {
   item_code: async function(frm, cdt, cdn) {
@@ -122,7 +153,9 @@ export const stock_transfer_item = {
   basic_rate: calc_and_set_row_amount,
   amount: calc_and_set_total_amount,
   items_remove: calc_and_set_row_amount,
+  branch: _set_data,
 };
+
 
 function set_route_to_list(frm) {
   frm.page.actions.find('a.grey-link:contains("Receive")').on('click', function() {
@@ -130,10 +163,12 @@ function set_route_to_list(frm) {
   });
 }
 
+
 function toggle_incoming_datetime(frm) {
   frm.toggle_enable('incoming_datetime', frm.doc.workflow_state === 'In Transit');
   // frm.toggle_reqd('incoming_datetime', frm.doc.workflow_state === 'In Transit');
 }
+
 
 async function toggle_cancel_action(frm) {
   const { message: branch } = await frappe.call({
@@ -145,6 +180,7 @@ async function toggle_cancel_action(frm) {
       frm.doc.workflow_state === 'In Transit' && branch !== frm.doc.target_branch
     );
 }
+
 
 export default {
   setup: set_queries,
