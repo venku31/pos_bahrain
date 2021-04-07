@@ -62,6 +62,11 @@ class GLPayment(AccountsController):
             ]
         )
 
+    def get_gl_dict(self, x):
+        gl_dict = super().get_gl_dict(x)
+        gl_dict['cost_center'] = self.cost_center
+        return gl_dict
+
     def _make_gl_entries(self, cancel=0):
         gl_entries = [
             self.get_gl_dict(x)
