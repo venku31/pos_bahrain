@@ -38,6 +38,7 @@ def _get_columns(doctype, filters):
         make_column("invoice", "Invoice number", width=150),
         make_column("date", "Invoice date", type="Date", width=90),
         make_column("vat_account_no", "VAT Account Number", width=150),
+        make_column("cost_center", "Cost Center", width=150),
         make_column("party_name", "Client name", width=150),
         make_column("description", "Good/Service description", width=180),
         make_column("taxable_amount", "Total BHD (exclusive of VAT)", type="Float"),
@@ -226,6 +227,13 @@ def _get_data(clauses, values, keys):
                 lambda: filter(lambda x: x.item_code == item_code, doc.items),
             )()
 
+        def get_cost_center(item_code):
+            return compose(
+                excepts(StopIteration, first, lambda _: item_code),
+                partial(map, lambda x: x.cost_center),
+                lambda: filter(lambda x: x.item_code == item_code, doc.items),
+            )()
+
         return [
             merge(
                 {
@@ -234,6 +242,7 @@ def _get_data(clauses, values, keys):
                     "vat_account_no": doc.tax_id,
                     "party_name": doc.get(clauses.get("party_name")),
                     "description": get_item_name(x),
+                    "cost_center": get_cost_center(x),
                 },
                 get_amounts(x),
             )
