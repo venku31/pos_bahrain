@@ -9,9 +9,11 @@ function _create_custom_buttons(frm) {
   if (frm.doc.docstatus !== 1) {
     return;
   }
-  frm.add_custom_button(__("Purchase Invoice"), function () {
-    _make_purchase_invoice(frm);
-  }, __("Make"));
+  if (!frm.doc.pb_related_pi) {
+    frm.add_custom_button(__("Purchase Invoice"), function () {
+      _make_purchase_invoice(frm);
+    }, __("Make"));
+  }
 }
 
 

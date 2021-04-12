@@ -150,6 +150,7 @@ fixtures = [
                     "Branch-pb_cr_expiry",
                     "Stock Entry-pb_reference_stock_transfer",
                     "Stock Entry-pb_repack_request",
+                    "Sales Invoice-pb_related_pi",
                 ],
             ]
         ],
@@ -240,7 +241,10 @@ doc_events = {
             "pos_bahrain.doc_events.purchase_invoice.before_validate",
             "pos_bahrain.doc_events.purchase_invoice.before_save",
         ],
-        "on_submit": "pos_bahrain.doc_events.purchase_receipt.set_batch_references",
+        "on_submit": [
+            "pos_bahrain.doc_events.purchase_invoice.on_submit",
+            "pos_bahrain.doc_events.purchase_receipt.set_batch_references",
+        ],
     },
     "Payment Entry": {
         "before_save": "pos_bahrain.doc_events.payment_entry.before_save"
