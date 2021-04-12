@@ -8,6 +8,9 @@ from frappe.model.mapper import get_mapped_doc
 @frappe.whitelist()
 def make_purchase_invoice(source_name, target_doc=None):
     def set_missing_values(source, target):
+        target.due_date = source.posting_date
+        target.bill_date = source.posting_date
+        target.bill_no = source.name
         target.run_method("set_missing_values")
         target.run_method("calculate_taxes_and_totals")
 
