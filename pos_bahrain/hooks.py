@@ -43,6 +43,7 @@ doctype_js = {
     "Sales Invoice": [
         "public/js/alternate_discount.js",
         "public/js/includes/scan_barcode.js",
+        "public/js/sales_invoice.js",
     ],
     "Sales Order": "public/js/alternate_discount.js",
     "Purchase Invoice": [
