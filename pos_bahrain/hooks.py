@@ -57,6 +57,7 @@ doctype_js = {
     "Purchase Invoice": [
         "public/js/set_retail_price.js",
         "public/js/includes/scan_barcode.js",
+        "public/js/branch.js",
     ],
     "Purchase Order": "public/js/set_retail_price.js",
     "Purchase Receipt": "public/js/includes/scan_barcode.js",
@@ -176,6 +177,8 @@ fixtures = [
                     "Sales Order Item-pb_branch_qty",
                     "Sales Invoice Item-pb_branch",
                     "Sales Invoice Item-pb_branch_qty",
+                    "Purchase Invoice Item-pb_branch",
+                    "Purchase Invoice Item-pb_branch_qty",
                 ],
             ]
         ],
