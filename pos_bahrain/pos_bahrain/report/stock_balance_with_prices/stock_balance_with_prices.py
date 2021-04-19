@@ -10,9 +10,9 @@ from pos_bahrain.utils import key_by
 
 
 def execute(filters=None):
-    from erpnext.stock.report.stock_balance.stock_balance import execute
-
-    columns, data = execute(filters)
+    from erpnext.stock.report.stock_balance import stock_balance
+    stock_balance.validate_filters = _validate_filters
+    columns, data = stock_balance.execute(filters)
     prices = {
         "buying": frappe.db.get_single_value("Buying Settings", "buying_price_list"),
         "selling": frappe.db.get_single_value("Selling Settings", "selling_price_list"),
@@ -114,3 +114,7 @@ def _get_data(data, prices, filters):
     )
 
     return make_data(data)
+
+
+def _validate_filters(filters):
+    pass
