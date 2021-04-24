@@ -57,10 +57,12 @@ doctype_js = {
     "Purchase Invoice": [
         "public/js/set_retail_price.js",
         "public/js/includes/scan_barcode.js",
+        "public/js/branch.js",
     ],
     "Purchase Order": "public/js/set_retail_price.js",
     "Purchase Receipt": "public/js/includes/scan_barcode.js",
     "Material Request": "public/js/material_request.js",
+    "Delivery Note": "public/js/delivery_note.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -175,6 +177,8 @@ fixtures = [
                     "Sales Order Item-pb_branch_qty",
                     "Sales Invoice Item-pb_branch",
                     "Sales Invoice Item-pb_branch_qty",
+                    "Purchase Invoice Item-pb_branch",
+                    "Purchase Invoice Item-pb_branch_qty",
                 ],
             ]
         ],

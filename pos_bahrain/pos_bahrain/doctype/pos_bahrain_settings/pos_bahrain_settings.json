@@ -9,6 +9,8 @@
   "use_barcode_uom",
   "manage_batch",
   "use_item_storage_location",
+  "hide_sales_return_except",
+  "hide_sales_return_role",
   "gen_col",
   "show_sales_employee",
   "disable_standard_pf",
@@ -285,10 +287,24 @@
    "fieldname": "disable_standard_pf",
    "fieldtype": "Check",
    "label": "Disable Standard Print Format"
+  },
+  {
+   "default": "0",
+   "description": "Hide Sales Return except the selected role",
+   "fieldname": "hide_sales_return_except",
+   "fieldtype": "Check",
+   "label": "Hide Sales Return Except"
+  },
+  {
+   "depends_on": "hide_sales_return_except",
+   "fieldname": "hide_sales_return_role",
+   "fieldtype": "Link",
+   "label": "Hide Sales Return Role",
+   "options": "Role"
   }
  ],
  "issingle": 1,
- "modified": "2021-03-30 15:30:01.282345",
+ "modified": "2021-04-13 12:19:16.042947",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "POS Bahrain Settings",
