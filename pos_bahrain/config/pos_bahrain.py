@@ -137,6 +137,8 @@ def get_data():
                 make_item("report", "VAT on Purchase per GCC", "VAT on Purchase per GCC", True),
                 make_item("report", "Stock Item Cost", "Stock Item Cost", True),
                 make_item("report", "Stock Cost Summary", "Stock Cost Summary", True),
+                make_item("report", "Purchase Analytics with Warehouse", "Purchase Analytics with Warehouse", True),
+                make_item("report", "Sales Analytics with Warehouse", "Sales Analytics with Warehouse", True),
             ],
         ),
         make_section(
