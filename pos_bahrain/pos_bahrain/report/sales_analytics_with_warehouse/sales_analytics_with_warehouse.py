@@ -24,10 +24,15 @@ class AnalyticsExtended(Analytics):
             entity = "supplier as entity"
             entity_name = "supplier_name as entity_name"
 
-        self.entries = frappe.get_all(
-            self.filters.doc_type,
-            fields=[entity, entity_name, value_field, self.date_field],
-            filters={
+        def get_data(filters):
+            return frappe.get_all(
+                self.filters.doc_type,
+                fields=["name", entity, entity_name, value_field, self.date_field],
+                filters=filters,
+            )
+
+        self.entries = get_data(
+            {
                 "docstatus": 1,
                 "company": self.filters.company,
                 self.date_field: (
@@ -35,8 +40,26 @@ class AnalyticsExtended(Analytics):
                     [self.filters.from_date, self.filters.to_date],
                 ),
                 "set_warehouse": self.filters.warehouse,
-            },
+            }
         )
+
+        if self.filters.warehouse:
+            entries_by_pos = get_data(
+                {
+                    "docstatus": 1,
+                    "company": self.filters.company,
+                    self.date_field: (
+                        "between",
+                        [self.filters.from_date, self.filters.to_date],
+                    ),
+                    "set_warehouse": "",
+                    "pos_profile": (
+                        "in",
+                        _get_pos_profiles_by_warehouse(self.filters.warehouse),
+                    ),
+                }
+            )
+            self.entries = self.entries + entries_by_pos
 
         self.entity_names = {}
         for d in self.entries:
@@ -48,33 +71,51 @@ class AnalyticsExtended(Analytics):
         else:
             value_field = "stock_qty"
 
-        self.entries = frappe.db.sql(
-            """
-                SELECT 
-                    i.item_code AS entity,
-                    i.item_name AS entity_name,
-                    i.stock_uom, 
-                    i.{value_field} AS value_field, 
-                    s.{date_field}
-                FROM `tab{doctype} Item` i , `tab{doctype}` s
-                WHERE s.name = i.parent
-                AND i.docstatus = 1 
-                AND s.company = %(company)s
-                AND s.{date_field} BETWEEN %(from_date)s AND %(to_date)s
-                {set_warehouse_query}
-            """.format(
-                date_field=self.date_field,
-                value_field=value_field,
-                doctype=self.filters.doc_type,
-                set_warehouse_query=(
-                    "AND s.set_warehouse = %(warehouse)s"
-                    if self.filters.warehouse
-                    else ""
+        def get_data(query, filters):
+            return frappe.db.sql(
+                """
+                    SELECT 
+                        i.item_code AS entity,
+                        i.item_name AS entity_name,
+                        i.stock_uom, 
+                        i.{value_field} AS value_field, 
+                        s.{date_field}
+                    FROM `tab{doctype} Item` i , `tab{doctype}` s
+                    WHERE s.name = i.parent
+                    AND i.docstatus = 1 
+                    AND s.company = %(company)s
+                    AND s.{date_field} BETWEEN %(from_date)s AND %(to_date)s
+                    {query}
+                """.format(
+                    date_field=self.date_field,
+                    value_field=value_field,
+                    doctype=self.filters.doc_type,
+                    query=query,
                 ),
-            ),
+                filters,
+                as_dict=1,
+            )
+
+        self.entries = get_data(
+            ("AND s.set_warehouse = %(warehouse)s" if self.filters.warehouse else ""),
             self.filters,
-            as_dict=1,
         )
+
+        if self.filters.warehouse:
+            clauses = [
+                "AND (s.set_warehouse IS NULL OR s.set_warehouse = '')",  # don't forget AND for the first clause
+                "s.pos_profile IN %(pos_profiles)s",
+            ]
+            entries_by_pos = get_data(
+                " AND ".join(clauses),
+                {
+                    **self.filters,
+                    "pos_profiles": _get_pos_profiles_by_warehouse(
+                        self.filters.warehouse
+                    ),
+                },
+            )
+            self.entries = self.entries + entries_by_pos
 
         self.entity_names = {}
         for d in self.entries:
@@ -86,31 +127,49 @@ class AnalyticsExtended(Analytics):
         else:
             value_field = "qty"
 
-        self.entries = frappe.db.sql(
-            """
-                SELECT 
-                    i.item_group AS entity, 
-                    i.{value_field} AS value_field, 
-                    s.{date_field}
-                FROM `tab{doctype} Item` i , `tab{doctype}` s
-                WHERE s.name = i.parent
-                AND i.docstatus = 1 
-                AND s.company = %(company)s
-                AND s.{date_field} between %(from_date)s and %(to_date)s
-                {set_warehouse_query}
-            """.format(
-                date_field=self.date_field,
-                value_field=value_field,
-                doctype=self.filters.doc_type,
-                set_warehouse_query=(
-                    "AND s.set_warehouse = %(warehouse)s"
-                    if self.filters.warehouse
-                    else ""
+        def get_data(query, filters):
+            return frappe.db.sql(
+                """
+                    SELECT 
+                        i.item_group AS entity, 
+                        i.{value_field} AS value_field, 
+                        s.{date_field}
+                    FROM `tab{doctype} Item` i , `tab{doctype}` s
+                    WHERE s.name = i.parent
+                    AND i.docstatus = 1 
+                    AND s.company = %(company)s
+                    AND s.{date_field} between %(from_date)s and %(to_date)s
+                    {query}
+                """.format(
+                    date_field=self.date_field,
+                    value_field=value_field,
+                    doctype=self.filters.doc_type,
+                    query=query,
                 ),
-            ),
+                filters,
+                as_dict=1,
+            )
+
+        self.entries = get_data(
+            ("AND s.set_warehouse = %(warehouse)s" if self.filters.warehouse else ""),
             self.filters,
-            as_dict=1,
         )
+
+        if self.filters.warehouse:
+            clauses = [
+                "AND (s.set_warehouse IS NULL OR s.set_warehouse = '')",  # don't forget AND for the first clause
+                "s.pos_profile IN %(pos_profiles)s",
+            ]
+            entries_by_pos = get_data(
+                " AND ".join(clauses),
+                {
+                    **self.filters,
+                    "pos_profiles": _get_pos_profiles_by_warehouse(
+                        self.filters.warehouse
+                    ),
+                },
+            )
+            self.entries = self.entries + entries_by_pos
 
         self.get_groups()
 
@@ -128,10 +187,15 @@ class AnalyticsExtended(Analytics):
         else:
             entity_field = "territory as entity"
 
-        self.entries = frappe.get_all(
-            self.filters.doc_type,
-            fields=[entity_field, value_field, self.date_field],
-            filters={
+        def get_data(filters):
+            return frappe.get_all(
+                self.filters.doc_type,
+                fields=[entity_field, value_field, self.date_field],
+                filters=filters,
+            )
+
+        self.entries = get_data(
+            {
                 "docstatus": 1,
                 "company": self.filters.company,
                 self.date_field: (
@@ -139,6 +203,32 @@ class AnalyticsExtended(Analytics):
                     [self.filters.from_date, self.filters.to_date],
                 ),
                 "set_warehouse": self.filters.warehouse,
-            },
+            }
         )
+
+        if self.filters.warehouse:
+            entries_by_pos = get_data(
+                {
+                    "docstatus": 1,
+                    "company": self.filters.company,
+                    self.date_field: (
+                        "between",
+                        [self.filters.from_date, self.filters.to_date],
+                    ),
+                    "set_warehouse": "",
+                    "pos_profile": (
+                        "in",
+                        _get_pos_profiles_by_warehouse(self.filters.warehouse),
+                    ),
+                }
+            )
+            self.entries = self.entries + entries_by_pos
+
         self.get_groups()
+
+
+def _get_pos_profiles_by_warehouse(warehouse):
+    return [
+        x.get("name")
+        for x in frappe.get_all("POS Profile", filters={"warehouse": warehouse})
+    ]
