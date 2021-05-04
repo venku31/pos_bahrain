@@ -235,6 +235,13 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       this.set_opening_entry();
     }
   },
+  remove_selected_item: function() {
+    const selected_item_idx = parseInt(this.selected_cart_idx) + 1;
+    this.remove_item = []
+    this.remove_item.push(selected_item_idx);
+    this.remove_zero_qty_items_from_cart()
+    this.update_paid_amount_status(false)
+  }
 });
 
 erpnext.pos.PointOfSale = pos_bahrain.addons.extend_pos(
