@@ -240,7 +240,12 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     this.remove_item = []
     this.remove_item.push(selected_item_idx);
     this.remove_zero_qty_items_from_cart()
-    this.update_paid_amount_status(false)
+    this.update_paid_amount_status(false);
+
+    // clean ui
+    this.selected_row.hide();
+    this.selected_cart_idx = null;
+    this.selected_row = null;
   }
 });
 
