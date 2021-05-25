@@ -6,7 +6,7 @@ import frappe
 from functools import partial
 from toolz import compose, pluck, merge, concatv
 
-from pos_bahrain.utils import pick
+from pos_bahrain.utils import pick, sum_by
 from pos_bahrain.utils.report import make_column
 
 
@@ -14,8 +14,11 @@ def execute(filters=None):
     columns = _get_columns(filters)
     keys = compose(list, partial(pluck, "fieldname"))(columns)
     clauses, values = _get_filters(filters)
+
+    opening_data = _get_opening_data(filters, keys)
     data = _get_data(clauses, values, keys)
-    return columns, data
+
+    return columns, [opening_data, *data]
 
 
 def _get_columns(filters):
@@ -39,9 +42,11 @@ def _get_columns(filters):
     )
 
 
-def _get_filters(filters):
+def _get_filters(filters, opening=False):
     clauses = concatv(
-        ["sle.posting_date BETWEEN %(from_date)s AND %(to_date)s"],
+        ["sle.posting_date BETWEEN %(from_date)s AND %(to_date)s"]
+        if not opening
+        else ["sle.posting_date < %(from_date)s"],
         ["sle.item_code = %(item_code)s"],
         ["sle.warehouse = %(warehouse)s"] if filters.warehouse else [],
     )
@@ -98,3 +103,13 @@ def _get_data(clauses, values, keys):
 
     make_row = compose(partial(pick, keys), set_particalurs_and_qtys)
     return [make_row(x) for x in result]
+
+
+def _get_opening_data(filters, keys):
+    clauses, values = _get_filters(filters, True)
+    data = _get_data(clauses, values, keys)
+    return {
+        "particulars": "Opening",
+        "receipt": sum_by("receipt", data),
+        "issue": sum_by("issue", data),
+    }
