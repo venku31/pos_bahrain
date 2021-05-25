@@ -1,5 +1,5 @@
 {
- "add_total_row": 1,
+ "add_total_row": 0,
  "creation": "2020-02-26 21:06:50.289734",
  "disable_prepared_report": 0,
  "disabled": 0,
@@ -7,7 +7,7 @@
  "doctype": "Report",
  "idx": 0,
  "is_standard": "Yes",
- "modified": "2020-02-26 21:06:50.289734",
+ "modified": "2021-05-25 17:22:10.127709",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "Sales and Purchase History",
