@@ -17,8 +17,10 @@ def execute(filters=None):
 
     opening_data = _get_opening_data(filters, keys)
     data = _get_data(clauses, values, keys)
+    total_data = _get_total_receipts_and_issues(data, "Total")
+    closing_data = _get_total_receipts_and_issues([opening_data, *data], "Closing (Opening + Total)")
 
-    return columns, [opening_data, *data]
+    return columns, [opening_data, *data, total_data, closing_data]
 
 
 def _get_columns(filters):
@@ -34,10 +36,11 @@ def _get_columns(filters):
                 options="voucher_type",
                 width=150,
             ),
-            make_column("particulars"),
+            make_column("particulars", width=180),
             make_column("expiry_date", type="Date", width=90),
             make_column("receipt", type="Float", width=90),
             make_column("issue", type="Float", width=90),
+            make_column("balance", type="Float", width=90),
         ],
     )
 
@@ -108,8 +111,15 @@ def _get_data(clauses, values, keys):
 def _get_opening_data(filters, keys):
     clauses, values = _get_filters(filters, True)
     data = _get_data(clauses, values, keys)
+    return _get_total_receipts_and_issues(data, "Opening")
+
+
+def _get_total_receipts_and_issues(data, title):
+    receipt = sum_by("receipt", data)
+    issue = sum_by("issue", data)
     return {
-        "particulars": "Opening",
-        "receipt": sum_by("receipt", data),
-        "issue": sum_by("issue", data),
+        "particulars": title,
+        "receipt": receipt,
+        "issue": issue,
+        "balance": receipt - issue,
     }
