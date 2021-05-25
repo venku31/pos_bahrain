@@ -9,7 +9,7 @@ def pick(whitelist, d):
 
 @curry
 def sum_by(key, iterand):
-    return compose(sum, partial(map, lambda x: x.get(key)))(iterand)
+    return compose(sum, partial(map, lambda x: x.get(key) or 0))(iterand)
 
 
 def with_report_error_check(data_fn):
