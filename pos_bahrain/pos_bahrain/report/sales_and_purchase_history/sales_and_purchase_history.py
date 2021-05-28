@@ -15,12 +15,18 @@ def execute(filters=None):
     keys = compose(list, partial(pluck, "fieldname"))(columns)
     clauses, values = _get_filters(filters)
 
-    opening_data = _get_opening_data(filters, keys)
-    data = _get_data(clauses, values, keys)
-    total_data = _get_total_receipts_and_issues(data, "Total")
-    closing_data = _get_total_receipts_and_issues([opening_data, *data], "Closing (Opening + Total)")
+    partners = _get_partners()
+    opening_data = _get_opening_data(filters, keys, partners)
 
-    return columns, [opening_data, *data, total_data, closing_data]
+    data = _get_data(clauses, values, keys)
+    partners_data = _get_partners_data(data, partners)
+
+    total_data = _get_total_receipts_and_issues(partners_data, "Total", True)
+    closing_data = _get_total_receipts_and_issues(
+        [opening_data, *partners_data], "Closing (Opening + Total)", True
+    )
+
+    return columns, [opening_data, *partners_data, total_data, closing_data]
 
 
 def _get_columns(filters):
@@ -41,6 +47,7 @@ def _get_columns(filters):
             make_column("receipt", type="Float", width=90),
             make_column("issue", type="Float", width=90),
             make_column("balance", type="Float", width=90),
+            make_column("partner", type="Float", width=120, label="Partner Sales"),
         ],
     )
 
@@ -71,10 +78,12 @@ def _get_data(clauses, values, keys):
                 sle.voucher_type AS voucher_type,
                 sle.voucher_no AS voucher_no,
                 sle.actual_qty AS qty,
-                b.expiry_date AS expiry_date
+                b.expiry_date AS expiry_date,
+                si.customer AS partner
             FROM `tabStock Ledger Entry` AS sle
             LEFT JOIN `tabItem` AS i ON i.name = sle.item_code
             LEFT JOIN `tabBatch` AS b ON b.name = sle.batch_no
+            LEFt JOIN `tabSales Invoice` AS si ON si.name = sle.voucher_no
             WHERE {clauses}
             ORDER BY sle.posting_date
         """.format(
@@ -108,18 +117,48 @@ def _get_data(clauses, values, keys):
     return [make_row(x) for x in result]
 
 
-def _get_opening_data(filters, keys):
+def _get_opening_data(filters, keys, partners=None):
     clauses, values = _get_filters(filters, True)
     data = _get_data(clauses, values, keys)
-    return _get_total_receipts_and_issues(data, "Opening")
+    partners_data = list(_get_partners_data(data, partners))
+    return _get_total_receipts_and_issues(partners_data, "Opening", True)
 
 
-def _get_total_receipts_and_issues(data, title):
+def _get_total_receipts_and_issues(data, title, partner=False):
     receipt = sum_by("receipt", data)
     issue = sum_by("issue", data)
+    partner = sum_by("partner", data) if partner else 0.00
     return {
         "particulars": title,
         "receipt": receipt,
         "issue": issue,
         "balance": receipt - issue,
+        "partner": partner,
     }
+
+
+def _get_partners():
+    return [
+        x.get("customer")
+        for x in frappe.get_all(
+            "POS Bahrain Settings Partner",
+            fields=["customer"],
+        )
+    ]
+
+
+def _get_partners_data(data, partners):
+    return list(
+        map(
+            lambda x: merge(
+                x,
+                {
+                    "partner": x.get("issue")
+                    if x.get("particulars") == "Sales"
+                    and x.get("partner", "") in partners
+                    else 0.00
+                },
+            ),
+            data,
+        )
+    )
