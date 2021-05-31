@@ -24,8 +24,7 @@ def _make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
     def update_item(obj, target, source_parent):
         target.cost_center = None
         target.stock_qty = flt(obj.qty) * flt(obj.conversion_factor)
-        target.reference_dt = "Quotation"
-        target.reference_dn = obj.parent
+        target.pb_quotation = obj.parent
 
     doclist = get_mapped_doc(
         "Quotation",

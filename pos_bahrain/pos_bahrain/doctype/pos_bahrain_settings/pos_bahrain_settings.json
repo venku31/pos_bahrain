@@ -44,6 +44,8 @@
   "reports_col",
   "vat_tax_categories",
   "section_break_17",
+  "partners",
+  "column_break_42",
   "payments",
   "item_section",
   "transit_warehouse"
@@ -301,10 +303,20 @@
    "fieldtype": "Link",
    "label": "Hide Sales Return Role",
    "options": "Role"
+  },
+  {
+   "fieldname": "partners",
+   "fieldtype": "Table",
+   "label": "Partners",
+   "options": "POS Bahrain Settings Partner"
+  },
+  {
+   "fieldname": "column_break_42",
+   "fieldtype": "Column Break"
   }
  ],
  "issingle": 1,
- "modified": "2021-04-13 12:19:16.042947",
+ "modified": "2021-05-26 12:02:31.236191",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "POS Bahrain Settings",

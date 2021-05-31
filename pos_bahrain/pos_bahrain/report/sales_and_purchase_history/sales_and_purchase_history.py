@@ -6,7 +6,7 @@ import frappe
 from functools import partial
 from toolz import compose, pluck, merge, concatv
 
-from pos_bahrain.utils import pick
+from pos_bahrain.utils import pick, sum_by
 from pos_bahrain.utils.report import make_column
 
 
@@ -14,8 +14,19 @@ def execute(filters=None):
     columns = _get_columns(filters)
     keys = compose(list, partial(pluck, "fieldname"))(columns)
     clauses, values = _get_filters(filters)
+
+    partners = _get_partners()
+    opening_data = _get_opening_data(filters, keys, partners)
+
     data = _get_data(clauses, values, keys)
-    return columns, data
+    partners_data = _get_partners_data(data, partners)
+
+    total_data = _get_total_receipts_and_issues(partners_data, "Total", True)
+    closing_data = _get_total_receipts_and_issues(
+        [opening_data, *partners_data], "Closing (Opening + Total)", True
+    )
+
+    return columns, [opening_data, *partners_data, total_data, closing_data]
 
 
 def _get_columns(filters):
@@ -31,17 +42,21 @@ def _get_columns(filters):
                 options="voucher_type",
                 width=150,
             ),
-            make_column("particulars"),
+            make_column("particulars", width=180),
             make_column("expiry_date", type="Date", width=90),
             make_column("receipt", type="Float", width=90),
             make_column("issue", type="Float", width=90),
+            make_column("balance", type="Float", width=90),
+            make_column("partner", type="Float", width=120, label="Partner Sales"),
         ],
     )
 
 
-def _get_filters(filters):
+def _get_filters(filters, opening=False):
     clauses = concatv(
-        ["sle.posting_date BETWEEN %(from_date)s AND %(to_date)s"],
+        ["sle.posting_date BETWEEN %(from_date)s AND %(to_date)s"]
+        if not opening
+        else ["sle.posting_date < %(from_date)s"],
         ["sle.item_code = %(item_code)s"],
         ["sle.warehouse = %(warehouse)s"] if filters.warehouse else [],
     )
@@ -63,10 +78,12 @@ def _get_data(clauses, values, keys):
                 sle.voucher_type AS voucher_type,
                 sle.voucher_no AS voucher_no,
                 sle.actual_qty AS qty,
-                b.expiry_date AS expiry_date
+                b.expiry_date AS expiry_date,
+                si.customer AS partner
             FROM `tabStock Ledger Entry` AS sle
             LEFT JOIN `tabItem` AS i ON i.name = sle.item_code
             LEFT JOIN `tabBatch` AS b ON b.name = sle.batch_no
+            LEFt JOIN `tabSales Invoice` AS si ON si.name = sle.voucher_no
             WHERE {clauses}
             ORDER BY sle.posting_date
         """.format(
@@ -98,3 +115,50 @@ def _get_data(clauses, values, keys):
 
     make_row = compose(partial(pick, keys), set_particalurs_and_qtys)
     return [make_row(x) for x in result]
+
+
+def _get_opening_data(filters, keys, partners=None):
+    clauses, values = _get_filters(filters, True)
+    data = _get_data(clauses, values, keys)
+    partners_data = list(_get_partners_data(data, partners))
+    return _get_total_receipts_and_issues(partners_data, "Opening", True)
+
+
+def _get_total_receipts_and_issues(data, title, partner=False):
+    receipt = sum_by("receipt", data)
+    issue = sum_by("issue", data)
+    partner = sum_by("partner", data) if partner else 0.00
+    return {
+        "particulars": title,
+        "receipt": receipt,
+        "issue": issue,
+        "balance": receipt - issue,
+        "partner": partner,
+    }
+
+
+def _get_partners():
+    return [
+        x.get("customer")
+        for x in frappe.get_all(
+            "POS Bahrain Settings Partner",
+            fields=["customer"],
+        )
+    ]
+
+
+def _get_partners_data(data, partners):
+    return list(
+        map(
+            lambda x: merge(
+                x,
+                {
+                    "partner": x.get("issue")
+                    if x.get("particulars") == "Sales"
+                    and x.get("partner", "") in partners
+                    else 0.00
+                },
+            ),
+            data,
+        )
+    )
