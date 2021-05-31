@@ -183,6 +183,7 @@ fixtures = [
                     "Sales Invoice Item-pb_branch_qty",
                     "Purchase Invoice Item-pb_branch",
                     "Purchase Invoice Item-pb_branch_qty",
+                    "Sales Invoice Item-pb_quotation"
                 ],
             ]
         ],
