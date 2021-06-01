@@ -16,6 +16,9 @@ function _setup_queries(frm) {
 
 function _set_price_list_rate(frm, cdt, cdn) {
   const child = locals[cdt][cdn];
+  if (!child.pb_price_list) {
+    return;
+  }
   _get_selling_rates(
     child.item_code,
     child.pb_price_list,
