@@ -1,4 +1,4 @@
-function _setup_queries(frm) {
+function _setup_price_list_query(frm) {
   if (frm.fields_dict['items'].grid.get_field('item_code')) {
     frm.set_query('pb_price_list', 'items', function (doc, cdt, cdn) {
       const child = locals[cdt][cdn];
@@ -16,6 +16,9 @@ function _setup_queries(frm) {
 
 function _set_price_list_rate(frm, cdt, cdn) {
   const child = locals[cdt][cdn];
+  if (!child.pb_price_list) {
+    return;
+  }
   _get_selling_rates(
     child.item_code,
     child.pb_price_list,
@@ -37,9 +40,9 @@ async function _get_selling_rates(item, price_list, currency) {
   return data;
 }
 
-frappe.ui.form.on('Quotation', { onload: _setup_queries });
-frappe.ui.form.on('Sales Order', { onload: _setup_queries });
-frappe.ui.form.on('Sales Invoice', { onload: _setup_queries });
+frappe.ui.form.on('Quotation', { onload: _setup_price_list_query });
+frappe.ui.form.on('Sales Order', { onload: _setup_price_list_query });
+frappe.ui.form.on('Sales Invoice', { onload: _setup_price_list_query });
 
 frappe.ui.form.on('Quotation Item', { pb_price_list: _set_price_list_rate });
 frappe.ui.form.on('Sales Order Item', { pb_price_list: _set_price_list_rate });
