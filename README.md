@@ -1,6 +1,6 @@
-## Pos Bahrain
+## POS Bahrain
 
-## Pos Enhancement over the default POS of ERPNext
+## POS Enhancement over the default POS of ERPNext
 
   1. Opening Cash (Doctype) - Cashier to enter the opening cash received.
   2. Closing Cash Voucher Customized to Display opening cash for that cashier and the total sales from Opening Cash Voucher time/date till the Closing cash voucher time/date.

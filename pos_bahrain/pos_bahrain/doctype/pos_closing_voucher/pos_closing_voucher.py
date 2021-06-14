@@ -159,13 +159,14 @@ class POSClosingVoucher(Document):
             collected_payment = merge(
                 make_payment(payment), get_form_collected(payment.mode_of_payment)
             )
-            existing_payment = list(
+            existing_payments = list(
                 filter(
                     lambda x: x.mode_of_payment == collected_payment["mode_of_payment"],
                     self.payments,
                 )
-            )[0]
-            if existing_payment:
+            )
+            if existing_payments:
+                existing_payment = first(existing_payments)
                 for field in [
                     "expected_amount",
                     "collected_amount",
