@@ -28,3 +28,17 @@ def make_purchase_invoice(source_name, target_doc=None):
     }, target_doc, set_missing_values)
 
     return doc
+
+
+@frappe.whitelist()
+def make_sales_return(source_name, target_doc=None):
+    from erpnext.accounts.doctype.sales_invoice.sales_invoice import make_sales_return
+    sales_return = make_sales_return(source_name, target_doc)
+    return _prepend_returned_si(sales_return)
+
+
+def _prepend_returned_si(si):
+    prepend_return_pos_name = frappe.db.get_single_value("POS Bahrain Settings", "prepend_return_pos_name")
+    if prepend_return_pos_name and si.offline_pos_name:
+        si.offline_pos_name = "RET-{}".format(si.offline_pos_name)
+    return si
