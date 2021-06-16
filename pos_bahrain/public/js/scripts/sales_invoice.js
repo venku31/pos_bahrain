@@ -109,5 +109,17 @@ export default {
     set_uom_query(frm);
     set_cost_center_query(frm);
   },
+  refresh: function (frm) {
+    if (frm.doc.docstatus === 1 && !frm.doc.is_return) {
+      if (frm.doc.outstanding_amount >= 0 || Math.abs(flt(frm.doc.outstanding_amount)) < flt(frm.doc.grand_total)) {
+        frm.add_custom_button(__('Return / Credit Note'), function () {
+          frappe.model.open_mapped_doc({
+			method: "pos_bahrain.api.sales_invoice.make_sales_return",
+			frm,
+		  });
+        }, __("Make"));
+      }
+    }
+  },
   pb_set_cost_center: set_table_cost_centers,
 };
