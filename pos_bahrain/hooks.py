@@ -45,8 +45,12 @@ doctype_js = {
         "public/js/includes/scan_barcode.js",
         "public/js/sales_invoice.js",
         "public/js/branch.js",
+        "public/js/includes/discount_percentage.js",
     ],
-    "Sales Order": "public/js/alternate_discount.js",
+    "Sales Order": [
+        "public/js/alternate_discount.js",
+        "public/js/includes/discount_percentage.js",
+    ],
     "Purchase Invoice": [
         "public/js/set_retail_price.js",
         "public/js/includes/scan_barcode.js",
@@ -56,7 +60,10 @@ doctype_js = {
     "Purchase Order": "public/js/set_retail_price.js",
     "Purchase Receipt": "public/js/includes/scan_barcode.js",
     "Material Request": "public/js/material_request.js",
-    "Quotation": "public/js/quotation.js",
+    "Quotation": [
+        "public/js/quotation.js",
+        "public/js/includes/discount_percentage.js",
+    ],
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -158,6 +165,9 @@ fixtures = [
                     "Purchase Invoice Item-pb_branch_qty",
                     "Sales Invoice Item-pb_branch",
                     "Sales Invoice Item-pb_branch_qty",
+                    "Quotation-pb_discount_percentage",
+                    "Sales Order-pb_discount_percentage",
+                    "Sales Invoice-pb_discount_percentage",
                 ],
             ]
         ],
