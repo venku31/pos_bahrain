@@ -45,6 +45,7 @@ doctype_js = {
         "public/js/includes/scan_barcode.js",
         "public/js/sales_invoice.js",
         "public/js/branch.js",
+        "public/js/includes/discount_percentage.js",
     ],
     "Sales Order": [
         "public/js/alternate_discount.js",
@@ -166,6 +167,7 @@ fixtures = [
                     "Sales Invoice Item-pb_branch_qty",
                     "Quotation-pb_discount_percentage",
                     "Sales Order-pb_discount_percentage",
+                    "Sales Invoice-pb_discount_percentage",
                 ],
             ]
         ],
