@@ -44,6 +44,7 @@ doctype_js = {
     "Quotation": [
         "public/js/price_list.js",
         "public/js/quotation.js",
+        "public/js/includes/discount_percentage.js",
     ],
     "Sales Invoice": [
         "public/js/alternate_discount.js",
@@ -51,11 +52,13 @@ doctype_js = {
         "public/js/price_list.js",
         "public/js/branch.js",
         "public/js/sales_invoice.js",
+        "public/js/includes/discount_percentage.js",
     ],
     "Sales Order": [
         "public/js/alternate_discount.js",
         "public/js/price_list.js",
         "public/js/branch.js",
+        "public/js/includes/discount_percentage.js",
     ],
     "Purchase Invoice": [
         "public/js/set_retail_price.js",
