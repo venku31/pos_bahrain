@@ -21,6 +21,13 @@ def _make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
         target.run_method("set_missing_values")
         target.run_method("calculate_taxes_and_totals")
 
+        # Terms and Conditions
+        target.tc_name = target.meta.get_field("tc_name").default
+        if target.tc_name:
+            target.terms = frappe.db.get_value(
+                "Terms and Conditions", target.tc_name, "terms"
+            )
+
     def update_item(obj, target, source_parent):
         target.cost_center = None
         target.stock_qty = flt(obj.qty) * flt(obj.conversion_factor)
