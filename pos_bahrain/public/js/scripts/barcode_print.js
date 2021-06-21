@@ -3,7 +3,7 @@ import scan_barcode from './extensions/scan_barcode.js';
 
 function set_link_query(frm) {
   frm.set_query('print_dt', {
-    filters: [['name', 'in', 'Purchase Receipt, Purchase Invoice']],
+    filters: [['name', 'in', 'Purchase Receipt, Purchase Invoice, Stock Entry']],
   });
   frm.fields_dict.print_dt.df.only_select = 1;
 }
