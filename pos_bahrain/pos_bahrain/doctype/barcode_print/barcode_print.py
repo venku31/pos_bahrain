@@ -33,7 +33,17 @@ class BarcodePrint(Document):
 
     def set_items_from_reference(self):
         ref_doc = frappe.get_doc(self.print_dt, self.print_dn)
-        self.set_warehouse = ref_doc.set_warehouse
+
+        if self.print_dt == "Stock Entry":
+            self.set_warehouse = (
+                ref_doc.from_warehouse
+                if self.use_warehouse == "Source"
+                else ref_doc.to_warehouse
+            )
+        else:
+            self.set_warehouse = ref_doc.set_warehouse
+            self.use_warehouse = None  # Target, Source
+
         self.items = []
         for ref_item in ref_doc.items:
             items = merge(
@@ -44,7 +54,7 @@ class BarcodePrint(Document):
                 {
                     "batch": ref_item.batch_no,
                     "expiry_date": _get_expiry_date(ref_item),
-                    "actual_qty": _get_actual_qty(ref_item),
+                    "actual_qty": _get_actual_qty(ref_item, self.set_warehouse),
                 },
             )
             self.append("items", items)
@@ -60,7 +70,7 @@ def _get_expiry_date(item):
     return item.pb_expiry_date
 
 
-def _get_actual_qty(item):
-    if item.warehouse:
-        return get_actual_qty(item.item_code, item.warehouse, item.batch_no)
+def _get_actual_qty(item, warehouse):
+    if warehouse:
+        return get_actual_qty(item.item_code, warehouse, item.batch_no)
     return 0
