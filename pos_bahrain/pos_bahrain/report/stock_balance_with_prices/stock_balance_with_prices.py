@@ -58,7 +58,9 @@ def _get_data(data, prices, filters):
         partial(valmap, lambda x: x.get("value")),
         partial(key_by, "item_code"),
         lambda x: frappe.db.sql(
-            x, values=merge({"item_codes": [x[0] for x in data]}, prices), as_dict=1
+            x,
+            values=merge({"item_codes": [x.get("item_code") for x in data]}, prices),
+            as_dict=1,
         ),
     )
     price_query = """
@@ -90,18 +92,14 @@ def _get_data(data, prices, filters):
     )
 
     def add_fields(row):
-        item_code = row[0]
-        return list(
-            concatv(
-                row[:2],
-                [suppliers_by_item_code.get(item_code)],
-                row[2:7],
-                [
-                    buying_prices_by_item_code.get(item_code),
-                    selling_prices_by_item_code.get(item_code),
-                ],
-                row[7:],
-            )
+        item_code = row.get("item_code")
+        return merge(
+            row,
+            {
+                "supplier": suppliers_by_item_code.get(item_code),
+                "buying_price": buying_prices_by_item_code.get(item_code),
+                "selling_price": selling_prices_by_item_code.get(item_code),
+            },
         )
 
     def filter_by_supplier(row):
