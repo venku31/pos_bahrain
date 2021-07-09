@@ -134,19 +134,15 @@ export default {
         frm.doc.outstanding_amount >= 0 ||
         Math.abs(flt(frm.doc.outstanding_amount)) < flt(frm.doc.grand_total)
       ) {
-        setTimeout(() => {
-          frm.custom_buttons['Return / Credit Note'].hide();
-          frm.add_custom_button(
-            __('Return / Credit Note'),
-            function () {
-              frappe.model.open_mapped_doc({
-                method: 'pos_bahrain.api.sales_invoice.make_sales_return',
-                frm,
-              });
-            },
-            __('Create')
-          );
-        }, 500);
+        frm.add_custom_button(
+          __('POS Return / Credit Note'),
+          function () {
+            frappe.model.open_mapped_doc({
+              method: 'pos_bahrain.api.sales_invoice.make_sales_return',
+              frm,
+            });
+          },
+        );
       }
     }
   },
