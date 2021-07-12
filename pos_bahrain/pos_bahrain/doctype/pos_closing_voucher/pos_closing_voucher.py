@@ -319,6 +319,7 @@ def _get_payments(args):
             WHERE docstatus = 1
             AND company = %(company)s
             AND owner = %(user)s
+            AND payment_type = "Receive"
             AND TIMESTAMP(posting_date, pb_posting_time) BETWEEN %(period_from)s AND %(period_to)s
             GROUP BY mode_of_payment
         """,
