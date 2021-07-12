@@ -67,11 +67,12 @@ def _update_contact_phones(customers_list):
             "parent",
         )
 
-        contact_doc = frappe.get_doc("Contact", contact_name)
+        if contact_name:
+            contact_doc = frappe.get_doc("Contact", contact_name)
 
-        phone = data.get("phone")
-        phone_nos = [x.phone for x in contact_doc.phone_nos]
-        if phone not in phone_nos:
-            contact_doc.add_phone(phone)
+            phone = data.get("phone")
+            phone_nos = [x.phone for x in contact_doc.phone_nos]
+            if phone not in phone_nos:
+                contact_doc.add_phone(phone)
 
-        contact_doc.save(ignore_permissions=True)
+            contact_doc.save(ignore_permissions=True)
