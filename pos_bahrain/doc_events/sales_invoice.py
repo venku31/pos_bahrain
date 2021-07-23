@@ -4,7 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe.utils import flt
+from frappe.utils import flt, today
 from erpnext.setup.utils import get_exchange_rate
 from toolz import first
 
@@ -73,6 +73,8 @@ def on_submit(doc, method):
                 flt(payment.base_amount) / flt(conversion_rate),
             )
 
+    _make_gl_entry_for_provision_credit(doc)
+
 
 def set_cost_center(doc):
     if doc.pb_set_cost_center:
@@ -99,3 +101,32 @@ def _get_location(item_code, warehouse):
         location = first(locations).get("storage_location")
 
     return location
+
+
+def _make_gl_entry_for_provision_credit(doc):
+    if not doc.is_return:
+        return
+
+    provision_account = frappe.db.get_single_value("POS Bahrain Settings", "credit_note_provision_account")
+    if not provision_account:
+        return
+
+    je_doc = frappe.new_doc("Journal Entry")
+    je_doc.posting_date = today()
+    je_doc.append("accounts", {
+        "account": doc.debit_to,
+        "party_type": "Customer",
+        "party": doc.customer,
+        "debit_in_account_currency": 0,
+        "credit_in_account_currency": doc.grand_total,
+    })
+    je_doc.append("accounts", {
+        "account": provision_account,
+        "party_type": "Customer",
+        "party": doc.customer,
+        "debit_in_account_currency": doc.grand_total,
+        "credit_in_account_currency": 0,
+    })
+
+    je_doc.save()
+    je_doc.submit()
