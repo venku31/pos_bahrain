@@ -73,7 +73,7 @@ def on_submit(doc, method):
                 flt(payment.base_amount) / flt(conversion_rate),
             )
 
-    _make_gl_entry_for_provision_credit(doc)
+    # _make_gl_entry_for_provision_credit(doc)
 
 
 def set_cost_center(doc):
