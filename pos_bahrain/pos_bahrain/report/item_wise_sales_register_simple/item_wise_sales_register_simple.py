@@ -87,7 +87,7 @@ def _get_filters(filters, transaction_type):
             ],
             filters,
         ),
-        {"from_date": filters.date_range[0], "to_date": filters.date_range[1]},
+        {"from_date": filters.from_date, "to_date": filters.to_date},
     )
     return (
         {
