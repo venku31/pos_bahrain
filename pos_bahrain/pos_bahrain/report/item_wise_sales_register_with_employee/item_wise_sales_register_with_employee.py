@@ -14,5 +14,6 @@ from pos_bahrain.pos_bahrain.report.sales_register_with_employee.sales_register_
 
 def execute(filters=None):
     filters.net_amount_col = "amount"
+    filters["date_range"] = [filters.get("from_date"), filters.get("to_date")]
     return extend_report(item_wise_sales_register, filters)
 
