@@ -16,6 +16,7 @@ _fields = [
     "item_name",
     "brand",
     "default_supplier",
+    "supplier_name",
     "stock_uom",
     "actual_qty",
     "qty_after_transaction",
@@ -44,7 +45,13 @@ _get_columns = compose(
             "fieldtype": "Link",
             "options": "Supplier",
             "width": 100,
-        }
+        },
+        {
+            "label": _("Supplier Name"),
+            "fieldname": "supplier_name",
+            "fieldtype": "Data",
+            "width": 120,
+        },
     ]
     + x[5:],
 )
@@ -54,13 +61,16 @@ def _get_data(data, filters):
     item_codes = compose(list, unique, partial(pluck, "item_code"))(data)
     if not item_codes:
         return data
+
     query = frappe.db.sql(
         """
             SELECT
                 i.item_code AS item_code,
-                id.default_supplier AS default_supplier
+                id.default_supplier AS default_supplier,
+                s.supplier_name AS supplier_name
             FROM `tabItem` AS i
             LEFT JOIN `tabItem Default` AS id ON i.name = id.parent
+            LEFT JOIN `tabSupplier` AS s ON id.default_supplier = s.name
             WHERE i.item_code IN %(item_codes)s
                 AND id.company = %(company)s
         """,
@@ -69,14 +79,23 @@ def _get_data(data, filters):
     )
 
     suppliers_map = compose(
-        partial(valmap, lambda x: x.get("default_supplier")),
         partial(valmap, first),
         partial(groupby, "item_code"),
     )(query)
 
     make_row = compose(
         partial(pick, _fields),
-        lambda x: merge(x, {"default_supplier": suppliers_map.get(x.get("item_code"))}),
+        lambda x: merge(
+            x,
+            {
+                "default_supplier": suppliers_map.get(x.get("item_code")).get(
+                    "default_supplier"
+                ),
+                "supplier_name": suppliers_map.get(x.get("item_code")).get(
+                    "supplier_name"
+                ),
+            },
+        ),
     )
 
     def filter_by_supplier(item):
@@ -87,4 +106,5 @@ def _get_data(data, filters):
     make_data = compose(
         list, partial(filter, filter_by_supplier), partial(map, make_row)
     )
+
     return make_data(data)
