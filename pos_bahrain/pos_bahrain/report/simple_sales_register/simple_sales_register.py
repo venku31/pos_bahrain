@@ -29,6 +29,7 @@ def _get_columns():
         make_column("posting_date", "Date", type="Date", width=90),
         make_column("invoice", "Invoice No", type="Link", options="Sales Invoice"),
         make_column("customer", "Customer", type="Link", options="Customer"),
+        make_column("customer_name", "Customer Name", type="Data", width=150),
         make_column("total", "Total"),
         make_column("discount", "Discount"),
         make_column("net_total", "Net Total"),
@@ -48,7 +49,7 @@ def _get_clauses(filters):
     invoice_type = {"Sales": 0, "Returns": 1}
     clauses = concatv(
         [
-            "docstatus = 1",
+            "si.docstatus = 1",
             "company = %(company)s",
             "posting_date BETWEEN %(from_date)s AND %(to_date)s",
         ],
@@ -65,14 +66,16 @@ def _get_data(clauses, args, keys):
         """
             SELECT
                 posting_date,
-                name AS invoice,
-                customer,
+                si.name AS invoice,
+                si.customer,
+                c.customer_name,
                 base_total AS total,
                 base_discount_amount AS discount,
                 base_net_total AS net_total,
                 base_total_taxes_and_charges AS tax,
                 base_grand_total AS grand_total
-            FROM `tabSales Invoice`
+            FROM `tabSales Invoice` AS si
+            LEFT JOIN `tabCustomer` AS c ON c.name = si.customer 
             WHERE {clauses}
         """.format(
             clauses=clauses
