@@ -8,21 +8,32 @@ from pos_bahrain.pos_bahrain.report.item_wise_sales_register_with_employee.item_
     execute as item_wise_sales_register_with_employee,
 )
 
-from toolz import compose, concatv, first
+from toolz import compose, concatv, first, merge
 from toolz.curried import groupby, valmap
 
 
 def execute(filters=None):
     columns, data = item_wise_sales_register_with_employee(filters)
     item_idx = next(x for x, v in enumerate(columns) if "Item Code" in v.get("label"))
-    return _extend_columns(columns), _extend_data(data, filters, item_idx)
+    columns = _extend_columns(columns)
+    data = _extend_data(data, filters, item_idx)
+    return columns, data
 
 
 def _extend_columns(columns):
+    def make_column(key, label=None, type="Data", options=None, width=120):
+        return {
+            "label": _(label or key.replace("_", " ").title()),
+            "fieldname": key,
+            "fieldtype": type,
+            "options": options,
+            "width": width,
+        }
+
     return columns + [
-        "Balance Qty:Float:90",
-        "Valuation Rate:Float:120",
-        "Total Valuation Rate:Float:120",
+        make_column("balance_qty", type="Float", width=90),
+        make_column("valuation_rate", type="Float", width=120),
+        make_column("total_valuation_rate", type="Float", width=120),
     ]
 
 
@@ -36,7 +47,7 @@ def _get_clauses(filters):
 
 
 def _extend_data(data, filters, item_idx):
-    items = list(set(map(lambda x: x[item_idx], data)))
+    items = list(set(map(lambda x: x.get("item_code"), data)))
     if not items:
         frappe.msgprint(_("No records found"))
         return
@@ -44,15 +55,14 @@ def _extend_data(data, filters, item_idx):
     balance_qty = _get_balance_qty(items, filters)
     valuation_rate = _get_valuation_rate(items)
     set_valuation_rate = compose(
-        list,
-        lambda x: concatv(
+        lambda x: merge(
             x,
-            [
-                balance_qty.get(x[item_idx], 0.0),
-                valuation_rate.get(x[item_idx], 0.0),
-                balance_qty.get(x[item_idx], 0.00)
-                * valuation_rate.get(x[item_idx], 0.00),
-            ],
+            {
+                "balance_qty": balance_qty.get(x.get("item_code"), 0.0),
+                "valuation_rate": valuation_rate.get(x.get("item_code"), 0.0),
+                "total_valuation_rate": balance_qty.get(x.get("item_code"), 0.00)
+                * valuation_rate.get(x.get("item_code"), 0.00),
+            },
         ),
     )
     return [set_valuation_rate(x) for x in data]
