@@ -38,7 +38,7 @@ def _get_columns(filters):
         make_column("returns_grand_total", "Total Returns"),
         make_column("net_total_after_returns", "Net Sales After Tax & Returns"),
     ]
-    mops = pluck("name", frappe.get_all("Mode of Payment"))
+    mops = pluck("name", frappe.get_all("Mode of Payment", order_by="modified desc"))
     return columns + [make_column(x, x) for x in mops]
 
 
