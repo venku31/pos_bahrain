@@ -49,7 +49,7 @@ def _get_clauses(filters):
     invoice_type = {"Sales": 0, "Returns": 1}
     clauses = concatv(
         [
-            "si.docstatus = 1",
+            "docstatus = 1",
             "company = %(company)s",
             "posting_date BETWEEN %(from_date)s AND %(to_date)s",
         ],
@@ -66,16 +66,15 @@ def _get_data(clauses, args, keys):
         """
             SELECT
                 posting_date,
-                si.name AS invoice,
-                si.customer,
-                c.customer_name,
+                name AS invoice,
+                customer,
+                customer_name,
                 base_total AS total,
                 base_discount_amount AS discount,
                 base_net_total AS net_total,
                 base_total_taxes_and_charges AS tax,
                 base_grand_total AS grand_total
-            FROM `tabSales Invoice` AS si
-            LEFT JOIN `tabCustomer` AS c ON c.name = si.customer 
+            FROM `tabSales Invoice`
             WHERE {clauses}
         """.format(
             clauses=clauses
