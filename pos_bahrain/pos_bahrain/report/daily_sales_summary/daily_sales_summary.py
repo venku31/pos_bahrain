@@ -125,7 +125,7 @@ def _set_payments(payments):
     )(payments)
 
     def fn(row):
-        mop_payments = payments_grouped[row.get("posting_date")]
+        mop_payments = payments_grouped.get(row.get("posting_date")) or {}
         cash_amount = (mop_payments.get("Cash") or 0) - (row.get("change_amount") or 0)
         return merge(row, mop_payments, {"Cash": cash_amount})
 
