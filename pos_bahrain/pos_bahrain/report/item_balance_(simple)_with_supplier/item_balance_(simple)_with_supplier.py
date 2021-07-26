@@ -33,6 +33,7 @@ def _get_columns(filters):
         make_column("item_group", type="Link", options="Item Group"),
         make_column("brand", type="Link", options="Brand"),
         make_column("supplier", "Default Supplier", type="Link", options="Supplier"),
+        make_column("supplier_name", "Supplier Name", width=150),
         make_column("supplier_part_no"),
         make_column("stock_uom", "Stock UOM", width=90),
         make_column("qty", "Balance Qty", type="Float", width=90),
@@ -88,12 +89,14 @@ def _get_data(clauses, values, keys):
                 i.stock_uom AS stock_uom,
                 i.brand AS brand,
                 id.default_supplier AS supplier,
+                s.supplier_name AS supplier_name,
                 isp.supplier_part_no AS supplier_part_no,
                 SUM(b.actual_qty) AS qty
             FROM `tabItem` AS i
             LEFT JOIN `tabBin` AS b ON {bin_clauses}
             LEFT JOIN `tabItem Default` AS id ON {defaults_clauses}
             LEFT JOIN `tabItem Supplier` AS isp ON {supplier_clauses}
+            LEFT JOIN `tabSupplier` AS s ON s.name = id.default_supplier
             WHERE {clauses}
             GROUP BY i.item_code
         """.format(
