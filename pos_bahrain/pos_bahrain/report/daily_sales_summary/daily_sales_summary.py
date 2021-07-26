@@ -13,7 +13,11 @@ def execute(filters=None):
     keys = compose(list, partial(pluck, "fieldname"))(columns)
     clauses, values = _get_filters(filters)
     data = _get_data(clauses, values, keys)
-    return columns, data
+
+    def post_row(row):
+        return merge(row, {x: row.get(x) or 0 for x in keys})
+
+    return columns, list(map(post_row, data))
 
 
 def _get_columns(filters):
