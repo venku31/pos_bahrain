@@ -87,6 +87,8 @@ def _get_valuation_rate(items):
         valmap(first),
         groupby("name"),
         lambda: frappe.get_all(
-            "Item", filters=[["name", "in", items]], fields=["name", "valuation_rate"]
+            "Item",
+            filters=[["name", "in", items]],
+            fields=["name", "valuation_rate"],
         ),
     )()
