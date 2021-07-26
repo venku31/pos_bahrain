@@ -5,11 +5,20 @@
 frappe.query_reports['Cheque Summary'] = {
   filters: [
     {
-      fieldname: 'date_range',
-      label: __('Date Range'),
-      fieldtype: 'DateRange',
+      fieldname: 'from_date',
+      label: __('From Date'),
+      fieldtype: 'Date',
+      width: '80',
       reqd: 1,
-      default: [frappe.datetime.month_start(), frappe.datetime.month_end()],
+      default: frappe.datetime.add_months(frappe.datetime.get_today(), -1),
+    },
+    {
+      fieldname: 'to_date',
+      label: __('To Date'),
+      fieldtype: 'Date',
+      width: '80',
+      reqd: 1,
+      default: frappe.datetime.get_today(),
     },
   ],
 };

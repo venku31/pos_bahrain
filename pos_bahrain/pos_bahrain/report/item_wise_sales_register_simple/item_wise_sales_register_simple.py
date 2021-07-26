@@ -48,6 +48,7 @@ def _get_columns(filters, transaction_type):
         make_column("item_name", width=150),
         make_column("item_group", type="Link", options="Item Group"),
         make_column("default_supplier", type="Link", options="Supplier"),
+        make_column("supplier_name", type="Data", width=150),
         make_column("current_qty", type="Float", width=90),
         make_column("stock_qty", type="Float", width=90),
         make_column("rate", type="Currency", width=90),
@@ -87,7 +88,7 @@ def _get_filters(filters, transaction_type):
             ],
             filters,
         ),
-        {"from_date": filters.date_range[0], "to_date": filters.date_range[1]},
+        {"from_date": filters.from_date, "to_date": filters.to_date},
     )
     return (
         {
@@ -110,6 +111,7 @@ def _get_data(clauses, values, keys):
                 inv_item.item_name AS item_name,
                 inv_item.item_group AS item_group,
                 id.default_supplier AS default_supplier,
+                s.supplier_name AS supplier_name,
                 b.actual_qty AS current_qty,
                 inv_item.stock_qty AS stock_qty,
                 inv_item.stock_uom AS stock_uom,
@@ -122,6 +124,8 @@ def _get_data(clauses, values, keys):
                 inv.name = inv_item.parent
             LEFT JOIN `tabItem Default` AS id ON
                 id.parent = inv_item.item_code AND id.company = %(company)s
+            LEFT JOIN `tabSupplier` AS s ON
+                s.name = id.default_supplier
             LEFT JOIN (
                 SELECT item_code, SUM(actual_qty) AS actual_qty
                 FROM `tabBin` WHERE {bin_clauses} GROUP BY item_code
