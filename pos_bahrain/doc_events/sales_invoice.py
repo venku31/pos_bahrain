@@ -73,7 +73,7 @@ def on_submit(doc, method):
                 flt(payment.base_amount) / flt(conversion_rate),
             )
 
-    # _make_gl_entry_for_provision_credit(doc)
+    _make_gl_entry_for_provision_credit(doc)
     _make_gl_entry_on_credit_issued(doc)
 
 
@@ -105,7 +105,7 @@ def _get_location(item_code, warehouse):
 
 
 def _make_gl_entry_on_credit_issued(doc):
-    if doc.is_return:
+    if doc.is_return or doc.is_pos:
         return
 
     provision_account = frappe.db.get_single_value("POS Bahrain Settings", "credit_note_provision_account")
@@ -150,30 +150,46 @@ def _make_gl_entry_on_credit_issued(doc):
     })
 
     je_doc.save()
+    je_doc.submit()
 
 
 def _make_gl_entry_for_provision_credit(doc):
-    if not doc.is_return:
+    if not doc.is_return or doc.is_pos:
         return
 
     provision_account = frappe.db.get_single_value("POS Bahrain Settings", "credit_note_provision_account")
     if not provision_account:
         return
 
+    customer_account = frappe.get_all(
+        "GL Entry",
+        filters={
+            "party_type": "Customer",
+            "party": doc.customer,
+        },
+        fields=["sum(credit) - sum(debit) as balance"],
+    )
+    if not customer_account:
+        return
+
+    balance = customer_account[0].get("balance")
+    if not balance:
+        return
+
     je_doc = frappe.new_doc("Journal Entry")
     je_doc.posting_date = today()
-    je_doc.append("accounts", {
-        "account": doc.debit_to,
-        "party_type": "Customer",
-        "party": doc.customer,
-        "debit_in_account_currency": 0,
-        "credit_in_account_currency": doc.grand_total,
-    })
     je_doc.append("accounts", {
         "account": provision_account,
         "party_type": "Customer",
         "party": doc.customer,
-        "debit_in_account_currency": doc.grand_total,
+        "debit_in_account_currency": 0,
+        "credit_in_account_currency": abs(doc.grand_total),
+    })
+    je_doc.append("accounts", {
+        "account": doc.against_income_account,
+        "party_type": "Customer",
+        "party": doc.customer,
+        "debit_in_account_currency": abs(doc.grand_total),
         "credit_in_account_currency": 0,
     })
 
