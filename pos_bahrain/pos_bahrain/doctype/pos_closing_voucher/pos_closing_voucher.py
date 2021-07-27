@@ -46,6 +46,22 @@ class POSClosingVoucher(Document):
                 "Another POS Closing Voucher already exists during this time frame."
             )
 
+        existing_opens = frappe.db.sql(
+            """
+                SELECT 1 FROM `tabPOS Closing Voucher` 
+                WHERE docstatus = 0
+                AND name != %(name)s
+                AND user = %(user)s
+            """,
+            values={"name": self.name, "user": self.user},
+        )
+        if existing_opens:
+            frappe.throw(
+                "There are open closing voucher(s) on user {}. Please submit/delete them.".format(
+                    self.user
+                )
+            )
+
     def before_insert(self):
         if not self.period_from:
             self.period_from = get_datetime()
@@ -335,10 +351,10 @@ def _get_payments(args):
 
 def _correct_mop_amounts(payments, default_mop):
     """
-        Correct conversion_rate for MOPs using base currency.
-        Required because conversion_rate is calculated as
-            base_amount / mop_amount
-        for MOPs using alternate currencies.
+    Correct conversion_rate for MOPs using base currency.
+    Required because conversion_rate is calculated as
+        base_amount / mop_amount
+    for MOPs using alternate currencies.
     """
     base_mops = compose(list, partial(pluck, "name"), frappe.get_all)(
         "Mode of Payment", filters={"in_alt_currency": 0}
@@ -432,3 +448,6 @@ def _get_item_groups(args):
     )
     return [merge(v, {"item_group": k}) for k, v in groups.items()]
 
+
+def _validate_existing(doc):
+    print(doc)
