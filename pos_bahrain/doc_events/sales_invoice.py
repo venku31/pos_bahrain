@@ -74,6 +74,7 @@ def on_submit(doc, method):
             )
 
     # _make_gl_entry_for_provision_credit(doc)
+    _make_gl_entry_on_credit_issued(doc)
 
 
 def set_cost_center(doc):
@@ -101,6 +102,54 @@ def _get_location(item_code, warehouse):
         location = first(locations).get("storage_location")
 
     return location
+
+
+def _make_gl_entry_on_credit_issued(doc):
+    if doc.is_return:
+        return
+
+    provision_account = frappe.db.get_single_value("POS Bahrain Settings", "credit_note_provision_account")
+    if not provision_account:
+        return
+
+    customer_account = frappe.get_all(
+        "GL Entry",
+        filters={
+            "account": provision_account,
+            "party_type": "Customer",
+            "party": doc.customer,
+        },
+        fields=["sum(credit) - sum(debit) as balance"],
+    )
+    if not customer_account:
+        return
+
+    balance = customer_account[0].get("balance")
+    if not balance:
+        return
+
+    carry_over = balance if balance < doc.outstanding_amount else doc.outstanding_amount
+
+    je_doc = frappe.new_doc("Journal Entry")
+    je_doc.posting_date = today()
+    je_doc.append("accounts", {
+        "account": doc.debit_to,
+        "party_type": "Customer",
+        "party": doc.customer,
+        "debit_in_account_currency": 0,
+        "credit_in_account_currency": carry_over,
+        "reference_type": "Sales Invoice",
+        "reference_name": doc.name,
+    })
+    je_doc.append("accounts", {
+        "account": provision_account,
+        "party_type": "Customer",
+        "party": doc.customer,
+        "debit_in_account_currency": carry_over,
+        "credit_in_account_currency": 0,
+    })
+
+    je_doc.save()
 
 
 def _make_gl_entry_for_provision_credit(doc):
