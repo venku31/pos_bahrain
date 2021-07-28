@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.utils import flt, today
 from erpnext.setup.utils import get_exchange_rate
+from pos_bahrain.api.sales_invoice import get_customer_account_balance
 from toolz import first
 
 
@@ -34,6 +35,8 @@ def validate(doc, method):
                 frappe.throw(
                     "Reference Date necessary in payment row #{}".format(payment.idx)
                 )
+
+    doc.pb_available_balance = get_customer_account_balance(doc.customer)
 
 
 def before_save(doc, method):
@@ -77,6 +80,51 @@ def on_submit(doc, method):
     _make_gl_entry_on_credit_issued(doc)
 
 
+def before_cancel(doc, method):
+    parent = _get_parent_by_account(doc.name)
+    if not parent:
+        return
+
+    je_doc = frappe.get_doc("Journal Entry", parent)
+    je_doc.cancel()
+
+
+def _get_parent_by_account(name):
+    data = frappe.db.sql(
+        """
+        SELECT je.name 
+        FROM `tabJournal Entry` je
+        JOIN `tabJournal Entry Account` jea
+        ON jea.parent = je.name
+        WHERE jea.reference_type = "Sales Invoice"
+        AND jea.reference_name = %s
+        """,
+        name,
+        as_dict=1,
+    )
+    if not data:
+        return
+
+    provision_account = frappe.db.get_single_value(
+        "POS Bahrain Settings",
+        "credit_note_provision_account",
+    )
+    if not provision_account:
+        return
+
+    je_name = data[0].get("name")
+    provision_account = frappe.db.sql(
+        """
+        SELECT 1 FROM `tabJournal Entry Account`
+        WHERE parent = %s
+        AND account = %s
+        """,
+        (je_name, provision_account),
+    )
+
+    return je_name if provision_account else None
+
+
 def set_cost_center(doc):
     if doc.pb_set_cost_center:
         for row in doc.items:
@@ -94,7 +142,7 @@ def _get_location(item_code, warehouse):
     locations = frappe.get_all(
         "Item Storage Location",
         filters={"parent": item_code, "warehouse": warehouse},
-        fields=["storage_location"]
+        fields=["storage_location"],
     )
 
     location = None
@@ -108,19 +156,13 @@ def _make_gl_entry_on_credit_issued(doc):
     if doc.is_return or doc.is_pos:
         return
 
-    provision_account = frappe.db.get_single_value("POS Bahrain Settings", "credit_note_provision_account")
+    provision_account = frappe.db.get_single_value(
+        "POS Bahrain Settings", "credit_note_provision_account"
+    )
     if not provision_account:
         return
 
-    customer_account = frappe.get_all(
-        "GL Entry",
-        filters={
-            "account": provision_account,
-            "party_type": "Customer",
-            "party": doc.customer,
-        },
-        fields=["sum(credit) - sum(debit) as balance"],
-    )
+    customer_account = get_customer_account_balance(doc.customer)
     if not customer_account:
         return
 
@@ -132,22 +174,28 @@ def _make_gl_entry_on_credit_issued(doc):
 
     je_doc = frappe.new_doc("Journal Entry")
     je_doc.posting_date = today()
-    je_doc.append("accounts", {
-        "account": doc.debit_to,
-        "party_type": "Customer",
-        "party": doc.customer,
-        "debit_in_account_currency": 0,
-        "credit_in_account_currency": carry_over,
-        "reference_type": "Sales Invoice",
-        "reference_name": doc.name,
-    })
-    je_doc.append("accounts", {
-        "account": provision_account,
-        "party_type": "Customer",
-        "party": doc.customer,
-        "debit_in_account_currency": carry_over,
-        "credit_in_account_currency": 0,
-    })
+    je_doc.append(
+        "accounts",
+        {
+            "account": doc.debit_to,
+            "party_type": "Customer",
+            "party": doc.customer,
+            "debit_in_account_currency": 0,
+            "credit_in_account_currency": carry_over,
+            "reference_type": "Sales Invoice",
+            "reference_name": doc.name,
+        },
+    )
+    je_doc.append(
+        "accounts",
+        {
+            "account": provision_account,
+            "party_type": "Customer",
+            "party": doc.customer,
+            "debit_in_account_currency": carry_over,
+            "credit_in_account_currency": 0,
+        },
+    )
 
     je_doc.save()
     je_doc.submit()
@@ -157,18 +205,13 @@ def _make_gl_entry_for_provision_credit(doc):
     if not doc.is_return or doc.is_pos:
         return
 
-    provision_account = frappe.db.get_single_value("POS Bahrain Settings", "credit_note_provision_account")
+    provision_account = frappe.db.get_single_value(
+        "POS Bahrain Settings", "credit_note_provision_account"
+    )
     if not provision_account:
         return
 
-    customer_account = frappe.get_all(
-        "GL Entry",
-        filters={
-            "party_type": "Customer",
-            "party": doc.customer,
-        },
-        fields=["sum(credit) - sum(debit) as balance"],
-    )
+    customer_account = get_customer_account_balance(doc.customer)
     if not customer_account:
         return
 
@@ -178,20 +221,26 @@ def _make_gl_entry_for_provision_credit(doc):
 
     je_doc = frappe.new_doc("Journal Entry")
     je_doc.posting_date = today()
-    je_doc.append("accounts", {
-        "account": provision_account,
-        "party_type": "Customer",
-        "party": doc.customer,
-        "debit_in_account_currency": 0,
-        "credit_in_account_currency": abs(doc.grand_total),
-    })
-    je_doc.append("accounts", {
-        "account": doc.against_income_account,
-        "party_type": "Customer",
-        "party": doc.customer,
-        "debit_in_account_currency": abs(doc.grand_total),
-        "credit_in_account_currency": 0,
-    })
+    je_doc.append(
+        "accounts",
+        {
+            "account": provision_account,
+            "party_type": "Customer",
+            "party": doc.customer,
+            "debit_in_account_currency": 0,
+            "credit_in_account_currency": abs(doc.grand_total),
+        },
+    )
+    je_doc.append(
+        "accounts",
+        {
+            "account": doc.debit_to,
+            "party_type": "Customer",
+            "party": doc.customer,
+            "debit_in_account_currency": abs(doc.grand_total),
+            "credit_in_account_currency": 0,
+        },
+    )
 
     je_doc.save()
     je_doc.submit()
