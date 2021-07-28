@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.utils import flt, today
 from erpnext.setup.utils import get_exchange_rate
+from pos_bahrain.api.sales_invoice import get_customer_account_balance
 from toolz import first
 
 
@@ -34,6 +35,8 @@ def validate(doc, method):
                 frappe.throw(
                     "Reference Date necessary in payment row #{}".format(payment.idx)
                 )
+
+    doc.pb_available_balance = get_customer_account_balance(doc.customer)
 
 
 def before_save(doc, method):
@@ -159,15 +162,7 @@ def _make_gl_entry_on_credit_issued(doc):
     if not provision_account:
         return
 
-    customer_account = frappe.get_all(
-        "GL Entry",
-        filters={
-            "account": provision_account,
-            "party_type": "Customer",
-            "party": doc.customer,
-        },
-        fields=["sum(credit) - sum(debit) as balance"],
-    )
+    customer_account = get_customer_account_balance(doc.customer)
     if not customer_account:
         return
 
@@ -216,14 +211,7 @@ def _make_gl_entry_for_provision_credit(doc):
     if not provision_account:
         return
 
-    customer_account = frappe.get_all(
-        "GL Entry",
-        filters={
-            "party_type": "Customer",
-            "party": doc.customer,
-        },
-        fields=["sum(credit) - sum(debit) as balance"],
-    )
+    customer_account = get_customer_account_balance(doc.customer)
     if not customer_account:
         return
 

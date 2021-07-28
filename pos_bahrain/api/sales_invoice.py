@@ -5,6 +5,7 @@ from frappe.model.mapper import get_mapped_doc
 # Set Cost Center = Supplier
 # Date = Date & Supplier Invoice Date
 
+
 @frappe.whitelist()
 def make_purchase_invoice(source_name, target_doc=None):
     def set_missing_values(source, target):
@@ -31,6 +32,7 @@ def make_purchase_invoice(source_name, target_doc=None):
 
     return doc
 
+
 @frappe.whitelist()
 def make_sales_return(source_name, target_doc=None):
     from erpnext.accounts.doctype.sales_invoice.sales_invoice import make_sales_return
@@ -43,3 +45,19 @@ def _prepend_returned_si(si):
     if prepend_return_pos_name and si.offline_pos_name:
         si.offline_pos_name = "RET-{}".format(si.offline_pos_name)
     return si
+
+
+@frappe.whitelist()
+def get_customer_account_balance(customer):
+    customer_account = frappe.get_all(
+        "GL Entry",
+        filters={
+            "party_type": "Customer",
+            "party": customer,
+        },
+        fields=["sum(credit) - sum(debit) as balance"],
+    )
+    if not customer_account:
+        return None
+    balance = customer_account[0].get("balance")
+    return balance if balance > 0 else None
