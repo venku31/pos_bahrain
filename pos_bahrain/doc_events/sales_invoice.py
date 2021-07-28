@@ -186,7 +186,7 @@ def _make_gl_entry_for_provision_credit(doc):
         "credit_in_account_currency": abs(doc.grand_total),
     })
     je_doc.append("accounts", {
-        "account": doc.against_income_account,
+        "account": doc.debit_to,
         "party_type": "Customer",
         "party": doc.customer,
         "debit_in_account_currency": abs(doc.grand_total),
