@@ -162,7 +162,7 @@ def _make_gl_entry_on_credit_issued(doc):
     if not provision_account:
         return
 
-    account_balance = get_customer_account_balance(doc.customer)
+    account_balance = doc.pb_available_balance
     if not account_balance:
         return
 
