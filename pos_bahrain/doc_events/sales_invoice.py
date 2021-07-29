@@ -162,15 +162,15 @@ def _make_gl_entry_on_credit_issued(doc):
     if not provision_account:
         return
 
-    customer_account = get_customer_account_balance(doc.customer)
-    if not customer_account:
+    account_balance = get_customer_account_balance(doc.customer)
+    if not account_balance:
         return
 
-    balance = customer_account[0].get("balance")
-    if not balance:
-        return
-
-    carry_over = balance if balance < doc.outstanding_amount else doc.outstanding_amount
+    carry_over = (
+        account_balance
+        if account_balance < doc.outstanding_amount
+        else doc.outstanding_amount
+    )
 
     je_doc = frappe.new_doc("Journal Entry")
     je_doc.posting_date = today()
@@ -211,12 +211,8 @@ def _make_gl_entry_for_provision_credit(doc):
     if not provision_account:
         return
 
-    customer_account = get_customer_account_balance(doc.customer)
-    if not customer_account:
-        return
-
-    balance = customer_account[0].get("balance")
-    if not balance:
+    account_balance = get_customer_account_balance(doc.customer)
+    if not account_balance:
         return
 
     je_doc = frappe.new_doc("Journal Entry")
