@@ -191,6 +191,7 @@ fixtures = [
                     "Sales Order-pb_discount_percentage",
                     "Sales Invoice-pb_discount_percentage",
                     "Sales Invoice-pb_available_balance",
+                    "Sales Invoice-pb_after_balance",
                 ],
             ]
         ],
