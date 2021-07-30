@@ -200,6 +200,9 @@ def _make_gl_entry_on_credit_issued(doc):
     je_doc.save()
     je_doc.submit()
 
+    after_balance = doc.pb_available_balance - carry_over
+    frappe.db.set_value("Sales Invoice", doc.name, "pb_after_balance", after_balance)
+
 
 def _make_gl_entry_for_provision_credit(doc):
     if not doc.is_return or doc.is_pos:

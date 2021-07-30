@@ -1,9 +1,11 @@
 async function set_invoice_date(frm, cdt, cdn) {
-  console.log('Setter');
   const { reference_doctype, reference_name } = frappe.get_doc(cdt, cdn) || {};
   if (reference_name) {
-    const date_field =
-      reference_doctype === 'Sales Order' ? 'transaction_date' : 'posting_date';
+    const date_field = ['Sales Order', 'Purchase Order'].includes(
+      reference_doctype
+    )
+      ? 'transaction_date'
+      : 'posting_date';
     const { message: doc = {} } = await frappe.db.get_value(
       reference_doctype,
       reference_name,
