@@ -60,4 +60,4 @@ def get_customer_account_balance(customer):
     if not customer_account:
         return None
     balance = customer_account[0].get("balance")
-    return balance if balance > 0 else None
+    return balance if balance and balance > 0 else None
