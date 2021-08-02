@@ -21,7 +21,7 @@
    "fieldname": "batch",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Batch",
+   "label": "Item Name, Code or Batch No.",
    "options": "Batch",
    "reqd": 1
   },
@@ -80,7 +80,7 @@
  ],
  "hide_toolbar": 1,
  "issingle": 1,
- "modified": "2021-08-02 17:27:57.641612",
+ "modified": "2021-08-02 18:16:12.619372",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "Batch Recall",
