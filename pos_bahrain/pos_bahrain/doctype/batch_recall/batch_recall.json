@@ -7,6 +7,8 @@
  "field_order": [
   "batch",
   "email_template",
+  "item_name",
+  "item_code",
   "main_col",
   "no_of_invoices",
   "no_of_customers",
@@ -61,11 +63,24 @@
    "fieldtype": "Table",
    "options": "Batch Recall Invoice",
    "read_only": 1
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item Code",
+   "options": "Item",
+   "read_only": 1
   }
  ],
  "hide_toolbar": 1,
  "issingle": 1,
- "modified": "2021-08-02 17:23:40.969329",
+ "modified": "2021-08-02 17:27:57.641612",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "Batch Recall",

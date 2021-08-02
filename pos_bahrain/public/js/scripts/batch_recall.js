@@ -13,7 +13,7 @@ export default function () {
     batch: function (frm) {
       const { batch } = frm.doc;
       if (batch) {
-        frm.call({ method: 'fetch_invoices', doc: frm.doc });
+        frm.call({ method: 'fetch_data', doc: frm.doc });
       } else {
         clear(frm);
       }
