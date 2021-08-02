@@ -6,7 +6,7 @@
  "field_order": [
   "sales_invoice",
   "posting_date",
-  "qty_sold",
+  "qty",
   "grand_total",
   "customer",
   "customer_name",
@@ -59,15 +59,15 @@
   },
   {
    "columns": 1,
-   "fieldname": "qty_sold",
+   "fieldname": "qty",
    "fieldtype": "Float",
    "in_list_view": 1,
-   "label": "Qty Sold",
+   "label": "Qty",
    "read_only": 1
   }
  ],
  "istable": 1,
- "modified": "2021-08-02 17:50:51.616324",
+ "modified": "2021-08-02 17:52:06.717634",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "Batch Recall Invoice",
