@@ -1,5 +1,12 @@
 export default function () {
   return {
+    onload: function (frm) {
+      frm.set_query('batch', function () {
+        return {
+          query: 'pos_bahrain.api.batch_recall.batch_query',
+        };
+      });
+    },
     refresh: function (frm) {
       frm.disable_save();
       frm.page.show_menu();
@@ -13,7 +20,11 @@ export default function () {
     batch: function (frm) {
       const { batch } = frm.doc;
       if (batch) {
-        frm.call({ method: 'fetch_invoices', doc: frm.doc });
+        frm.call({
+          method: 'fetch_data',
+          doc: frm.doc,
+          freeze: true,
+        });
       } else {
         clear(frm);
       }
