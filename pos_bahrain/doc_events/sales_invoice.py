@@ -153,7 +153,7 @@ def _get_location(item_code, warehouse):
 
 
 def _make_gl_entry_on_credit_issued(doc):
-    if doc.is_return or doc.is_pos:
+    if doc.is_return:
         return
 
     provision_account = frappe.db.get_single_value(
@@ -171,6 +171,9 @@ def _make_gl_entry_on_credit_issued(doc):
         if account_balance < doc.outstanding_amount
         else doc.outstanding_amount
     )
+
+    if not carry_over:
+        return
 
     je_doc = frappe.new_doc("Journal Entry")
     je_doc.posting_date = today()
