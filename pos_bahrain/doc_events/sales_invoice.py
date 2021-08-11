@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.utils import flt, today
 from erpnext.setup.utils import get_exchange_rate
 from pos_bahrain.api.sales_invoice import get_customer_account_balance
@@ -36,6 +37,7 @@ def validate(doc, method):
                     "Reference Date necessary in payment row #{}".format(payment.idx)
                 )
 
+    _validate_return_series(doc)
     doc.pb_available_balance = get_customer_account_balance(doc.customer)
 
 
@@ -87,6 +89,21 @@ def before_cancel(doc, method):
 
     je_doc = frappe.get_doc("Journal Entry", parent)
     je_doc.cancel()
+
+
+def _validate_return_series(doc):
+    if not doc.is_return:
+        return
+    return_series = frappe.db.get_single_value("POS Bahrain Settings", "return_series")
+    if return_series:
+        if doc.naming_series != return_series:
+            frappe.throw(
+                _(
+                    "Only naming series <strong>{}</strong> is allowed for Credit Note. Please change it.".format(
+                        return_series
+                    )
+                )
+            )
 
 
 def _get_parent_by_account(name):
