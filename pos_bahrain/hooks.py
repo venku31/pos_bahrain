@@ -192,6 +192,7 @@ fixtures = [
                     "Sales Invoice-pb_discount_percentage",
                     "Sales Invoice-pb_available_balance",
                     "Sales Invoice-pb_after_balance",
+                    "Sales Invoice-pb_returned_to_warehouse",
                 ],
             ],
         ],
@@ -279,6 +280,7 @@ doc_events = {
         "before_save": "pos_bahrain.doc_events.sales_invoice.before_save",
         "on_submit": "pos_bahrain.doc_events.sales_invoice.on_submit",
         "before_cancel": "pos_bahrain.doc_events.sales_invoice.before_cancel",
+        "on_cancel": "pos_bahrain.doc_events.sales_invoice.on_cancel",
     },
     "Purchase Receipt": {
         "before_save": "pos_bahrain.doc_events.purchase_receipt.before_validate",
