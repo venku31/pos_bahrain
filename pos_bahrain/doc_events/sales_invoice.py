@@ -7,8 +7,10 @@ import frappe
 from frappe import _
 from frappe.utils import flt, today
 from erpnext.setup.utils import get_exchange_rate
+from erpnext.accounts.doctype.sales_invoice.sales_invoice import make_delivery_note
 from pos_bahrain.api.sales_invoice import get_customer_account_balance
-from toolz import first
+from functools import partial
+from toolz import first, compose, pluck, unique
 
 
 def validate(doc, method):
@@ -80,6 +82,7 @@ def on_submit(doc, method):
 
     _make_gl_entry_for_provision_credit(doc)
     _make_gl_entry_on_credit_issued(doc)
+    _make_return_dn(doc)
 
 
 def before_cancel(doc, method):
@@ -104,6 +107,60 @@ def _validate_return_series(doc):
                     )
                 )
             )
+
+
+def _make_return_dn(doc):
+    if not doc.is_return or not doc.pb_returned_to_warehouse:
+        return
+
+    return_against_update_stock = frappe.db.get_value(
+        "Sales Invoice",
+        doc.return_against,
+        "update_stock",
+    )
+    if return_against_update_stock:
+        return
+
+    get_dns = compose(
+        list,
+        unique,
+        partial(pluck, "parent"),
+        frappe.get_all,
+    )
+    dns = get_dns(
+        "Delivery Note Item",
+        filters={
+            "against_sales_invoice": doc.return_against,
+            "docstatus": 1,
+        },
+        fields=["parent"],
+    )
+    if not dns:
+        return
+
+    dn_doc = make_delivery_note(doc.return_against)
+
+    excluded_items = []
+    for item in dn_doc.items:
+        si_item = list(
+            filter(
+                lambda x: x.item_code == item.item_code,
+                doc.items,
+            ),
+        )
+        if si_item:
+            item.qty = first(si_item).qty
+            item.stock_qty = first(si_item).stock_qty
+        else:
+            excluded_items.append(item.item_code)
+
+    dn_doc.items = list(filter(lambda x: x.item_code in excluded_items, dn_doc.items))
+    dn_doc.is_return = 1
+    dn_doc.return_against = first(dns)
+    dn_doc.set_warehouse = doc.pb_returned_to_warehouse
+    dn_doc.run_method("calculate_taxes_and_totals")
+    dn_doc.insert()
+    dn_doc.submit()
 
 
 def _get_parent_by_account(name):
