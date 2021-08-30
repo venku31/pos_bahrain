@@ -28,8 +28,10 @@ function _make_purchase_invoice(frm) {
 
 
 async function _set_customer_account_balance(frm) {
-  const account_balance = await _get_customer_account_balance(frm.doc.customer);
-  frm.set_value("pb_available_balance", account_balance);
+  if(frm.doc.customer != null){
+    const account_balance = await _get_customer_account_balance(frm.doc.customer);
+    frm.set_value("pb_available_balance", account_balance);
+  } 
 }
 
 
