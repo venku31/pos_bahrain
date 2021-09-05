@@ -15,6 +15,7 @@ export { default as backported_stock_reconciliation } from './backported_stock_r
 export { default as payment_entry_pb } from './payment_entry_pb';
 export { default as gl_payment } from './gl_payment';
 export { default as batch_recall } from './batch_recall';
+export { default as branch } from './branch';
 
 import * as extensions from './extensions';
 import stock_transfer, { stock_transfer_item } from './stock_transfer';
