@@ -31,7 +31,6 @@ def branch_query(doctype, txt, searchfield, start, page_len, filters):
 
     return frappe.db.sql(query, filters)
 
-
 @frappe.whitelist()
 def get_branch_qty(branch, item):
     data = frappe.db.sql(
@@ -39,10 +38,11 @@ def get_branch_qty(branch, item):
         SELECT ROUND(`tabBin`.actual_qty, 2) as qty
         FROM `tabBin`
         INNER JOIN `tabBranch` ON `tabBin`.warehouse = `tabBranch`.warehouse
-        WHERE `tabBranch`.name = %(branch)s
-        AND `tabBin`.item_code = %(item_code)s
-        """,
+        WHERE `tabBranch`.name = '%(branch)s'
+        AND `tabBin`.item_code = '%(item_code)s'
+        """%
         {"item_code": item, "branch": branch},
-        as_dict=1,
+        as_dict=1
     )
-    return first(data) if data else None
+
+    return data[0][0] if data else None
