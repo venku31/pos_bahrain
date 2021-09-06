@@ -112,3 +112,25 @@ def _make_customer(source_name, ignore_permissions=False):
                 return customer_name
         else:
             return frappe.get_doc("Customer", quotation.get("party_name"))
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def link_query_override(doctype, txt, searchfield, start, page_len, filters, as_dict=False):
+	return frappe.db.sql("""
+			SELECT
+				`tabCustomer`.name, `tabCustomer`.mobile_no, `tabCustomer`.email_id
+			FROM
+				`tabCustomer`
+			WHERE 
+				( `tabCustomer`.`name` LIKE %(txt)s OR
+				`tabCustomer`.`email_id` LIKE %(txt)s OR
+				`tabCustomer`.`customer_name` LIKE %(txt)s OR
+				`tabCustomer`.`mobile_no` LIKE %(txt)s )
+			ORDER BY
+				`tabCustomer`.`%(key)s`
+			""" % {
+				"key": searchfield,
+				"start": start,
+				"page_len": page_len,
+			"txt": "%(txt)s"
+		}, {"txt": ("%%%s%%" % txt)}, as_dict=as_dict)
