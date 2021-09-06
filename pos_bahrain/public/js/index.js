@@ -26,7 +26,7 @@ frappe.ui.form.on(
   'Purchase Order Item',
   scripts.purchase_order.purchase_order_item
 );
-
+frappe.ui.form.on('Branch', scripts.branch);
 frappe.ui.form.on('Purchase Receipt', scripts.purchase_receipt);
 frappe.ui.form.on(
   'Purchase Receipt Item',

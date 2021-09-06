@@ -44,5 +44,15 @@ def get_branch_qty(branch, item):
         {"item_code": item, "branch": branch},
         as_dict=1
     )
-
     return data[0][0] if data else None
+
+@frappe.whitelist()
+def get_naming_series():
+    return {
+        "sales_order": _get_series("Sales Order"),
+        "sales_invoice": _get_series("Sales Invoice"),
+    }
+
+def _get_series(doctype):
+    series_text = frappe.get_meta(doctype).get_field("naming_series").options or ""
+    return series_text.split("\n")
