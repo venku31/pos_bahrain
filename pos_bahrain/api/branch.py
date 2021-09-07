@@ -42,9 +42,12 @@ def get_branch_qty(branch, item):
         AND `tabBin`.item_code = '%(item_code)s'
         """%
         {"item_code": item, "branch": branch},
-        as_dict=1
+        as_dict=0
     )
-    return data[0][0] if data else None
+    if data:
+        return data[0][0]
+    else:
+        return None
 
 @frappe.whitelist()
 def get_naming_series():
