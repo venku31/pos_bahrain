@@ -44,7 +44,10 @@ def get_branch_qty(branch, item):
         {"item_code": item, "branch": branch},
         as_dict=0
     )
-    return data[0][0] if data else None
+    if data:
+        return data[0][0]
+    else:
+        return None
 
 @frappe.whitelist()
 def get_naming_series():
