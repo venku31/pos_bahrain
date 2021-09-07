@@ -42,3 +42,16 @@ async function _get_customer_account_balance(customer) {
   })
   return data;
 }
+
+function get_employee(frm) {
+  if (!frm.doc.pb_sales_employee) {
+    frappe.call({
+      method: "pos_bahrain.api.sales_invoice.get_logged_employee_id",
+      callback: function (r) {
+        if (r.message != 0) {
+          frm.set_value("pb_sales_employee", r.message)
+        }
+      }
+    })
+  }
+}
