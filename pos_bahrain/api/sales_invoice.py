@@ -61,3 +61,11 @@ def get_customer_account_balance(customer):
         return None
     balance = customer_account[0].get("balance")
     return balance if balance and balance > 0 else None
+
+@frappe.whitelist()
+def get_logged_employee_id():
+    user = frappe.session.user
+    uid = frappe.db.sql("""SELECT name FROM `tabEmployee` where user_id='%(user)s'"""%
+        {"user": user},
+        as_dict=0)
+    return uid[0][0] if uid else 0
