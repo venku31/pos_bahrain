@@ -8,6 +8,13 @@ frappe.ui.form.on('Quotation', {
   }
 });
 
+frappe.ui.form.on('Quotation Item', {
+  item_code: function (frm, cdt, cdn) {
+      get_total_stock_qty(frm, cdt, cdn)
+  },
+});
+
+
 function _create_custom_buttons(frm) {
   if (frm.doc.docstatus === 1 && frm.doc.status !== 'Lost') {
     if (
@@ -41,4 +48,20 @@ function query_override(frm){
       };
       });
   }
+}
+
+function get_total_stock_qty(frm, cdt, cdn) {
+  var d = locals[cdt][cdn];
+  if (d.item_code === undefined) {
+      return;
+  }
+  frappe.call({
+      method: "pos_bahrain.api.stock.get_total_stock_qty",
+      args: {
+          item_code: d.item_code
+      },
+      callback: function (r) {
+          frappe.model.set_value(cdt, cdn, "total_available_qty", r.message);
+      }
+  })
 }
