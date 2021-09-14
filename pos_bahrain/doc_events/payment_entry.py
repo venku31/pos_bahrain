@@ -14,7 +14,7 @@ def before_save(doc, method):
         if not ref.pb_invoice_date:
             date_field = (
                 "transaction_date"
-                if ref.reference_doctype == "Sales Order"
+                if ref.reference_doctype == "Sales Order" or ref.reference_doctype == "Purchase Order" 
                 else "posting_date"
             )
             ref.pb_invoice_date = frappe.db.get_value(
