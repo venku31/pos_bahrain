@@ -21,14 +21,14 @@ RECEIVE = "Receive"
 class StockTransfer(Document):
     def validate(self):
         user_branch = get_user_branch()
-        if not _is_sys_mgr() and self.source_branch != user_branch:
-            frappe.throw(
-                _(
-                    "Source branch only allowed to be set to User branch: {}".format(
-                        user_branch
-                    )
-                )
-            )
+        # if not _is_sys_mgr() and self.source_branch != user_branch:
+        #     frappe.throw(
+        #         _(
+        #             "Source branch only allowed to be set to User branch: {}".format(
+        #                 user_branch
+        #             )
+        #         )
+        #     )
         if self.source_branch == self.target_branch:
             frappe.throw(_("Source and Target Branches cannot be the same"))
         if not self.source_warehouse:
@@ -61,8 +61,8 @@ class StockTransfer(Document):
             self.outgoing_datetime = now()
         self.set_missing_fields()
 
-    def before_submit(self):
-        self.validate_owner()
+    # def before_submit(self):
+    #     self.validate_owner()
 
     def on_submit(self):
         if self.workflow_state == "In Transit":
@@ -114,8 +114,8 @@ class StockTransfer(Document):
             )
             self.set_ref_doc("incoming_stock_entry", ref_doc)
 
-    def before_cancel(self):
-        self.validate_owner()
+    # def before_cancel(self):
+    #     self.validate_owner()
 
     def on_cancel(self):
         if self.incoming_stock_entry:
