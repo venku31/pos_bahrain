@@ -50,7 +50,7 @@ async function _get_customer_account_balance(customer) {
 }
 
 function get_employee(frm) {
-  if (!frm.doc.pb_sales_employee) {
+  if (!frm.doc.pb_sales_employee && frm.doc.__islocal) {
     frappe.call({
       method: "pos_bahrain.api.sales_invoice.get_logged_employee_id",
       callback: function (r) {
