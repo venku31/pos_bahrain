@@ -125,7 +125,9 @@ def link_query_override(doctype, txt, searchfield, start, page_len, filters, as_
 				( `tabCustomer`.`name` LIKE %(txt)s OR
 				`tabCustomer`.`email_id` LIKE %(txt)s OR
 				`tabCustomer`.`customer_name` LIKE %(txt)s OR
-				`tabCustomer`.`mobile_no` LIKE %(txt)s )
+				`tabCustomer`.`mobile_no` LIKE %(txt)s OR 
+                `tabCustomer`.`email_address` LIKE %(txt)s OR 
+                `tabCustomer`.`mobile_number` LIKE %(txt)s )
 			ORDER BY
 				`tabCustomer`.`%(key)s`
 			""" % {
