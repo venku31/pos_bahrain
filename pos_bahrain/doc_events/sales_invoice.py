@@ -177,7 +177,8 @@ def _make_return_dn(doc):
         partial(pluck, "parent"),
     )(dns)
     if not dns:
-        frappe.throw(_("There are no Delivery Note items to returned to"))
+    #    frappe.throw(_("There are no Delivery Note items to returned to"))
+    return
     if len(dn_parents) > 1:
         frappe.throw(
             _(
