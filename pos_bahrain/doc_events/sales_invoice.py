@@ -178,7 +178,7 @@ def _make_return_dn(doc):
     )(dns)
     if not dns:
     #    frappe.throw(_("There are no Delivery Note items to returned to"))
-    return
+        return
     if len(dn_parents) > 1:
         frappe.throw(
             _(

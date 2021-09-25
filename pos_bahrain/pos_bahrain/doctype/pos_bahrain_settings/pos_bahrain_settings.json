@@ -53,7 +53,11 @@
   "credit_note_provision_account",
   "prepend_return_pos_name",
   "column_break_49",
-  "return_series"
+  "return_series",
+  "misc_settings_section",
+  "enable_custom_item_description_fields",
+  "column_break_53",
+  "enable_custom_customer_contact_details"
  ],
  "fields": [
   {
@@ -345,10 +349,31 @@
    "fieldname": "return_series",
    "fieldtype": "Data",
    "label": "Return Series"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_custom_item_description_fields",
+   "fieldtype": "Check",
+   "label": "Enable Custom Item Description Fields"
+  },
+  {
+   "fieldname": "misc_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Misc Settings"
+  },
+  {
+   "fieldname": "column_break_53",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_custom_customer_contact_details",
+   "fieldtype": "Check",
+   "label": "Enable custom customer contact details"
   }
  ],
  "issingle": 1,
- "modified": "2021-08-11 17:10:32.882474",
+ "modified": "2021-09-25 15:55:32.461280",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "POS Bahrain Settings",
