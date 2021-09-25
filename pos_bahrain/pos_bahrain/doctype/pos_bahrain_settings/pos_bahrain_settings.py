@@ -77,7 +77,23 @@ class POSBahrainSettings(Document):
             make_property_setter("Sales Order Item", "pb_description", "hidden", 1, "Check")
             make_property_setter("Sales Order Item", "pb_description", "in_list_view", 0, "Check")
             make_property_setter("Sales Order Item", "description", "hidden", 0, "Check")
-            make_property_setter("Sales Order Item", "description", "default", "" , "Check")   
+            make_property_setter("Sales Order Item", "description", "default", "" , "Check")
+
+        if(self.enable_custom_customer_contact_details):
+            make_property_setter("Customer", "pb_contact_person", "hidden", 0, "Check")
+            make_property_setter("Customer", "pb_mobile_number", "hidden", 0, "Check")
+            make_property_setter("Customer", "pb_email_address", "hidden", 0, "Check")
+            make_property_setter("Customer", "pb_address", "hidden", 0, "Check")
+            make_property_setter("Customer", "pb_city", "hidden", 0, "Check")
+            make_property_setter("Customer", "pb_country", "hidden", 0, "Check")
+
+        if(not self.enable_custom_customer_contact_details):
+            make_property_setter("Customer", "pb_contact_person", "hidden", 1, "Check")
+            make_property_setter("Customer", "pb_mobile_number", "hidden", 1, "Check")
+            make_property_setter("Customer", "pb_email_address", "hidden", 1, "Check")
+            make_property_setter("Customer", "pb_address", "hidden", 1, "Check")
+            make_property_setter("Customer", "pb_city", "hidden", 1, "Check")
+            make_property_setter("Customer", "pb_country", "hidden", 1, "Check")
 
         hide_batch_price = not cint(self.use_batch_price)
         make_property_setter(
@@ -107,4 +123,3 @@ class POSBahrainSettings(Document):
             True,
             "Check",
         )
-
