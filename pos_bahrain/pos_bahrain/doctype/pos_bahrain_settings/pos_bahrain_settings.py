@@ -16,32 +16,26 @@ class POSBahrainSettings(Document):
             make_property_setter("Item", "description", "hidden", 1, "Check")
 
             make_property_setter("Purchase Invoice Item", "pb_description", "hidden", 0, "Check")
-            make_property_setter("Purchase Invoice Item", "pb_description", "in_list_view", 1, "Check")
             make_property_setter("Purchase Invoice Item", "description", "default", "NA" , "Check")
             make_property_setter("Purchase Invoice Item", "description", "hidden", 1, "Check")
 
             make_property_setter("Purchase Order Item", "pb_description", "hidden", 0, "Check")
-            make_property_setter("Purchase Order Item", "pb_description", "in_list_view", 1, "Check")
             make_property_setter("Purchase Order Item", "description", "default", "NA" , "Check")
             make_property_setter("Purchase Order Item", "description", "hidden", 1, "Check")
 
             make_property_setter("Purchase Receipt Item", "pb_description", "hidden", 0, "Check")
-            make_property_setter("Purchase Receipt Item", "pb_description", "in_list_view", 1, "Check")
             make_property_setter("Purchase Receipt Item", "description", "default", "NA" , "Check")
             make_property_setter("Purchase Receipt Item", "description", "hidden", 1, "Check")
 
             make_property_setter("Quotation Item", "pb_description", "hidden", 0, "Check")
-            make_property_setter("Quotation Item", "pb_description", "in_list_view", 1, "Check")
             make_property_setter("Quotation Item", "description", "default", "NA" , "Check")
             make_property_setter("Quotation Item", "description", "hidden", 1, "Check")
 
             make_property_setter("Sales Invoice Item", "pb_description", "hidden", 0, "Check")
-            make_property_setter("Sales Invoice Item", "pb_description", "in_list_view", 1, "Check")
             make_property_setter("Sales Invoice Item", "description", "default", "NA" , "Check")
             make_property_setter("Sales Invoice Item", "description", "hidden", 1, "Check")
 
             make_property_setter("Sales Order Item", "pb_description", "hidden", 0, "Check")
-            make_property_setter("Sales Order Item", "pb_description", "in_list_view", 1, "Check")
             make_property_setter("Sales Order Item", "description", "default", "NA" , "Check")
             make_property_setter("Sales Order Item", "description", "hidden", 1, "Check")
 
@@ -50,32 +44,26 @@ class POSBahrainSettings(Document):
             make_property_setter("Item", "description", "hidden", 0, "Check")
 
             make_property_setter("Purchase Invoice Item", "pb_description", "hidden", 1, "Check")
-            make_property_setter("Purchase Invoice Item", "pb_description", "in_list_view", 0, "Check")
             make_property_setter("Purchase Invoice Item", "description", "hidden", 0, "Check")
             make_property_setter("Purchase Invoice Item", "description", "default", "" , "Check")
 
             make_property_setter("Purchase Order Item", "pb_description", "hidden", 1, "Check")
-            make_property_setter("Purchase Order Item", "pb_description", "in_list_view", 0, "Check")
             make_property_setter("Purchase Order Item", "description", "hidden", 0, "Check")
             make_property_setter("Purchase Order Item", "description", "default", "" , "Check")
 
             make_property_setter("Purchase Receipt Item", "pb_description", "hidden", 1, "Check")
-            make_property_setter("Purchase Receipt Item", "pb_description", "in_list_view", 0, "Check")
             make_property_setter("Purchase Receipt Item", "description", "hidden", 0, "Check")
             make_property_setter("Purchase Receipt Item", "description", "default", "" , "Check")
             
             make_property_setter("Quotation Item", "pb_description", "hidden", 1, "Check")
-            make_property_setter("Quotation Item", "pb_description", "in_list_view", 0, "Check")
             make_property_setter("Quotation Item", "description", "hidden", 0, "Check")
             make_property_setter("Quotation Item", "description", "default", "" , "Check")
 
             make_property_setter("Sales Invoice Item", "pb_description", "hidden", 1, "Check")
-            make_property_setter("Sales Invoice Item", "pb_description", "in_list_view", 0, "Check")
             make_property_setter("Sales Invoice Item", "description", "hidden", 0, "Check")
             make_property_setter("Sales Invoice Item", "description", "default", "" , "Check")
 
             make_property_setter("Sales Order Item", "pb_description", "hidden", 1, "Check")
-            make_property_setter("Sales Order Item", "pb_description", "in_list_view", 0, "Check")
             make_property_setter("Sales Order Item", "description", "hidden", 0, "Check")
             make_property_setter("Sales Order Item", "description", "default", "" , "Check")
 
