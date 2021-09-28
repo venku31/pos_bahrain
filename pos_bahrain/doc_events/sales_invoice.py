@@ -95,6 +95,7 @@ def before_cancel(doc, method):
 
 
 def on_cancel(doc, method):
+    cancel_jv(doc)
     if not doc.pb_returned_to_warehouse:
         return
 
@@ -138,6 +139,10 @@ def on_cancel(doc, method):
             )
     dn_doc.cancel()
 
+def cancel_jv(doc):
+    if(doc.pb_credit_note_no):
+        jv_doc = frappe.get_doc("Journal Entry", doc.pb_credit_note_no)
+        jv_doc.cancel()
 
 def _validate_return_series(doc):
     if not doc.is_return:
@@ -349,6 +354,13 @@ def _make_gl_entry_for_provision_credit(doc):
 
     je_doc = frappe.new_doc("Journal Entry")
     je_doc.posting_date = today()
+
+    jv_naming_series = frappe.db.get_single_value(
+        "POS Bahrain Settings", "jv_credit_note_series"
+    )
+    if jv_naming_series:
+        je_doc.naming_series = jv_naming_series
+    
     je_doc.append(
         "accounts",
         {
@@ -356,7 +368,7 @@ def _make_gl_entry_for_provision_credit(doc):
             "party_type": "Customer",
             "party": doc.customer,
             "debit_in_account_currency": 0,
-            "credit_in_account_currency": abs(doc.grand_total),
+            "credit_in_account_currency": abs(doc.grand_total - doc.outstanding_amount),
         },
     )
     je_doc.append(
@@ -365,10 +377,12 @@ def _make_gl_entry_for_provision_credit(doc):
             "account": doc.debit_to,
             "party_type": "Customer",
             "party": doc.customer,
-            "debit_in_account_currency": abs(doc.grand_total),
+            "debit_in_account_currency": abs(doc.grand_total - doc.outstanding_amount),
             "credit_in_account_currency": 0,
         },
     )
 
     je_doc.save()
     je_doc.submit()
+    frappe.db.sql("""UPDATE `tabSales Invoice` SET pb_credit_note_no='%(jv)s' where name='%(si)s'"""%
+                    {"jv":je_doc.name, "si":doc.name})
