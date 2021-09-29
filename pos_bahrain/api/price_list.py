@@ -62,4 +62,4 @@ def _get_selling_rate(item, price_list, currency):
         },
         fields=["price_list_rate"],
     )
-    return first(item_price)
+    return first(item_price) if item_price else {"price_list_rate":0}
