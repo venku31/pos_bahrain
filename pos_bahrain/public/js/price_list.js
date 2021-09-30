@@ -16,17 +16,29 @@ function _setup_queries(frm) {
 
 function _set_price_list_rate(frm, cdt, cdn) {
   const child = locals[cdt][cdn];
-  _get_selling_rates(
-    child.item_code,
-    child.pb_price_list,
-    frm.doc.currency
-  ).then((selling_rates) => {
-    if (selling_rates) {
-      const discount_amount = selling_rates.default_price_list_rate - selling_rates.price_list_rate;
-      frappe.model.set_value(cdt, cdn, 'discount_amount', discount_amount);
-      frappe.model.set_value(cdt, cdn, 'pb_price_list_rate', selling_rates.price_list_rate);
-    }
-  });
+  if (child.pb_price_list) {
+    _get_selling_rates(
+      child.item_code,
+      child.pb_price_list,
+      frm.doc.currency
+    ).then((selling_rates) => {
+      var discount_amount = 0
+      if (selling_rates) {
+        if(selling_rates.default_price_list_rate != 0){
+          discount_amount = selling_rates.default_price_list_rate - selling_rates.price_list_rate;
+        }
+        else if(selling_rates.default_price_list_rate === 0){
+          discount_amount = 0;
+        }
+        frappe.model.set_value(cdt, cdn, 'discount_amount', discount_amount);
+        frappe.model.set_value(cdt, cdn, 'pb_price_list_rate', selling_rates.price_list_rate);
+      }
+    });
+  }
+  if(!child.pb_price_list){
+    frappe.model.set_value(cdt, cdn, 'rate', child.price_list_rate);
+    frappe.model.set_value(cdt, cdn, 'pb_price_list_rate', child.price_list_rate);
+  }
 }
 
 async function _get_selling_rates(item, price_list, currency) {
