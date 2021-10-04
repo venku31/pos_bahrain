@@ -22,6 +22,7 @@ function _set_price_list_rate(frm, cdt, cdn) {
       child.pb_price_list,
       frm.doc.currency
     ).then((selling_rates) => {
+      console.log(selling_rates)
       var discount_amount = 0
       if (selling_rates) {
         if(selling_rates.default_price_list_rate != 0){
