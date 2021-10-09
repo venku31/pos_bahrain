@@ -41,6 +41,11 @@ frappe.query_reports["Daily Cash with Payment"] = {
 		    fieldtype: 'Check',
 		},
 		{
+		    fieldname: 'show_reference_info',
+		    label: __('Show Reference Info'),
+		    fieldtype: 'Check',
+		},
+		{
 			fieldname: 'summary_view',
 			label: __('Summary View'),
 			fieldtype: 'Check'
