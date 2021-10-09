@@ -8,7 +8,6 @@ from datetime import datetime
 from functools import partial, reduce
 from toolz import groupby, pluck, compose, merge, keyfilter
 
-
 def execute(filters=None):
 	mop = _get_mop()
 
@@ -21,6 +20,7 @@ def execute(filters=None):
 def _get_columns(mop, filters):
 	summary_view = filters.get('summary_view')
 	show_customer_info = filters.get('show_customer_info')
+	show_ref_info = filters.get('show_reference_info')
 	columns = []
 
 	def make_column(key, label=None, type="Data", options=None, width=120):
@@ -51,6 +51,12 @@ def _get_columns(mop, filters):
 			make_column("mobile_no", "Mobile No")
 		])
 
+	if show_ref_info:
+		columns.extend([
+			make_column("ref_no", "Ref No"),
+			# make_column("ref_date", "Ref Date"),
+		])
+
 	print(columns)
 
 	def make_mop_column(row):
@@ -78,6 +84,8 @@ def _get_data(clauses, filters, mop):
 				si.change_amount AS change_amount,
 				sip.mode_of_payment AS mode_of_payment,
 				sip.amount AS amount,
+				sip.pb_reference_no AS ref_no,
+				sip.pb_reference_date AS ref_date,
 				si.customer AS customer,
 				si.customer_name AS customer_name,
 				c.mobile_no AS mobile_no
@@ -95,6 +103,41 @@ def _get_data(clauses, filters, mop):
 		values=filters,
 		as_dict=1
 	)
+
+	clause = {"query_doc":filters.query_doc, "start":filters.from_date, "end":filters.to_date}
+	if(filters.query_doctype == 'POS Profile'):
+		pe_clauses = ("pe.pb_pos_profile = '%(query_doc)s' AND pe.posting_date BETWEEN '%(start)s' AND '%(end)s'"%clause)
+	elif(filters.query_doctype == 'Warehouse'):
+		pe_clauses = ("pp.warehouse = '%(query_doc)s' AND pe.posting_date BETWEEN '%(start)s' AND '%(end)s'"%clause)
+
+	payment_entry = frappe.db.sql(
+		"""SELECT
+				pe.name AS invoice,
+				pp.warehouse AS warehouse,
+				pe.posting_date AS posting_date,
+				pe.pb_posting_time AS posting_time,
+				0 AS change_amount,
+				pe.mode_of_payment AS mode_of_payment,
+				pe.paid_amount AS amount,
+				pe.reference_no AS ref_no,
+				pe.reference_date AS ref_date,
+				pe.party_name AS customer,
+				pe.party_name AS customer_name,
+				c.mobile_no AS mobile_no
+			FROM `tabPayment Entry` AS pe
+			JOIN `tabCustomer` AS c ON
+				c.name = pe.party_name
+			LEFT JOIN `tabPOS Profile` AS pp ON
+				pp.name = pe.pb_pos_profile
+			WHERE {pe_clauses}
+		""".format(
+			pe_clauses = pe_clauses
+		),
+		values=filters,
+		as_dict=1
+	)
+
+	result = result + payment_entry
 
 	result = _sum_invoice_payments(
 		groupby('invoice', result),
@@ -220,6 +263,11 @@ def _make_payment_row(mop_cols, _, row):
 		_['customer_name'] = row.get('customer_name')
 	if not _.get('mobile_no'):
 		_['mobile_no'] = row.get('mobile_no')
+	if not _.get('ref_no'):
+		_['ref_no'] = row.get('ref_no')
+	# if not _.get('ref_date'):
+	# 	_['ref_date'] = row.get('ref_date')
+
 
 	return _
 
@@ -242,7 +290,9 @@ def _new_invoice_payment(mop_cols):
 		'total': 0.00,
 		'customer': None,
 		'customer_name': None,
-		'mobile_no': None
+		'mobile_no': None,
+		'ref_no' : None,
+		# 'ref_date' :None
 	}
 
 	for mop_col in mop_cols:

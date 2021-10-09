@@ -75,6 +75,9 @@ doctype_js = {
         "public/js/includes/scan_barcode.js",
         "public/js/purchase_receipt.js",
     ],
+    "Payment Entry": [
+         "public/js/payment_entry.js"
+    ],
     "Material Request": "public/js/material_request.js",
     "Delivery Note": "public/js/delivery_note.js",
     "Print Format": "public/js/print_format.js",

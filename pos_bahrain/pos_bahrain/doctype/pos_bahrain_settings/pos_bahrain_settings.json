@@ -57,6 +57,7 @@
   "jv_credit_note_series",
   "misc_settings_section",
   "enable_custom_item_description_fields",
+  "add_pos_profile_and_branch_to_payment_entry",
   "column_break_53",
   "enable_custom_customer_contact_details"
  ],
@@ -377,10 +378,16 @@
    "fieldtype": "Select",
    "label": "JV Credit Note Series",
    "options": "\nCDN.######"
+  },
+  {
+   "default": "0",
+   "fieldname": "add_pos_profile_and_branch_to_payment_entry",
+   "fieldtype": "Check",
+   "label": "Add POS Profile and Branch to Payment Entry"
   }
  ],
  "issingle": 1,
- "modified": "2021-09-28 19:14:00.551748",
+ "modified": "2021-10-05 15:52:03.945508",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "POS Bahrain Settings",
