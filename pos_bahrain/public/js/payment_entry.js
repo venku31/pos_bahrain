@@ -5,7 +5,7 @@ frappe.ui.form.on('Payment Entry', {
 });
 
 function add_pos_profile_and_branch_to_payment_entry(frm) {
-    if (cur_frm.__islocal) {
+    if (cur_frm.doc.__islocal) {
         frappe.call({
             method: "pos_bahrain.api.payment_entry.add_pos_profile_and_branch_to_payment_entry",
             async: false,
