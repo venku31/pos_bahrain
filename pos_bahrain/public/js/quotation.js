@@ -22,7 +22,7 @@ function _create_custom_buttons(frm) {
       frappe.datetime.get_diff(
         frm.doc.valid_till,
         frappe.datetime.get_today()
-      ) > 0
+      ) >= 0
     ) {
       frm.add_custom_button(
         __('Sales Invoice'),
