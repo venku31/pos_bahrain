@@ -125,7 +125,7 @@ def _get_data(clauses, filters, mop):
 				pe.party_name AS customer_name,
 				c.mobile_no AS mobile_no
 			FROM `tabPayment Entry` AS pe
-			JOIN `tabCustomer` AS c ON
+			LEFT JOIN `tabCustomer` AS c ON
 				c.name = pe.party_name
 			LEFT JOIN `tabPOS Profile` AS pp ON
 				pp.name = pe.pb_pos_profile
