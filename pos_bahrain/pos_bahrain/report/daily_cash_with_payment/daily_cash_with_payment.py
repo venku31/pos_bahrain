@@ -129,7 +129,7 @@ def _get_data(clauses, filters, mop):
 				c.name = pe.party_name
 			LEFT JOIN `tabPOS Profile` AS pp ON
 				pp.name = pe.pb_pos_profile
-			WHERE {pe_clauses}
+			WHERE {pe_clauses}  AND pe.docstatus = 1
 		""".format(
 			pe_clauses = pe_clauses
 		),

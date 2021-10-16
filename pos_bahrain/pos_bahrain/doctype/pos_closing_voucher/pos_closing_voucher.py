@@ -106,7 +106,7 @@ class POSClosingVoucher(Document):
             )
             expected_amount = (
                 payment.amount - sum_by("change_amount", sales)
-                if payment.is_default
+                if payment.is_default and not payment.pe_entry
                 else (payment.mop_amount or payment.amount)
             )
             return merge(
@@ -172,6 +172,7 @@ class POSClosingVoucher(Document):
                 ),
             )
         for payment in collection_payments:
+            payment.update({"pe_entry":1})
             collected_payment = merge(
                 make_payment(payment), get_form_collected(payment.mode_of_payment)
             )
