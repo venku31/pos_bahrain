@@ -20,15 +20,20 @@ def execute(filters=None):
     return columns, list(map(post_row, data))
 
 
+
 def _get_columns(filters):
-    def make_column(key, label=None, type="Currency", options=None, width=120):
-        return {
+    def make_column(key, label=None, col_type="Float", options=None, width=120):
+        col_data = {
             "label": _(label or key.replace("_", " ").title()),
             "fieldname": key,
-            "fieldtype": type,
+            "fieldtype": col_type,
             "options": options,
             "width": width,
+            "precision":3
         }
+        if(col_type != 'Float'):
+            del col_data['precision']
+        return col_data
 
     columns = [
         make_column("posting_date", "Date", type="Date", width=90),
