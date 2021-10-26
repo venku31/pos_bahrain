@@ -13,7 +13,7 @@ export default function withDiscountValidator(Pos) {
             const { item_group, max_discount: item_max_discount = 0 } =
               this.item_data.find(x => x.item_code === item_code) || {};
             const max_discount = item_max_discount || profile_max_discount;
-            const {discount_percentage = 1 } = this.pricing_rules.find(pricing_rule => pricing_rule.item_group === item_group) || {}
+            const {discount_percentage = 0 } = this.pricing_rules.find(pricing_rule => pricing_rule.item_group === item_group) || {}
             if (max_discount) {
               const net_rate = net_amount / qty;
               const price = this.get_item_price({
