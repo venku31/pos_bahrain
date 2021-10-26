@@ -24,7 +24,7 @@ export default function withDiscountValidator(Pos) {
                 transaction_date,
               });
               const discount = (1 - net_rate / price) * 100;
-              if (discount.toFixed(2) > max_discount && discount.toFixed(2) > discount_percentage) {
+              if (discount.toFixed(2) > max_discount && discount_percentage === 0) {
                 frappe.throw(
                   __(
                     `Discount for row #${idx}: ${discount }% cannot be greater than ${max_discount}%`
