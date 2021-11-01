@@ -100,6 +100,14 @@ class POSClosingVoucher(Document):
                 },
             )
 
+        def make_pe(pe):
+            return {
+                    "pe_number": pe.name,
+                    "party_name": pe.party_name,
+                    "mop": pe.mode_of_payment,
+                    "amount" : pe.amount
+                }
+
         def make_payment(payment):
             mop_conversion_rate = (
                 payment.amount / payment.mop_amount if payment.mop_amount else 1
@@ -148,6 +156,11 @@ class POSClosingVoucher(Document):
         self.invoices = []
         for invoice in sales:
             self.append("invoices", make_invoice(invoice))
+
+        self.pcv_pe_table = []
+        for pe in collection_payments:
+            self.append("pcv_pe_table",make_pe(pe))
+
         self.returns = []
         for invoice in returns:
             self.append("returns", make_invoice(invoice))
@@ -181,7 +194,11 @@ class POSClosingVoucher(Document):
                     lambda x: x.mode_of_payment == collected_payment["mode_of_payment"],
                     self.payments,
                 )
-            )[0]
+            ) #[0]
+
+            if existing_payment:
+                existing_payment = existing_payment[0]
+
             if existing_payment:
                 for field in [
                     "expected_amount",
@@ -330,6 +347,8 @@ def _get_payments(args):
     collection_payments = frappe.db.sql(
         """
             SELECT
+                name,
+                party_name,
                 mode_of_payment,
                 SUM(paid_amount) AS amount
             FROM `tabPayment Entry`

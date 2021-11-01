@@ -15,6 +15,7 @@ frappe.ui.form.on('POS Closing Voucher', {
       'taxes',
       'employees',
       'item_groups',
+      'pcv_pe_table'
     ].forEach((field) => {
       frm.set_df_property(field, 'read_only', 1);
     });
