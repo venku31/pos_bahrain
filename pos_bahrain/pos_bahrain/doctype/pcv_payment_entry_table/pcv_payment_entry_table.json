@@ -15,25 +15,29 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "PE Number",
-   "options": "Payment Entry"
+   "options": "Payment Entry",
+   "read_only": 1
   },
   {
    "fieldname": "mop",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "MOP"
+   "label": "MOP",
+   "read_only": 1
   },
   {
    "fieldname": "amount",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Amount"
+   "label": "Amount",
+   "read_only": 1,
   },
   {
    "fieldname": "party_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Party Name"
+   "label": "Party Name",
+   "read_only": 1
   }
  ],
  "istable": 1,
