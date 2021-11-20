@@ -140,9 +140,14 @@ def get_data(from_date, to_date):
 							GROUP BY
 								si.name
 							HAVING
-								si.docstatus = 1 AND si.is_return = 0 AND 
+								si.docstatus = 1 AND 
 								si.posting_date BETWEEN '%(from_date)s' AND '%(to_date)s')
 								"""%{"from_date":from_date, "to_date":to_date}, as_dict=1)
+	inv_data_with_cos = get_cost_of_sales(inv_data)
+	inv_data_return = negative_values_for_return(inv_data_with_cos)
+	return inv_data_return
+	
+def get_cost_of_sales(inv_data):
 	for invoice in inv_data:
 		items = frappe.db.sql(""" SELECT item_code, qty FROM `tabSales Invoice Item` where parent='%(si)s'"""%{"si":invoice.invoice_no}, as_dict = 1)
 		valuation_rate = 0
@@ -153,6 +158,12 @@ def get_data(from_date, to_date):
 				valuation_rate += (val_rate[0][0] * item.qty)
 
 		invoice.update({"valuation_rate":valuation_rate})
+	return inv_data
+
+def negative_values_for_return(inv_data):
+	for inv in inv_data:
+		if inv.is_return == 1:
+			pass
 		
 	return inv_data
-	
+
