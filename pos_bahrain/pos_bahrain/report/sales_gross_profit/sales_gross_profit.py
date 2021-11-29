@@ -114,6 +114,8 @@ def execute(filters=None):
 
 
 def get_data(from_date, to_date):
+	rounded_total = frappe.db.get_single_value('Global Defaults', 'disable_rounded_total')
+	total_field = "si.grand_total" if rounded_total else "si.rounded_total"
 
 	inv_data = frappe.db.sql(""" (SELECT
 								si.posting_date AS invoice_date,
@@ -124,8 +126,8 @@ def get_data(from_date, to_date):
 								SUM(inv_item.discount_amount  * inv_item.qty ) AS discount,
 								SUM(inv_item.amount) AS amount_after_discount,
 								si.total_taxes_and_charges AS vat,
-								si.rounded_total AS total_sales,
-								(si.rounded_total - si.outstanding_amount) AS payment,
+								%(total_field)s AS total_sales,
+								(%(total_field)s - si.outstanding_amount) AS payment,
 								si.outstanding_amount AS outstanding, 
 								ip.mode_of_payment AS mop,
 								si.pb_discount_percentage as disc_percent,
@@ -142,7 +144,7 @@ def get_data(from_date, to_date):
 							HAVING
 								si.docstatus = 1 AND 
 								si.posting_date BETWEEN '%(from_date)s' AND '%(to_date)s')
-								"""%{"from_date":from_date, "to_date":to_date}, as_dict=1)
+								"""%{"from_date":from_date, "to_date":to_date, "total_field" : total_field}, as_dict=1)
 	inv_data_with_cos = get_cost_of_sales(inv_data)
 	inv_data_return = negative_values_for_return(inv_data_with_cos)
 	return inv_data_return
