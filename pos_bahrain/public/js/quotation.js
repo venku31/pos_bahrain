@@ -1,5 +1,6 @@
 frappe.ui.form.on('Quotation', {
   refresh: function (frm) {
+    get_employee(frm);
     _create_custom_buttons(frm);
     query_override(frm);
   },
@@ -14,6 +15,18 @@ frappe.ui.form.on('Quotation Item', {
   },
 });
 
+function get_employee(frm) {
+  if (!frm.doc.pb_sales_employee && frm.doc.__islocal) {
+    frappe.call({
+      method: "pos_bahrain.api.sales_invoice.get_logged_employee_id",
+      callback: function (r) {
+        if (r.message != 0) {
+          frm.set_value("pb_sales_employee", r.message)
+        }
+      }
+    })
+  }
+}
 
 function _create_custom_buttons(frm) {
   if (frm.doc.docstatus === 1 && frm.doc.status !== 'Lost') {
