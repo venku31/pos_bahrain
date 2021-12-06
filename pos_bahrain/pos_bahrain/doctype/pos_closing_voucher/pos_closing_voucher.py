@@ -344,6 +344,10 @@ def _get_payments(args):
             "default": 1,
         },
     )
+    args2 = args
+    user_data = "AND owner = '{}'".format(args['user']) if args['user']  else ""
+    args2['user'] = user_data
+
     collection_payments = frappe.db.sql(
         """
             SELECT
@@ -354,12 +358,13 @@ def _get_payments(args):
             FROM `tabPayment Entry`
             WHERE docstatus = 1
             AND company = %(company)s
-            AND owner = %(user)s
+            AND pb_pos_profile = %(pos_profile)s
+            %(user)s
             AND payment_type = "Receive"
             AND TIMESTAMP(posting_date, pb_posting_time) BETWEEN %(period_from)s AND %(period_to)s
             GROUP BY mode_of_payment
         """,
-        values=args,
+        values=args2,
         as_dict=1,
     )
 
