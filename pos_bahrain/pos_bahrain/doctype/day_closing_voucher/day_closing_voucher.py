@@ -5,26 +5,18 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from datetime import date
 from itertools import groupby
-
-import json
-
-# jsonString_col = json.dumps(pcv_emp_list, indent=4, sort_keys=True, default=str)
-# f3= open("/home/demo9t9it/frappe-bench/apps/pos_bahrain/pos_bahrain/pos_bahrain/doctype/day_closing_voucher/txt/employees.txt","w+")
-# f3.write(jsonString_col)
 
 class DayClosingVoucher(Document):
 	def validate(self):
 		args = ""
 		if self.docstatus:
-			frappe.msgprint("this msg 1")
 			args = "AND name != '%(cur_docname)s'"%{"cur_docname":self.name}
 		existing = frappe.db.sql("""SELECT name FROM `tabDay Closing Voucher` WHERE date = '%(date)s' AND branch = '%(branch)s' AND docstatus != 2 %(args)s"""%{
 									"date":self.date, "branch": self.branch, "args":args})
 		if existing:
 			frappe.throw("Closing voucher exists for this branch for this date ")
-			
+
 		get_data(self)
 
 
