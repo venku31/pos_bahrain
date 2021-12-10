@@ -11,11 +11,20 @@ from itertools import groupby
 import json
 
 # jsonString_col = json.dumps(pcv_emp_list, indent=4, sort_keys=True, default=str)
-# f3= open("/home/demo9t9it/frappe-bench/apps/pos_bahrain/pos_bahrain/pos_bahrain/doctype/day_closing/txt/employees.txt","w+")
+# f3= open("/home/demo9t9it/frappe-bench/apps/pos_bahrain/pos_bahrain/pos_bahrain/doctype/day_closing_voucher/txt/employees.txt","w+")
 # f3.write(jsonString_col)
 
-class DayClosing(Document):
+class DayClosingVoucher(Document):
 	def validate(self):
+		args = ""
+		if self.docstatus:
+			frappe.msgprint("this msg 1")
+			args = "AND name != '%(cur_docname)s'"%{"cur_docname":self.name}
+		existing = frappe.db.sql("""SELECT name FROM `tabDay Closing Voucher` WHERE date = '%(date)s' AND branch = '%(branch)s' AND docstatus != 2 %(args)s"""%{
+									"date":self.date, "branch": self.branch, "args":args})
+		if existing:
+			frappe.throw("Closing voucher exists for this branch for this date ")
+			
 		get_data(self)
 
 
@@ -204,84 +213,76 @@ def get_data(self):
 		self.returns_quantity = pcv_columns_data['returns_quantity']
 
 		self.employees = []
-		if employees:
-			for employee in employees:
-				self.append("employees",{
-					"sales_employee" : employee['sales_employee'],
-					"sales_employee_name" : employee['sales_employee_name'],
-					"invoices_count": employee['invoices_count'],
-					"sales_total" : employee['sales_total']
-				})
+		for employee in employees:
+			self.append("employees",{
+				"sales_employee" : employee['sales_employee'],
+				"sales_employee_name" : employee['sales_employee_name'],
+				"invoices_count": employee['invoices_count'],
+				"sales_total" : employee['sales_total']
+			})
 
 		self.payments = []
-		if mop:
-			for entry in mop:
-				self.append("payments", {
-					"is_default" : entry["is_default"],
-					"mode_of_payment" : entry["mode_of_payment"],
-					"type" : entry["type"],
-					"collected_amount" : entry["collected_amount"],
-					"expected_amount" : entry["expected_amount"],
-					"difference_amount" : entry["difference_amount"],
-					"mop_currency" : entry["mop_currency"],
-					"mop_conversion_rate" : entry["mop_conversion_rate"],
-					"base_collected_amount" : entry["base_collected_amount"],
-				})
+		for entry in mop:
+			self.append("payments", {
+				"is_default" : entry["is_default"],
+				"mode_of_payment" : entry["mode_of_payment"],
+				"type" : entry["type"],
+				"collected_amount" : entry["collected_amount"],
+				"expected_amount" : entry["expected_amount"],
+				"difference_amount" : entry["difference_amount"],
+				"mop_currency" : entry["mop_currency"],
+				"mop_conversion_rate" : entry["mop_conversion_rate"],
+				"base_collected_amount" : entry["base_collected_amount"],
+			})
 		
 		self.invoices = []
-		if invoices:
-			for invoice in invoices:
-				self.append("invoices", {
-					"invoice" : invoice.invoice,
-					"sales_employee" : invoice.sales_employee, 
-					"total_quantity" : invoice.total_quantity,
-					"grand_total" : invoice.grand_total,
-					"paid_amount" : invoice.paid_amount,
-					"change_amount" : invoice.change_amount
+		for invoice in invoices:
+			self.append("invoices", {
+				"invoice" : invoice.invoice,
+				"sales_employee" : invoice.sales_employee, 
+				"total_quantity" : invoice.total_quantity,
+				"grand_total" : invoice.grand_total,
+				"paid_amount" : invoice.paid_amount,
+				"change_amount" : invoice.change_amount
 
-				})
+			})
 
 		self.payment_entry = []
-		if pe:
-			for pe_entry in pe:
-				self.append("payment_entry", {
-					"pe_number" : pe_entry['pe_number'],
-					"party_name" : pe_entry['party_name'],
-					"mop": pe_entry['mop'],
-					"amount" : pe_entry['amount']
-				})
+		for pe_entry in pe:
+			self.append("payment_entry", {
+				"pe_number" : pe_entry['pe_number'],
+				"party_name" : pe_entry['party_name'],
+				"mop": pe_entry['mop'],
+				"amount" : pe_entry['amount']
+			})
 
 		self.returns = []
-		if returns:
-			for invoice in returns:
-				self.append("returns",{
-					"invoice" : invoice['invoice'],
-					"sales_employee" : invoice['sales_employee'],
-					"total_quantity" : invoice['total_quantity'],
-					"grand_total" : invoice['grand_total'],
-					"paid_amount" : invoice['paid_amount'],
-					"change_amount" : invoice['change_amount']
-				})
+		for invoice in returns:
+			self.append("returns",{
+				"invoice" : invoice['invoice'],
+				"sales_employee" : invoice['sales_employee'],
+				"total_quantity" : invoice['total_quantity'],
+				"grand_total" : invoice['grand_total'],
+				"paid_amount" : invoice['paid_amount'],
+				"change_amount" : invoice['change_amount']
+			})
 
 		self.taxes = []
-		if taxes:
-			for tax in taxes:
-				self.append("taxes",{
-					"rate" : tax['rate'],
-					"tax_amount" : tax['tax_amount'],
-				})
+		for tax in taxes:
+			self.append("taxes",{
+				"rate" : tax['rate'],
+				"tax_amount" : tax['tax_amount'],
+			})
 
 		self.item_groups = []
-		if item_groups:
-			for item_group in item_groups:
-				self.append("item_groups", {
-					"item_group" : item_group['item_group'],
-					"qty" : item_group['qty'],
-					"net_amount" : item_group['net_amount'],
-					"tax_amount" : item_group['tax_amount'],
-					"grand_total" : item_group['grand_total']
-				})
-
+		for item_group in item_groups:
+			self.append("item_groups", {
+				"item_group" : item_group['item_group'],
+				"qty" : item_group['qty'],
+				"net_amount" : item_group['net_amount'],
+				"tax_amount" : item_group['tax_amount'],
+				"grand_total" : item_group['grand_total']
+			})
 
 	elif pcv_tup == 0:
 		frappe.throw("No POS Closing Vouchers found to create day closing")
