@@ -122,9 +122,15 @@ def get_data(from_date, to_date):
 								si.pb_sales_employee_name AS sales_man,
 								si.customer_name AS customer,
 								si.name AS invoice_no,
-								SUM(inv_item.price_list_rate * inv_item.qty ) AS amount_before_discount,
-								SUM(inv_item.discount_amount  * inv_item.qty ) AS discount,
-								SUM(inv_item.amount) AS amount_after_discount,
+								( SELECT sum( inv_item.price_list_rate * inv_item.qty )
+								AS amount_before_discount FROM `tabSales Invoice Item` inv_item 
+								WHERE parent = si.name ) AS amount_before_discount,
+								( SELECT sum(inv_item.discount_amount  * inv_item.qty ) 
+								AS discount FROM `tabSales Invoice Item` inv_item 
+								WHERE parent = si.name ) AS discount,
+								( SELECT sum(inv_item.amount) AS amount_after_discount
+								FROM `tabSales Invoice Item` inv_item WHERE parent = si.name )
+								AS amount_after_discount,
 								si.total_taxes_and_charges AS vat,
 								%(total_field)s AS total_sales,
 								(%(total_field)s - si.outstanding_amount) AS payment,
@@ -133,16 +139,15 @@ def get_data(from_date, to_date):
 								si.pb_discount_percentage as disc_percent,
 								si.docstatus as docstatus,
 								si.is_return
+								
 							FROM
 								`tabSales Invoice` si
-							LEFT JOIN
-								`tabSales Invoice Item` inv_item ON inv_item.parent = si.name
 							LEFT JOIN
 								`tabSales Invoice Payment` ip ON ip.parent = si.name
 							GROUP BY
 								si.name
 							HAVING
-								si.docstatus = 1 AND 
+								si.docstatus = 1 AND
 								si.posting_date BETWEEN '%(from_date)s' AND '%(to_date)s')
 								"""%{"from_date":from_date, "to_date":to_date, "total_field" : total_field}, as_dict=1)
 	inv_data_with_cos = get_cost_of_sales(inv_data)
