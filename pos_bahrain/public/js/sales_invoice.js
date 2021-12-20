@@ -7,6 +7,9 @@ frappe.ui.form.on('Sales Invoice', {
   customer: function (frm) {
     _set_customer_account_balance(frm);
   },
+  validate: function(frm){
+    check_duplicate(frm);
+  }
 });
 
 frappe.ui.form.on('Sales Invoice Item', {
@@ -14,6 +17,38 @@ frappe.ui.form.on('Sales Invoice Item', {
     get_total_stock_qty(frm, cdt, cdn)
   },
 });
+
+function check_duplicate(frm) {
+  if (frm.doc.is_pos && frm.doc.offline_pos_name && frm.doc.is_return && frm.doc.amended_from) {
+      frappe.call({
+          method: "frappe.client.get_value",
+          args: {
+              'doctype': 'Sales Invoice',
+              'filters': { 'name': frm.doc.amended_from},
+              'fieldname': [ 'offline_pos_name' ]
+          },
+          callback: function(r) {
+              if( r.message.offline_pos_name == frm.doc.offline_pos_name){
+                  var amended_offline_pos_name = split_str(frm.doc.offline_pos_name);
+                  frm.set_value("offline_pos_name", amended_offline_pos_name);
+              }
+          }
+      });
+  }
+}
+
+function split_str(str_) {
+  var amended_str ;
+  var split_str = str_.split("-");
+  if (split_str.length == 2) {
+      amended_str = (str_ + " - 1");
+  }
+  if (split_str.length == 3) {
+      var amend_no = Number(split_str[2]) + 1 ; 
+      amended_str = split_str[0] + "-" + split_str[1] + "- " + amend_no ;
+  }
+  return amended_str;
+}
 
 function _create_custom_buttons(frm) {
   if (frm.doc.docstatus !== 1) {
