@@ -38,7 +38,6 @@ function check_duplicate(frm) {
             offline_pos = amended_pos.amended_str
           }
         });
-        console.log(offline_pos)
         frm.set_value("offline_pos_name", offline_pos);
       }
     });
