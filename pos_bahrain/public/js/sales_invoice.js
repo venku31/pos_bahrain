@@ -19,34 +19,57 @@ frappe.ui.form.on('Sales Invoice Item', {
 });
 
 function check_duplicate(frm) {
-  if (frm.doc.is_pos && frm.doc.offline_pos_name && frm.doc.is_return && frm.doc.amended_from) {
-      frappe.call({
-          method: "frappe.client.get_value",
-          args: {
-              'doctype': 'Sales Invoice',
-              'filters': { 'name': frm.doc.amended_from},
-              'fieldname': [ 'offline_pos_name' ]
-          },
-          callback: function(r) {
-              if( r.message.offline_pos_name == frm.doc.offline_pos_name){
-                  var amended_offline_pos_name = split_str(frm.doc.offline_pos_name);
-                  frm.set_value("offline_pos_name", amended_offline_pos_name);
-              }
+  if (frm.doc.is_pos && frm.doc.offline_pos_name && frm.doc.is_return) {
+    frappe.call({
+      method: "frappe.client.get_list",
+      args: {
+        'doctype': 'Sales Invoice',
+        'filters': [['offline_pos_name', 'LIKE', split_str_og(frm.doc.offline_pos_name) + '%']],
+        'fields': ['offline_pos_name'],
+        'fieldname': ['offline_pos_name']
+      },
+      callback: function (r) {
+        var biggest = 0;
+        var offline_pos;
+        r.message.forEach(pos_name => {
+          var amended_pos = split_str(pos_name.offline_pos_name)
+          if (amended_pos.amend_no > biggest) {
+            biggest = amended_pos.amend_no
+            offline_pos = amended_pos.amended_str
           }
-      });
+        });
+        console.log(offline_pos)
+        frm.set_value("offline_pos_name", offline_pos);
+      }
+    });
   }
 }
 
 function split_str(str_) {
-  var amended_str ;
+  var amended_str;
+  var amend_no = 0;
   var split_str = str_.split("-");
   if (split_str.length == 2) {
-      amended_str = (str_ + " - 1");
+    amend_no = 1
+    amended_str = (str_ + " - 1");
   }
   if (split_str.length == 3) {
-      var amend_no = Number(split_str[2]) + 1 ; 
-      amended_str = split_str[0] + "-" + split_str[1] + "- " + amend_no ;
+    amend_no = Number(split_str[2]) + 1;
+    amended_str = split_str[0] + "-" + split_str[1] + "- " + amend_no;
   }
+  return { "amended_str": amended_str, "amend_no": amend_no };
+}
+
+function split_str_og(str_) {
+  var amended_str_ws;
+  var amended_str;
+  var split_str = str_.split("-");
+  if (split_str.length == 3) {
+    var amend_no = Number(split_str[2]) + 1;
+    amended_str_ws = split_str[0] + "-" + split_str[1];
+    amended_str = amended_str_ws.replace(/\s+$/, '')
+  }
+  else amended_str = str_
   return amended_str;
 }
 
