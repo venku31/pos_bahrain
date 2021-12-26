@@ -28,6 +28,9 @@
 ## Future Updates
   1. XXXXXXXXXXX
 
+## Version Update
+  1. 0.5.0
+  Fixed POS Closing voucher bug where all payment entry was grouped by mode of payment.
 
 ## Dev Notes
 

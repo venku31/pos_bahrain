@@ -87,6 +87,7 @@ class POSClosingVoucher(Document):
         )
 
         sales, returns = _get_invoices(args)
+        pe = get_pe(args)
         actual_payments, collection_payments = _get_payments(args)
         taxes = _get_taxes(args)
 
@@ -158,8 +159,8 @@ class POSClosingVoucher(Document):
             self.append("invoices", make_invoice(invoice))
 
         self.pcv_pe_table = []
-        for pe in collection_payments:
-            self.append("pcv_pe_table",make_pe(pe))
+        for entry in pe:
+            self.append("pcv_pe_table",make_pe(entry))
 
         self.returns = []
         for invoice in returns:
@@ -265,6 +266,29 @@ def _get_clauses(args):
     )
     return " AND ".join(clauses)
 
+def get_pe(args):
+    user_data = "AND owner = '{}'".format(args['user']) if args['user'] else ""
+    args['user'] = user_data
+
+    collection_payments = frappe.db.sql(
+        """
+            SELECT
+                name,
+                party_name,
+                mode_of_payment,
+                paid_amount AS amount
+            FROM `tabPayment Entry`
+            WHERE docstatus = 1
+            AND company = %(company)s
+            AND pb_pos_profile = %(pos_profile)s
+            %(user)s
+            AND payment_type = "Receive"
+            AND TIMESTAMP(posting_date, pb_posting_time) BETWEEN %(period_from)s AND %(period_to)s
+        """,
+        values=args,
+        as_dict=1,
+    )
+    return collection_payments
 
 def _get_invoices(args):
     sales = frappe.db.sql(
