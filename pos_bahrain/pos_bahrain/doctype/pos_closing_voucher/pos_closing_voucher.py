@@ -154,6 +154,9 @@ class POSClosingVoucher(Document):
             - self.change_total
         )
 
+        self.total_invoices_top = self.total_invoices
+        self.sales_total = self.grand_total
+        
         self.invoices = []
         for invoice in sales:
             self.append("invoices", make_invoice(invoice))

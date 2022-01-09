@@ -39,6 +39,9 @@
   3. 0.5.2
   (1) Added employee name in pos closing voucher employee table in list view.
 
+  4. 0.5.3
+  (1) Added total invoice count and sales total below employee table
+
 ## Dev Notes
 
 - **Custom Fields** created by this app generally start with `pb_`. There are a few fields that do not follow this convention. Please refer to the `hooks.py` for more info.
