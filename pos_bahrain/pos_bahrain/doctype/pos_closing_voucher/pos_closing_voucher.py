@@ -156,7 +156,7 @@ class POSClosingVoucher(Document):
 
         self.total_invoices_top = self.total_invoices
         self.sales_total = self.grand_total
-        
+
         self.invoices = []
         for invoice in sales:
             self.append("invoices", make_invoice(invoice))
@@ -188,6 +188,11 @@ class POSClosingVoucher(Document):
                     make_payment(payment), get_form_collected(payment.mode_of_payment)
                 ),
             )
+
+        self.total_collected_top = sum(item.collected_amount for item in self.payments)
+        self.total_expected = sum(item.expected_amount for item in self.payments)
+        self.total_base_collected = sum(item.base_collected_amount for item in self.payments)
+
         for payment in collection_payments:
             payment.update({"pe_entry":1})
             collected_payment = merge(

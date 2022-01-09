@@ -42,6 +42,9 @@
   4. 0.5.3
   (1) Added total invoice count and sales total below employee table
 
+  5. 0.5.4
+  (1) Added total collected, total base collected and total expected below payments table
+
 ## Dev Notes
 
 - **Custom Fields** created by this app generally start with `pb_`. There are a few fields that do not follow this convention. Please refer to the `hooks.py` for more info.

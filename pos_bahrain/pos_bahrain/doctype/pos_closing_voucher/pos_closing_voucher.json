@@ -25,6 +25,12 @@
   "sales_total",
   "payments_section",
   "payments",
+  "section_break_21",
+  "total_collected_top",
+  "column_break_23",
+  "total_expected",
+  "column_break_25",
+  "total_base_collected",
   "invoices_section",
   "invoices",
   "pcv_pe_table",
@@ -310,10 +316,40 @@
    "fieldtype": "Currency",
    "label": "Sales Total",
    "read_only": 1
+  },
+  {
+   "fieldname": "section_break_21",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "total_collected_top",
+   "fieldtype": "Currency",
+   "label": "Total Collected",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_expected",
+   "fieldtype": "Currency",
+   "label": "Total Expected",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_base_collected",
+   "fieldtype": "Currency",
+   "label": "Total Base Collected",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_23",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_25",
+   "fieldtype": "Column Break"
   }
  ],
  "is_submittable": 1,
- "modified": "2022-01-09 22:17:57.727418",
+ "modified": "2022-01-09 22:53:04.767380",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "POS Closing Voucher",
