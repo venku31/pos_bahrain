@@ -275,27 +275,27 @@ def _get_clauses(args):
     return " AND ".join(clauses)
 
 def get_pe(args):
-    user_data = "AND owner = '{}'".format(args['user']) if args['user'] else ""
-    args['user'] = user_data
-
-    collection_payments = frappe.db.sql(
-        """
-            SELECT
-                name,
-                party_name,
-                mode_of_payment,
-                paid_amount AS amount
-            FROM `tabPayment Entry`
-            WHERE docstatus = 1
-            AND company = %(company)s
-            AND pb_pos_profile = %(pos_profile)s
-            %(user)s
-            AND payment_type = "Receive"
-            AND TIMESTAMP(posting_date, pb_posting_time) BETWEEN %(period_from)s AND %(period_to)s
-        """,
-        values=args,
-        as_dict=1,
-    )
+    user_data = "AND owner = '{}'".format(args['user']) if args['user']  else ""
+    collection_payments = frappe.db.sql("""SELECT
+                                            name,
+                                            party_name,
+                                            mode_of_payment,
+                                            paid_amount AS amount
+                                        FROM
+                                            `tabPayment Entry`
+                                        WHERE
+                                            docstatus = 1 AND
+                                            company = '%(company)s' AND
+                                            pb_pos_profile ='%(pos_profile)s'
+                                            %(user)s AND
+                                            payment_type = "Receive" AND
+                                            TIMESTAMP(posting_date, pb_posting_time) BETWEEN '%(period_from)s' AND '%(period_to)s'
+                                    """%{"company":args['company'],
+                                        "pos_profile" : args['pos_profile'],
+                                        "user" : user_data,
+                                        "period_from" : args['period_from'],
+                                        "period_to" : args['period_to']
+                                        }, as_dict=1)
     return collection_payments
 
 def _get_invoices(args):
@@ -376,10 +376,8 @@ def _get_payments(args):
             "default": 1,
         },
     )
-    args2 = args
-    user_data = "AND owner = '{}'".format(args['user']) if args['user']  else ""
-    args2['user'] = user_data
 
+    user_data = "AND owner = '{}'".format(args['user']) if args['user']  else ""
     collection_payments = frappe.db.sql(
         """
             SELECT
@@ -389,17 +387,19 @@ def _get_payments(args):
                 SUM(paid_amount) AS amount
             FROM `tabPayment Entry`
             WHERE docstatus = 1
-            AND company = %(company)s
-            AND pb_pos_profile = %(pos_profile)s
+            AND company = '%(company)s'
+            AND pb_pos_profile = '%(pos_profile)s'
             %(user)s
             AND payment_type = "Receive"
-            AND TIMESTAMP(posting_date, pb_posting_time) BETWEEN %(period_from)s AND %(period_to)s
+            AND TIMESTAMP(posting_date, pb_posting_time) BETWEEN '%(period_from)s' AND '%(period_to)s'
             GROUP BY mode_of_payment
-        """,
-        values=args2,
-        as_dict=1,
-    )
-
+        """%{"company":args['company'],
+            "pos_profile" : args['pos_profile'],
+            "user" : user_data,
+            "period_from" : args['period_from'],
+            "period_to" : args['period_to']
+        }, as_dict=1)
+        
     return (
         _correct_mop_amounts(sales_payments, default_mop),
         _correct_mop_amounts(collection_payments, default_mop),
