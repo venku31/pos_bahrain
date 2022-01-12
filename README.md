@@ -45,6 +45,9 @@
   5. 0.5.4
   (1) Added total collected, total base collected and total expected below payments table
 
+  6. 0.5.5
+  (1) updated pos closing voucher, fixed payment entry not shoing and payment entry values not getting added to mode of payment
+
 ## Dev Notes
 
 - **Custom Fields** created by this app generally start with `pb_`. There are a few fields that do not follow this convention. Please refer to the `hooks.py` for more info.
