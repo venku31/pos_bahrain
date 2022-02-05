@@ -36,6 +36,18 @@
   (1) Updated price checker API to include VAT rate and item rate with VAT in API Response.
   (2) Updated Price checker API priority
 
+  3. 0.5.2
+  (1) Added employee name in pos closing voucher employee table in list view.
+
+  4. 0.5.3
+  (1) Added total invoice count and sales total below employee table
+
+  5. 0.5.4
+  (1) Added total collected, total base collected and total expected below payments table
+
+  6. 0.5.5
+  (1) updated pos closing voucher, fixed payment entry not shoing and payment entry values not getting added to mode of payment
+
 ## Dev Notes
 
 - **Custom Fields** created by this app generally start with `pb_`. There are a few fields that do not follow this convention. Please refer to the `hooks.py` for more info.
