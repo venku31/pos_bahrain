@@ -14,7 +14,13 @@ def search_barcode(barcode):
 
             price_and_name[0]['tax_rate'] =  tax_rate
             if tax_rate != 0:
-                price_and_name[0]['price_list_rate_with_vat'] = price_and_name[0]['price_list_rate'] + ((price_and_name[0]['tax_rate'] / 100) * price_and_name[0]['tax_rate'])
+                rate = price_and_name[0]['price_list_rate']
+                tax = price_and_name[0]['tax_rate']
+                
+                tax_prcnt =  1 + ( tax / 100) 
+                tax_incl = rate * tax_prcnt
+                price_and_name[0]['price_list_rate_with_vat'] = tax_incl
+
             if tax_rate == 0:
                 price_and_name[0]['price_list_rate_with_vat'] = price_and_name[0]['price_list_rate']
             price_and_name[0]['item_name'] = item_name
@@ -22,14 +28,11 @@ def search_barcode(barcode):
             price_and_name[0]['price_list_rate_with_vat'] = '{:.3f}'.format( price_and_name[0]['price_list_rate_with_vat'] )
             price_and_name[0]['price_list_rate'] = '{:.3f}'.format( price_and_name[0]['price_list_rate'] )
 
-
             return price_and_name
 
-    # if item_data == 0:
     return "Item/Price not found"
 
 def item_tax(item_code):
-    # return item_code
     tax_rate = frappe.db.sql("""SELECT ttd.tax_rate as tax_rate
                                 FROM `tabItem Tax Template Detail` ttd
                                 WHERE ttd.parent = (SELECT it.item_tax_template
@@ -122,7 +125,7 @@ def get_price(item_data):
         return price_data
     
     if item_data["type"] == "batch":
-        price_data = []
+        price_data = {}
         batch_data = frappe.db.sql("""SELECT pb_price_based_on, pb_rate, pb_discount
                                     FROM `tabBatch`
                                     WHERE name = '%(name)s'""" %{"name":item_data['batch_no']}, as_dict = 1)
@@ -135,7 +138,7 @@ def get_price(item_data):
             price_data = get_price_from_price_list(item_data, price_list)
             if batch_data['pb_price_based_on'] == "Based on Discount":
                 price_data["price_list_rate"] = price_data['price_list_rate'] * batch_data['pb_price_based_on']
-        return price_data
+        return [price_data]
     
     if item_data["type"] == "item_serial":
         return item_data
