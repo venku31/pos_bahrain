@@ -47,6 +47,8 @@
 
   6. 0.5.5
   (1) updated pos closing voucher, fixed payment entry not shoing and payment entry values not getting added to mode of payment
+  7. 0.5.6
+  (1) Updated price checker API priority.
 
 ## Dev Notes
 
