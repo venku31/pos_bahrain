@@ -28,6 +28,10 @@
 ## Future Updates
   1. XXXXXXXXXXX
 
+## Version Update
+  1. 0.4.4
+  Added Custom pb_phone in customer doc and hook function to copy phone from contact to customer pb_phone field upon contact form updation.
+
 
 ## Dev Notes
 

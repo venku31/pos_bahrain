@@ -273,6 +273,7 @@ doc_events = {
             "pos_bahrain.doc_events.stock_entry.on_submit",
         ],
     },
+    "Contact" : {"validate": "pos_bahrain.doc_events.contact.update_customer_phone"}, 
     "Item Price": {"before_save": "pos_bahrain.doc_events.item_price.before_save"},
     "Bin": {"on_update": "pos_bahrain.doc_events.bin.on_update"},
     "Bank Reconciliation": {
