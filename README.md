@@ -51,6 +51,8 @@
   (1) Updated price checker API priority.
   8. 0.5.7
   (1) Added option to enable/disable using credit balance if available.
+  9. 0.5.8
+  (1) Updated vat on sales per gcc report.
 
 ## Dev Notes
 
