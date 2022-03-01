@@ -286,6 +286,10 @@ def _get_location(item_code, warehouse):
 def _make_gl_entry_on_credit_issued(doc):
     if doc.is_return:
         return
+    
+    if not doc.pb_use_credit_if_available:
+        return
+
 
     provision_account = frappe.db.get_single_value(
         "POS Bahrain Settings", "credit_note_provision_account"

@@ -49,6 +49,10 @@
   (1) updated pos closing voucher, fixed payment entry not shoing and payment entry values not getting added to mode of payment
   7. 0.5.6
   (1) Updated price checker API priority.
+  8. 0.5.7
+  (1) Added option to enable/disable using credit balance if available.
+  9. 0.5.8
+  (1) Updated vat on sales per gcc report.
 
 ## Dev Notes
 

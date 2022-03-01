@@ -28,7 +28,17 @@ def make_report(doctype, filters):
     columns = _get_columns(doctype, filters)
     keys = compose(list, partial(pluck, "fieldname"))(columns)
     clauses, values = _get_filters(doctype, filters)
+
     data = _get_data(clauses, values, keys)
+
+    jsonString_col = json.dumps(clauses, indent=4, sort_keys=True, default=str)
+    f3= open("/home/demo9t9it/frappe-bench/apps/pos_bahrain/pos_bahrain/pos_bahrain/report/vat_on_sales_per_gcc/txt/clauses.txt","w+")
+    f3.write(jsonString_col)
+
+    jsonString_col = json.dumps(values, indent=4, sort_keys=True, default=str)
+    f3= open("/home/demo9t9it/frappe-bench/apps/pos_bahrain/pos_bahrain/pos_bahrain/report/vat_on_sales_per_gcc/txt/values.txt","w+")
+    f3.write(jsonString_col)
+
     return columns, data
 
 
@@ -54,7 +64,7 @@ def _get_filters(doctype, filters):
         x[0]
         for x in frappe.get_all(
             "POS Bahrain Settings Tax Category",
-            filters={"category": filters.vat_type} if is_include else {},
+            filters={"category": filters.vat_type} if is_include else {"category":('not in',(filters.vat_type))},
             fields=["account"],
             as_list=1,
         )
