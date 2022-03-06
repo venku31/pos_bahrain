@@ -5553,7 +5553,7 @@
         "doctype": "Custom Field",
         "dt": "Sales Invoice Item",
         "fetch_from": "item_code.pb_description",
-        "fetch_if_empty": 0,
+        "fetch_if_empty": 1,
         "fieldname": "pb_description",
         "fieldtype": "Text",
         "hidden": 1,
