@@ -53,6 +53,8 @@
   (1) Added option to enable/disable using credit balance if available.
   9. 0.5.8
   (1) Updated vat on sales per gcc report.
+  10. 0.5.9
+  (1) Added option to disable core feature of auto deleting batches when a purchase receipt is cancelled.
 
 ## Dev Notes
 
