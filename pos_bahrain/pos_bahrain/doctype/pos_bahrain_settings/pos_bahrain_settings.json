@@ -8,7 +8,6 @@
   "use_batch_price",
   "use_barcode_uom",
   "manage_batch",
-  "do_not_delete_batch_with_purchase_receipt",
   "use_item_storage_location",
   "hide_sales_return_except",
   "hide_sales_return_role",
@@ -60,7 +59,8 @@
   "enable_custom_item_description_fields",
   "add_pos_profile_and_branch_to_payment_entry",
   "column_break_53",
-  "enable_custom_customer_contact_details"
+  "enable_custom_customer_contact_details",
+  "do_not_delete_batch_with_purchase_receipt"
  ],
  "fields": [
   {
