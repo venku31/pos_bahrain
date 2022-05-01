@@ -139,6 +139,7 @@ def get_data():
                 make_item("report", "Stock Cost Summary", "Stock Cost Summary", True),
                 make_item("report", "Purchase Analytics with Warehouse", "Purchase Analytics with Warehouse", True),
                 make_item("report", "Sales Analytics with Warehouse", "Sales Analytics with Warehouse", True),
+                make_item("report", "Branch Stock And Value", "Branch Stock And Value", True),
             ],
         ),
         make_section(
