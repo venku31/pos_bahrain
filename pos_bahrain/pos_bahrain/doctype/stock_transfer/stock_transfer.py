@@ -83,14 +83,14 @@ class StockTransfer(Document):
             self.set_ref_doc("outgoing_stock_entry", ref_doc)
 
     def before_update_after_submit(self):
-        if not _is_sys_mgr() and self.target_branch != get_user_branch():
-            frappe.throw(
-                _(
-                    "Only users from Branch: {} can perform this".format(
-                        self.target_branch
-                    )
-                )
-            )
+       # if not _is_sys_mgr() and self.target_branch != get_user_branch():
+       #     frappe.throw(
+       #         _(
+       #             "Only users from Branch: {} can perform this".format(
+       #                 self.target_branch
+       #             )
+       #         )
+       #     )
 
         if not self.incoming_datetime:
             self.incoming_datetime = now()
