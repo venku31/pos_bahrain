@@ -60,10 +60,12 @@ def execute(filters=None):
 		
 		bal_qty = [sum(bal_qty) for bal_qty in zip(*wh_balance)]
 		total_qty = sum(bal_qty)
-		Valuation_rate = total_stock_value/total_qty
+		# Valuation_rate = total_stock_value/total_qty
 		if len(warehouse_list) > 1:
 			row += [total_qty]
-			row +=[Valuation_rate]	
+			if total_qty > 0:
+				Valuation_rate = total_stock_value/total_qty
+				row +=[Valuation_rate]	
 			
 		row += bal_qty
 		
