@@ -289,7 +289,12 @@ def _make_gl_entry_on_credit_issued(doc):
     
     if not doc.pb_use_credit_if_available:
         return
-
+        
+    enable_jv_concept = frappe.db.get_single_value(
+        "POS Bahrain Settings", "enable_jv_concept"
+    )
+    if not enable_jv_concept:
+        return
 
     provision_account = frappe.db.get_single_value(
         "POS Bahrain Settings", "credit_note_provision_account"
@@ -343,7 +348,13 @@ def _make_gl_entry_on_credit_issued(doc):
 
 
 def _make_gl_entry_for_provision_credit(doc):
-    if not doc.is_return or doc.is_pos:
+    if not doc.is_return or doc.is_pos or not doc.credit_note:
+        return
+
+    enable_jv_concept = frappe.db.get_single_value(
+        "POS Bahrain Settings", "enable_jv_concept"
+    )
+    if not enable_jv_concept:
         return
 
     provision_account = frappe.db.get_single_value(
