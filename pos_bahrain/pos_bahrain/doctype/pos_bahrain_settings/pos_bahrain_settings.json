@@ -50,6 +50,7 @@
   "item_section",
   "transit_warehouse",
   "section_break_46",
+  "enable_jv_concept",
   "credit_note_provision_account",
   "prepend_return_pos_name",
   "column_break_49",
@@ -338,6 +339,7 @@
    "label": "Prepend Return POS Name"
   },
   {
+   "depends_on": "enable_jv_concept",
    "fieldname": "credit_note_provision_account",
    "fieldtype": "Link",
    "label": "Provision Account for Credit Note",
@@ -375,6 +377,7 @@
    "label": "Enable custom customer contact details"
   },
   {
+   "depends_on": "enable_jv_concept",
    "fieldname": "jv_credit_note_series",
    "fieldtype": "Select",
    "label": "JV Credit Note Series",
@@ -387,14 +390,20 @@
    "label": "Add POS Profile and Branch to Payment Entry"
   },
   {
-    "default": "0",
-    "fieldname": "do_not_delete_batch_with_purchase_receipt",
-    "fieldtype": "Check",
-    "label": "Do Not Delete Batch with Purchase Receipt"
-   }
+   "default": "0",
+   "fieldname": "do_not_delete_batch_with_purchase_receipt",
+   "fieldtype": "Check",
+   "label": "Do Not Delete Batch with Purchase Receipt"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_jv_concept",
+   "fieldtype": "Check",
+   "label": "Enable JV Concept"
+  }
  ],
  "issingle": 1,
- "modified": "2021-10-05 15:52:03.945508",
+ "modified": "2022-05-12 15:48:31.230858",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "POS Bahrain Settings",
