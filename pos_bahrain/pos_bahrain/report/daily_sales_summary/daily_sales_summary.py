@@ -36,7 +36,7 @@ def _get_columns(filters):
         return col_data
 
     columns = [
-        make_column("posting_date", "Date", type="Date", width=90),
+        make_column("posting_date", "Date", col_type="Date", width=90),
         make_column("grand_total"),
         make_column("tax_total"),
         make_column("net_total", "Total Sales Value"),

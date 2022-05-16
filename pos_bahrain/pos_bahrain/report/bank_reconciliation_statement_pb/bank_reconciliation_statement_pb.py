@@ -32,15 +32,12 @@ def _extend_data(filters, data):
                 "account_currency": account_currency,
             },
         )
-
     gl_payments = [
         make_row(x, reverse=False)
         for x in frappe.db.sql(
             """
                 SELECT
-                    name AS payment_entry,
-                    reference_no,
-                    reference_date AS ref_date,
+                    name AS payment_entry,reference_no,reference_date AS ref_date,
                     payment_type,
                     total_amount,
                     posting_date,
