@@ -59,15 +59,16 @@ def get_payment_entries(doc, method):
                 )) AS against_account,
                 clearance_date
             FROM `tabGL Payment` AS gp
-            WHERE {conditions}
+            # WHERE {conditions} 
+            WHERE {conditions} and gp.clearance_date IS NULL
         """.format(
                     conditions=_get_conditions(
-                        ["gp.payment_account = %(account)s"],
-                        [
-                            "(gp.clearance_date IS NULL OR gp.clearance_date = '0000-00-00')"
-                        ]
-                        if not doc.include_reconciled_entries
-                        else [],
+                        ["gp.payment_account = %(account)s"]#,
+                        # [
+                        #     "(gp.clearance_date IS NULL OR gp.clearance_date = '0000-00-00')"
+                        # ]
+                        if doc.include_reconciled_entries 
+                         else [],
                     )
                 ),
                 values=values,
@@ -89,13 +90,13 @@ def get_payment_entries(doc, method):
                     gp.clearance_date
                 FROM `tabGL Payment Item` AS gpi
                 LEFT JOIN `tabGL Payment` AS gp ON gp.name = gpi.parent
-                WHERE {conditions}
+                WHERE {conditions} 
             """.format(
                     conditions=_get_conditions(
-                        ["gpi.account = %(account)s"],
-                        [
-                            "(gp.clearance_date IS NULL OR gp.clearance_date = '0000-00-00')"
-                        ]
+                        ["gpi.account = %(account)s"]#,
+                        # [
+                        #     "(gp.clearance_date IS NULL OR gp.clearance_date = '0000-00-00')"
+                        # ]
                         if not doc.include_reconciled_entries
                         else [],
                     )
