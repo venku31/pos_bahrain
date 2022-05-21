@@ -30,7 +30,7 @@ app_include_js = [
 # web_include_css = "/assets/pos_bahrain/css/pos_bahrain.css"
 # web_include_js = "/assets/pos_bahrain/js/pos_bahrain.js"
 
-# include js in page
+# include js in page--------offline POS----
 page_js = {
     "pos": "public/js/pos_page_js.js",
     "point-of-sale": "public/js/pos_page_js.js",
@@ -358,7 +358,7 @@ scheduler_events = {
 # ------------------------------
 #
 override_whitelisted_methods = {
-    "erpnext.stock.get_item_details.get_item_details": "pos_bahrain.api.get_item_details.get_item_details",  # noqa
+    #"erpnext.stock.get_item_details.get_item_details": "pos_bahrain.api.get_item_details.get_item_details",  # noqa
     "erpnext.accounts.doctype.sales_invoice.pos.get_pos_data": "pos_bahrain.api.item.get_pos_data",  # noqa
     "erpnext.accounts.doctype.sales_invoice.pos.make_invoice": "pos_bahrain.api.pos.make_invoice",  # noqa
     "erpnext.selling.page.point_of_sale.point_of_sale.search_serial_or_batch_or_barcode_number": "pos_bahrain.api.item.search_serial_or_batch_or_barcode_number",  # noqa
