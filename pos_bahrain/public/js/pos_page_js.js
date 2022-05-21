@@ -139,6 +139,21 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       }
     });
   },
+  update_paid_amount_status: function (update_paid_amount) {
+		if (this.frm.doc.offline_pos_name) {
+			update_paid_amount = update_paid_amount ? false : true;
+		}
+
+		this.refresh(update_paid_amount);
+	},
+
+	refresh: function (update_paid_amount) {
+		var me = this;
+		this.refresh_fields(update_paid_amount);
+		this.set_primary_action();
+		this.apply_pricing_rule();
+	},
+  
   refresh_fields: function(update_paid_amount) {
     this.apply_pricing_rule();
     this.discount_amount_applied = false;
@@ -161,6 +176,25 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     this.frm.doc.qty_total = qty_total;
     this.wrapper.find('.qty-total').text(this.frm.doc.qty_total);
   },
+  update_serial_no: function() {
+		// var me = this;
+
+		// //Remove the sold serial no from the cache
+		// $.each(this.frm.doc.items, function(index, data) {
+		// 	var sn = data.serial_no.split('\n')
+		// 	if(sn.length) {
+		// 		var serial_no_list = me.serial_no_data[data.item_code]
+		// 		if(serial_no_list) {
+		// 			$.each(sn, function(i, serial_no) {
+		// 				if(in_list(Object.keys(serial_no_list), serial_no)) {
+		// 					delete serial_no_list[serial_no]
+		// 				}
+		// 			})
+		// 			me.serial_no_data[data.item_code] = serial_no_list;
+		// 		}
+		// 	}
+		// })
+	},
   create_invoice: function() {
     var me = this;
     var invoice_data = {};
