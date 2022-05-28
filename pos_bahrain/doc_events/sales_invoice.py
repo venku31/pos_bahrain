@@ -25,19 +25,19 @@ def validate(doc, method):
         )
     ):
         frappe.throw("Cannot create duplicate offline POS invoice")
-    # for payment in doc.payments:
-    #     if payment.amount:
-    #         bank_method = frappe.get_cached_value(
-    #             "Mode of Payment", payment.mode_of_payment, "pb_bank_method"
-    #         )
-    #         if bank_method and not payment.pb_reference_no:
-    #             frappe.throw(
-    #                 "Reference Number necessary in payment row #{}".format(payment.idx)
-    #             )
-    #         if bank_method == "Cheque" and not payment.pb_reference_date:
-    #             frappe.throw(
-    #                 "Reference Date necessary in payment row #{}".format(payment.idx)
-    #             )
+    for payment in doc.payments:
+        if payment.amount:
+            bank_method = frappe.get_cached_value(
+                "Mode of Payment", payment.mode_of_payment, "pb_bank_method"
+            )
+            if bank_method and not payment.pb_reference_no:
+                frappe.throw(
+                    "Reference Number necessary in payment row #{}".format(payment.idx)
+                )
+            if bank_method == "Cheque" and not payment.pb_reference_date:
+                frappe.throw(
+                    "Reference Date necessary in payment row #{}".format(payment.idx)
+                )
 
     _validate_return_series(doc)
     doc.pb_available_balance = get_customer_account_balance(doc.customer)
