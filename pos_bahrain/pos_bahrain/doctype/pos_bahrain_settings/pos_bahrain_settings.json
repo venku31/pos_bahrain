@@ -393,7 +393,7 @@
    "default": "0",
    "fieldname": "do_not_delete_batch_with_purchase_receipt",
    "fieldtype": "Check",
-   "label": "Do Not Delete Batch with Purchase Receipt"
+   "label": "Do Not Delete Batch with Purchase Receipt and Purchase Invoice"
   },
   {
    "default": "0",
@@ -403,7 +403,7 @@
   }
  ],
  "issingle": 1,
- "modified": "2022-05-12 15:48:31.230858",
+ "modified": "2022-06-07 11:15:42.261403",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "POS Bahrain Settings",

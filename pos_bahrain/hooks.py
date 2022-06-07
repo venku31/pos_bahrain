@@ -362,6 +362,7 @@ override_whitelisted_methods = {
     "erpnext.accounts.doctype.sales_invoice.pos.get_pos_data": "pos_bahrain.api.item.get_pos_data",  # noqa
     "erpnext.accounts.doctype.sales_invoice.pos.make_invoice": "pos_bahrain.api.pos.make_invoice",  # noqa
     "erpnext.selling.page.point_of_sale.point_of_sale.search_serial_or_batch_or_barcode_number": "pos_bahrain.api.item.search_serial_or_batch_or_barcode_number",  # noqa
+    # "erpnext.controllers.stock_controller.delete_auto_created_batches":"pos_bahrain.api.auto_delete_batch.delete_auto_created_batches_override"
 }
 
 
@@ -382,7 +383,7 @@ from erpnext.controllers.stock_controller import StockController
 def delete_auto_created_batches_override(self):
 	import frappe
 	dont_delete_batch = frappe.db.get_single_value('POS Bahrain Settings', "do_not_delete_batch_with_purchase_receipt")
-	if dont_delete_batch and self.doctype == 'Purchase Receipt':
+	if dont_delete_batch and (self.doctype == 'Purchase Receipt' or self.doctype == 'Purchase Invoice'):
 		return
 		
 	for d in self.items:
