@@ -10,6 +10,7 @@ frappe.ui.form.on('Sales Invoice', {
   validate: function(frm){
     check_duplicate(frm);
   }
+ 
 });
 
 frappe.ui.form.on('Sales Invoice Item', {
