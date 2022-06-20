@@ -10,10 +10,12 @@ from pos_bahrain.pos_bahrain.doctype.gl_payment.gl_payment import get_direction
 
 
 def get_payment_entries(doc, method):
+    # account_currency = frappe.db.get_value(
+    #     "Account", doc.bank_account, "account_currency"
+    # )
     account_currency = frappe.db.get_value(
-        "Account", doc.bank_account, "account_currency"
+        "Account", doc.account, "account_currency"
     )
-
     def make_entry(entry, reverse):
         return merge(
             entry,
@@ -39,8 +41,8 @@ def get_payment_entries(doc, method):
             },
         )
 
-    values = {"account": doc.bank_account, "from": doc.from_date, "to": doc.to_date}
-
+    # values = {"account": doc.bank_account, "from": doc.from_date, "to": doc.to_date}
+    values = {"account": doc.account, "from": doc.from_date, "to": doc.to_date}
     gl_payments = (
         [
             make_entry(x, reverse=False)
@@ -67,8 +69,8 @@ def get_payment_entries(doc, method):
                         # [
                         #     "(gp.clearance_date IS NULL OR gp.clearance_date = '0000-00-00')"
                         # ]
-                        if doc.include_reconciled_entries 
-                         else [],
+                        # if doc.include_reconciled_entries 
+                        #  else [],
                     )
                 ),
                 values=values,
@@ -90,15 +92,15 @@ def get_payment_entries(doc, method):
                     gp.clearance_date
                 FROM `tabGL Payment Item` AS gpi
                 LEFT JOIN `tabGL Payment` AS gp ON gp.name = gpi.parent
-                WHERE {conditions} 
+                WHERE {conditions} and gp.clearance_date IS NOT NULL
             """.format(
                     conditions=_get_conditions(
-                        ["gpi.account = %(account)s"]#,
+                        ["gp.payment_account = %(account)s"]#,
                         # [
                         #     "(gp.clearance_date IS NULL OR gp.clearance_date = '0000-00-00')"
                         # ]
-                        if not doc.include_reconciled_entries
-                        else [],
+                        # if not doc.include_reconciled_entries
+                        # else [],
                     )
                 ),
                 values=values,
