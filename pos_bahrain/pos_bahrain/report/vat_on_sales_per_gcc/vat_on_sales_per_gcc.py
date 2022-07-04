@@ -66,11 +66,13 @@ def _get_filters(doctype, filters):
         x[0]
         for x in frappe.get_all(
             "POS Bahrain Settings Tax Category",
-            filters={"category": filters.vat_type} if is_include else {"category":('not in',(filters.vat_type))},
+            # filters={"category": filters.vat_type} if is_include else {"category":('not in',(filters.vat_type))},
+            filters={"category": filters.vat_type} if is_include else {"category":('not in',(filters.vat_type))},or_filters= {"category":('not in' ,("Standard Rated", "Zero Rated" ))},
             fields=["account"],
             as_list=1,
         )
     ]
+    print('/////////',vat_exempt_accounts)
     if not vat_exempt_accounts:
         msg = "Please setup {}: <em>VAT Tax Categories</em>".format(
             frappe.get_desk_link("POS Bahrain Settings", "")
