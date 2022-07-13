@@ -88,7 +88,8 @@ def _get_data(clauses, filters, mop):
 				si.posting_time AS posting_time,
 				si.change_amount AS change_amount,
 				sip.mode_of_payment AS mode_of_payment,
-				sip.amount AS amount,
+				sip.amount as amt,
+				case when (si.is_pos=1) then sip.amount else 0 end as amount,
 				sip.pb_reference_no AS ref_no,
 				usert.full_name as show_creator,
 				sip.pb_reference_date AS ref_date,
@@ -98,13 +99,13 @@ def _get_data(clauses, filters, mop):
 			FROM `tabSales Invoice` AS si
 			JOIN `tabCustomer` AS c ON
 				c.name = si.customer
-			RIGHT JOIN `tabSales Invoice Payment` AS sip ON
-				sip.parent = si.name
+			LEFT JOIN `tabSales Invoice Payment` AS sip ON
+				sip.parent = si.name 
 			LEFT JOIN `tabPOS Profile` AS pp ON
 				pp.name = si.pos_profile
 			LEFT JOIN
 				`tabUser` as usert ON usert.email = si.owner
-			WHERE {clauses} AND is_pos = 1
+			WHERE {clauses}
 		""".format(
 			clauses=clauses
 		),
