@@ -104,7 +104,7 @@ def _get_data(clauses, filters, mop):
 				pp.name = si.pos_profile
 			LEFT JOIN
 				`tabUser` as usert ON usert.email = si.owner
-			WHERE {clauses}
+			WHERE {clauses} AND is_pos = 1
 		""".format(
 			clauses=clauses
 		),
