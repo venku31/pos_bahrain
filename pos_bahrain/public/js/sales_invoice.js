@@ -135,3 +135,23 @@ function get_total_stock_qty(frm, cdt, cdn) {
     }
   })
 }
+
+frappe.ui.form.on('Sales Invoice', {
+  validate: function (frm) {
+    if (cur_frm.doc.is_return) {
+      cur_frm.set_value("main_invoice", "");
+      cur_frm.set_value("return_si_no", "");
+     }
+  }
+})
+cur_frm.fields_dict.return_si_no.get_query = function(doc) {
+	return {
+		filters: {
+			customer: doc.customer,
+			company:doc.company,
+			docstatus:1,
+			is_return : 1
+					
+		}
+	}
+}
