@@ -83,9 +83,11 @@ def on_submit(doc, method):
     _make_gl_entry_for_provision_credit(doc)
     _make_gl_entry_on_credit_issued(doc)
     _make_return_dn(doc)
+    gl_entries_update(doc)
 
 
 def before_cancel(doc, method):
+    gl_entries_cancel(doc)
     parent = _get_parent_by_account(doc.name)
     if not parent:
         return
@@ -95,6 +97,7 @@ def before_cancel(doc, method):
 
 
 def on_cancel(doc, method):
+    gl_entries_cancel(doc)
     cancel_jv(doc)
     if not doc.pb_returned_to_warehouse:
         return
@@ -401,3 +404,42 @@ def _make_gl_entry_for_provision_credit(doc):
     je_doc.submit()
     frappe.db.sql("""UPDATE `tabSales Invoice` SET pb_credit_note_no='%(jv)s' where name='%(si)s'"""%
                     {"jv":je_doc.name, "si":doc.name})
+
+def gl_entries_cancel(doc):
+    gl_name = frappe.db.sql(
+        """
+        SELECT name 
+        FROM `tabGL Entry`
+        WHERE voucher_type = "Sales Invoice"
+        AND voucher_no =%(main_invoice)s  AND debit = 0 and party = %(customer)s 
+        """, values={"main_invoice": doc.main_invoice, "customer":doc.customer},
+
+        as_dict=1,)
+    print("/////////",gl_name)    
+    if not doc.is_return and gl_name:
+        for name in gl_name:
+            frappe.db.set_value("GL Entry", name, "credit", doc.paid_amount)
+            frappe.db.set_value("GL Entry", name, "credit_in_account_currency", doc.paid_amount)
+            frappe.db.set_value("Sales Invoice", doc.main_invoice, "outstanding_amount", -doc.paid_amount)
+            doc.set_status(update=True)
+
+def gl_entries_update(doc):
+    return_against = frappe.db.get_value("Sales Invoice",doc.return_si_no, "return_against")
+    gl_name = frappe.db.sql(
+        """
+        SELECT name 
+        FROM `tabGL Entry`
+        WHERE voucher_type = "Sales Invoice"
+        AND voucher_no =%(main_invoice)s  and party = %(customer)s and debit = 0
+        """, values={"main_invoice": doc.main_invoice, "customer":doc.customer},
+
+        as_dict=1,
+    )
+    print("/////////",gl_name)
+    if not doc.is_return and gl_name:
+        for name in gl_name:
+            frappe.db.set_value("GL Entry", name, "credit", 0)
+            frappe.db.set_value("GL Entry", name, "credit_in_account_currency", 0)
+            frappe.db.set_value("GL Entry", name, "remarks", "Credit Note Adjustment")
+            frappe.db.set_value("Sales Invoice", doc.main_invoice, "outstanding_amount", 0)
+            doc.set_status(update=True)
