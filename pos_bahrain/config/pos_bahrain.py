@@ -140,6 +140,7 @@ def get_data():
                 make_item("report", "Purchase Analytics with Warehouse", "Purchase Analytics with Warehouse", True),
                 make_item("report", "Sales Analytics with Warehouse", "Sales Analytics with Warehouse", True),
                 make_item("report", "Branch Stock And Value", "Branch Stock And Value", True),
+                make_item("report", "General Ledger with Party Names", "General Ledger with Party Names", True),
             ],
         ),
         make_section(
