@@ -8,6 +8,9 @@ function setup_queries(frm) {
           item_code: child.item_code,
           currency: frm.doc.currency,
           selling: 1,
+          regural_price_list : frm.doc.selling_price_list,
+          customer_price_list : frm.doc.customer_price_list,
+          preferred : "Preferred"
         },
       };
     });

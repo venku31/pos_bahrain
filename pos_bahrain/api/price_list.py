@@ -23,6 +23,7 @@ def price_list_query(doctype, txt, searchfield, start, page_len, filters):
         AND ip.item_code = %(item_code)s
         AND pl.currency = %(currency)s
         AND pl.selling = %(selling)s
+        AND (pl.name = %(regural_price_list)s or pl.name = %(customer_price_list)s or pl.name = %(preferred)s)
         LIMIT {start}, {page_len}
     """.format(
         txt=frappe.db.escape("%{0}%".format(txt)), start=start, page_len=page_len
