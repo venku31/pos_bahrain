@@ -473,7 +473,7 @@ def update_credit_note(doc, cancel=False):
             as_dict=1,
         )
         # print("/////////",gl_name)
-        if not doc.is_return and doc.is_pos and doc.credit_note_invoice and gl_no:
+        if not doc.is_return and doc.credit_note_invoice and gl_no:
             for name in gl_no:
                 frappe.db.set_value("GL Entry", name, "credit", doc.total_advance)
                 frappe.db.set_value("GL Entry", name, "credit_in_account_currency", doc.total_advance)
@@ -497,7 +497,7 @@ def update_credit_note_cancel(doc):
         as_dict=1,
     )
         # print("/////////",gl_name)
-    if not doc.is_return and doc.is_pos and doc.credit_note_invoice and gl_no:
+    if not doc.is_return and doc.credit_note_invoice and gl_no:
         for name in gl_no:
             paid_amount = frappe.db.get_value("Sales Invoice",doc.main_si,"paid_amount")
             frappe.db.set_value("GL Entry", name, "credit", paid_amount)
