@@ -158,7 +158,15 @@ cur_frm.fields_dict.return_si_no.get_query = function(doc) {
 		}
 	}
 }
-
+frappe.ui.form.on('Sales Invoice Advance',"refresh", function(){
+  if (cur_frm.doc.advances){
+  for (var i =0; i < cur_frm.doc.advances.length; i++){
+   if (cur_frm.doc.items[i].reference_type = "Sales Invoice") {  
+  cur_frm.doc.credit_note_invoice=cur_frm.doc.advances[i].reference_name
+  }
+   }
+   }
+  })
 frappe.ui.form.on('Sales Invoice',"validate", function(){
   if (cur_frm.doc.advances){
   for (var i =0; i < cur_frm.doc.advances.length; i++){
