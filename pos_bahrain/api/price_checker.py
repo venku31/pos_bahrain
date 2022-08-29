@@ -144,4 +144,9 @@ def get_price(item_data):
         return item_data
 
     return 0
-    
+@frappe.whitelist()        
+def warehouse_stock(barcode):
+    stock = frappe.db.sql("""SELECT `tabBin`.warehouse,`tabBin`.actual_qty from `tabBin` left join `tabItem Barcode` 
+    ON (`tabBin`.item_code=`tabItem Barcode`.parent) 
+                                    WHERE `tabItem Barcode`.barcode = '%(barcode)s' """%{ "barcode" : barcode}, as_dict = 1)
+    return stock    
