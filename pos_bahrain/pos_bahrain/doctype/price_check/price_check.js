@@ -11,9 +11,19 @@ frappe.ui.form.on('Price Check', {
 	},
 	check : function(frm){
 		check_price(frm);
-	}
+		// check_stock(frm, cdt, cdn);
+		
+	},
+	// check : function(frm, cdt, cdn){
+	// 	check_stock(frm, cdt, cdn);
+		
+	// },
 });
-
+frappe.ui.form.on('Price Check', {
+	barcode: function (frm, cdt, cdn) {
+		check_stock(frm, cdt, cdn);
+	  },
+});	  
 function clear_fields(){
 	console.log("Clear field ::::::::::::::::::::::s")
 }
@@ -47,3 +57,25 @@ function check_price(frm){
 		}
 	  });
 }
+
+function check_stock(frm, cdt, cdn) {
+	  console.log("1")
+	  frappe.call({
+		"method": "pos_bahrain.api.price_checker.warehouse_stock",
+		"args": {
+		  "barcode": frm.doc.barcode,
+		 },
+		callback: function (r) {
+		  console.log(r)
+		  cur_frm.clear_table("price_check_warehouse_stock");
+		  r.message.forEach(stock => {
+			var child = cur_frm.add_child("price_check_warehouse_stock");
+			frappe.model.set_value(child.doctype, child.name, "warehouse", stock.warehouse)
+			frappe.model.set_value(child.doctype, child.name, "qty", stock.actual_qty)
+			});
+		//   cur_frm.refresh_fields()
+			  
+		}
+	  });
+	
+};
