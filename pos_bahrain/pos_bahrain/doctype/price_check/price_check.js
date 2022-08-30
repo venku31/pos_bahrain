@@ -1,6 +1,10 @@
 // Copyright (c) 2021, 	9t9it and contributors
 // For license information, please see license.txt
-
+frappe.ui.form.on('Price Check', {
+	check: function (frm, cdt, cdn) {
+		check_stock(frm, cdt, cdn);
+	  },
+});	  
 frappe.ui.form.on('Price Check', {
 	refresh: function(frm){
 		cur_frm.disable_save();
@@ -19,11 +23,7 @@ frappe.ui.form.on('Price Check', {
 		
 	// },
 });
-frappe.ui.form.on('Price Check', {
-	barcode: function (frm, cdt, cdn) {
-		check_stock(frm, cdt, cdn);
-	  },
-});	  
+
 function clear_fields(){
 	console.log("Clear field ::::::::::::::::::::::s")
 }

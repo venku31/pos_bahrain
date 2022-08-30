@@ -4,7 +4,8 @@ import frappe
 @frappe.whitelist()
 def search_barcode(barcode):
     item_data = search_serial_or_batch_or_barcode_number(barcode)
-    stock = frappe.db.sql("""SELECT `tabBin`.warehouse,`tabBin`.actual_qty from `tabBin` left join `tabItem Barcode` ON (`tabBin`.item_code=`tabItem Barcode`.parent) WHERE `tabItem Barcode`.barcode = '%(barcode)s' """%{ "barcode" : barcode}, as_dict = 1)
+    stock = frappe.db.sql("""SELECT warehouse,actual_qty from `tabBin` WHERE item_code = '%(item_code)s' """%{"item_code": item_data['item_code']}, as_dict = 1)
+    # print("/////////",stock)
     if item_data != 0:
         price_and_name = get_price(item_data)
         if price_and_name != 0:
@@ -146,7 +147,6 @@ def get_price(item_data):
 
 @frappe.whitelist()        
 def warehouse_stock(barcode):
-    stock = frappe.db.sql("""SELECT `tabBin`.warehouse,`tabBin`.actual_qty from `tabBin` left join `tabItem Barcode` 
-    ON (`tabBin`.item_code=`tabItem Barcode`.parent) 
-                                    WHERE `tabItem Barcode`.barcode = '%(barcode)s' """%{ "barcode" : barcode}, as_dict = 1)
+    item_data = search_serial_or_batch_or_barcode_number(barcode)
+    stock = frappe.db.sql("""SELECT warehouse,actual_qty from `tabBin` WHERE item_code = '%(item_code)s' """%{"item_code": item_data['item_code']}, as_dict = 1)
     return stock    
