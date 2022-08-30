@@ -17,7 +17,6 @@ def search_barcode(barcode):
             if tax_rate != 0:
                 rate = price_and_name[0]['price_list_rate']
                 tax = price_and_name[0]['tax_rate']
-                
                 tax_prcnt =  1 + ( tax / 100) 
                 tax_incl = rate * tax_prcnt
                 price_and_name[0]['price_list_rate_with_vat'] = tax_incl
@@ -31,7 +30,6 @@ def search_barcode(barcode):
             return price_and_name+stock
 
     return "Item/Price not found"
-    # warehouse_stock(barcode)
 def item_tax(item_code):
     tax_rate = frappe.db.sql("""SELECT ttd.tax_rate as tax_rate
                                 FROM `tabItem Tax Template Detail` ttd
