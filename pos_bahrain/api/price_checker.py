@@ -4,7 +4,7 @@ import frappe
 @frappe.whitelist()
 def search_barcode(barcode):
     item_data = search_serial_or_batch_or_barcode_number(barcode)
-
+    stock = frappe.db.sql("""SELECT `tabBin`.warehouse,`tabBin`.actual_qty from `tabBin` left join `tabItem Barcode` ON (`tabBin`.item_code=`tabItem Barcode`.parent) WHERE `tabItem Barcode`.barcode = '%(barcode)s' """%{ "barcode" : barcode}, as_dict = 1)
     if item_data != 0:
         price_and_name = get_price(item_data)
         if price_and_name != 0:
@@ -27,11 +27,10 @@ def search_barcode(barcode):
 
             price_and_name[0]['price_list_rate_with_vat'] = '{:.3f}'.format( price_and_name[0]['price_list_rate_with_vat'] )
             price_and_name[0]['price_list_rate'] = '{:.3f}'.format( price_and_name[0]['price_list_rate'] )
-
-            return price_and_name
+            return price_and_name+stock
 
     return "Item/Price not found"
-
+    # warehouse_stock(barcode)
 def item_tax(item_code):
     tax_rate = frappe.db.sql("""SELECT ttd.tax_rate as tax_rate
                                 FROM `tabItem Tax Template Detail` ttd
@@ -144,6 +143,7 @@ def get_price(item_data):
         return item_data
 
     return 0
+
 @frappe.whitelist()        
 def warehouse_stock(barcode):
     stock = frappe.db.sql("""SELECT `tabBin`.warehouse,`tabBin`.actual_qty from `tabBin` left join `tabItem Barcode` 
