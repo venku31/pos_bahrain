@@ -18,11 +18,11 @@ frappe.ui.form.on('Price Check', {
 		// check_stock(frm, cdt, cdn);
 		
 	},
-	// check : function(frm, cdt, cdn){
-	// 	check_stock(frm, cdt, cdn);
-		
-	// },
+	// check_stock_entry_det: function (frm, cdt, cdn) {
+	// 	check_stock_entry(frm, cdt, cdn);
+	//   },
 });
+
 
 function clear_fields(){
 	console.log("Clear field ::::::::::::::::::::::s")
@@ -78,4 +78,39 @@ function check_stock(frm, cdt, cdn) {
 		}
 	  });
 	
+};
+
+function check_stock_entry(frm, cdt, cdn) {
+	console.log("1")
+	frappe.call({
+	  "method": "pos_bahrain.api.stock_entry.get_stock_entry",
+	  "args": {
+		"batch": frm.doc.batch_number,
+	   },
+	  callback: function (r) {
+		console.log(r)
+		cur_frm.clear_table("stock_entry_api_details");
+		r.message.forEach(stock => {
+		  var child = cur_frm.add_child("stock_entry_api_details");
+		  cur_frm.set_value("batch_number","")
+		  frappe.model.set_value(child.doctype, child.name, "stock_entry_no", stock.stock_entry_no)
+		  frappe.model.set_value(child.doctype, child.name, "stock_entry_type", stock.stock_entry_type)
+		  frappe.model.set_value(child.doctype, child.name, "batch_no", stock.batch_no)
+		  frappe.model.set_value(child.doctype, child.name, "qty", stock.qty)
+		  frappe.model.set_value(child.doctype, child.name, "item_code", stock.item_code)
+		  frappe.model.set_value(child.doctype, child.name, "t_warehouse", stock.t_warehouse)
+		  frappe.model.set_value(child.doctype, child.name, "stock_uom", stock.stock_uom)
+		  frappe.model.set_value(child.doctype, child.name, "manufacturing_date", stock.manufacturing_date)
+		  frappe.model.set_value(child.doctype, child.name, "expiry_date", stock.expiry_date)
+		  frappe.model.set_value(child.doctype, child.name, "item_name", stock.item_name)
+		  frappe.model.set_value(child.doctype, child.name, "s_warehouse", stock.s_warehouse)
+		  });
+	    cur_frm.refresh_fields()
+			
+	  }
+	  
+	});
+	cur_frm.fields_dict.my_field.$input.on("click", function(evt){
+
+	})
 };
