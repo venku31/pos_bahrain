@@ -1,0 +1,70 @@
+{
+ "creation": "2022-09-12 07:29:05.814971",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item",
+  "details",
+  "update",
+  "purchase_receipt_section",
+  "item_code",
+  "prec_details"
+ ],
+ "fields": [
+  {
+   "fieldname": "item",
+   "fieldtype": "Data",
+   "label": "Item"
+  },
+  {
+   "fieldname": "details",
+   "fieldtype": "Table",
+   "label": "Details",
+   "options": "Stock Entry Api Details",
+   "read_only": 1
+  },
+  {
+   "fieldname": "update",
+   "fieldtype": "Button",
+   "label": "Update"
+  },
+  {
+   "fieldname": "purchase_receipt_section",
+   "fieldtype": "Section Break",
+   "label": "Purchase Receipt"
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Data",
+   "label": "Item"
+  },
+  {
+   "fieldname": "prec_details",
+   "fieldtype": "Table",
+   "label": "PREC Details",
+   "options": "PREC Details",
+   "read_only": 1
+  }
+ ],
+ "issingle": 1,
+ "modified": "2022-09-13 14:51:32.240466",
+ "modified_by": "Administrator",
+ "module": "Pos Bahrain",
+ "name": "Stock Adjustment And PREC API",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

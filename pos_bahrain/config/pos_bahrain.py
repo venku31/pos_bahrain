@@ -159,10 +159,13 @@ def get_data():
                 make_item("doctype", "Batch Recall", "Batch Recall"),
                 make_item("doctype", "Stock Transfer", "Stock Transfer"),
                 make_item("doctype", "Repack Request", "Repack Request"),
+                make_item("doctype", "Price Check", "Price Check"),
+                make_item("doctype", "Stock Adjustment And PREC API", "Stock Adjustment And PREC API"),
             ],
         ),
         make_section(
             "Setup",
-            [make_item("doctype", "POS Bahrain Settings", "POS Bahrain Settings")],
+            [make_item("doctype", "POS Bahrain Settings", "POS Bahrain Settings"),
+            make_item("doctype", "Price Checker API Settings", "Price Checker API Settings")],
         ),
     ]
