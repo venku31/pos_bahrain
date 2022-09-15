@@ -6,7 +6,8 @@
  "field_order": [
   "enabled",
   "price_list",
-  "stock_reconciliation_status"
+  "stock_reconciliation_status",
+  "purchase_receipt_status"
  ],
  "fields": [
   {
@@ -26,10 +27,16 @@
    "fieldtype": "Select",
    "label": "Stock Reconciliation Status",
    "options": "Draft\nSubmit"
+  },
+  {
+   "fieldname": "purchase_receipt_status",
+   "fieldtype": "Select",
+   "label": "Purchase Receipt Status",
+   "options": "Draft\nSubmit"
   }
  ],
  "issingle": 1,
- "modified": "2022-09-13 08:55:01.274298",
+ "modified": "2022-09-15 10:12:51.029744",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "Price Checker API Settings",

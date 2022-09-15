@@ -14,12 +14,18 @@ frappe.ui.form.on('Stock Adjustment And PREC API', {
 		// check_stock(frm, cdt, cdn);
 		
 	},
-	// update : function(frm){
-	// 	create_stock_adjustment(frm);
-	// 	// check_stock(frm, cdt, cdn);
+	prec_item : function(frm){
+		get_prec_item_details(frm);
+		// check_stock(frm, cdt, cdn);
 		
-	// },
+	},
+	
 });
+frappe.ui.form.on("PREC Details", {
+	qty: function (frm, cdt, cdn) {
+		get_prec_item_amount(frm, cdt, cdn);
+	},
+	});
 function clear_fields(){
 	console.log("Clear field ::::::::::::::::::::::s")
 }
@@ -127,3 +133,67 @@ frappe.ui.form.on("Stock Adjustment And PREC API", "update", function(frm, cdt, 
      })
       refresh_field("items");
     })
+
+
+	/////////////////PREC Get Data////////
+
+	function get_prec_item_details(frm, cdt, cdn) {
+		console.log("1")
+		frappe.call({
+		  "method": "pos_bahrain.api.purchase_receipt.search_prec_item",
+		  "args": {
+			"item": frm.doc.prec_item,
+		   },
+		  callback: function (r) {
+			console.log(r)
+			// cur_frm.clear_table("details");
+			r.message.forEach(stock => {
+			  var child = cur_frm.add_child("prec_details");
+			  cur_frm.set_value("prec_item","")
+			  frappe.model.set_value(child.doctype, child.name, "item_code", stock.item_code)
+			  frappe.model.set_value(child.doctype, child.name, "item_name", stock.item_name)
+			  frappe.model.set_value(child.doctype, child.name, "description", stock.description)
+			  frappe.model.set_value(child.doctype, child.name, "stock_uom", stock.stock_uom)
+			  frappe.model.set_value(child.doctype, child.name, "rate", stock.last_purchase_rate)
+			  });
+			cur_frm.refresh_fields()
+				
+		  }
+		  
+		});
+		cur_frm.fields_dict.my_field.$input.on("click", function(evt){
+	
+		})
+	};
+	frappe.ui.form.on("Stock Adjustment And PREC API", "create_purchase_receipt", function(frm, cdt, cdn) {
+		$.each(frm.doc.prec_details || [], function(i, d) {
+			// if(d.check){
+			frappe.call({
+					method: "pos_bahrain.api.purchase_receipt.create_prec",
+					args: { 
+						supplier: cur_frm.doc.supplier,
+						supplier_invoice_no: cur_frm.doc.supplier_invoice_no,
+						supplier_invoice_date: cur_frm.doc.supplier_invoice_date,
+						item_code:d.item_code,
+						warehouse:cur_frm.doc.warehouse,
+						qty:d.qty,
+						uom:d.stock_uom,
+						rate : d.rate
+					},
+					callback: function(r) {
+						var pi = r.message
+						alert("Purchase Receipt Generated",r);
+					}
+				});	
+			//}
+		
+		 })
+		  refresh_field("items");
+		})
+	function get_prec_item_amount(frm, cdt, cdn) {
+		$.each(frm.doc.prec_details || [], function(i, d) {
+			d.amount=d.qty+d.rate;
+		  });
+		refresh_field("prec_details");
+		}
+		
