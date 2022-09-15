@@ -8,8 +8,16 @@
   "details",
   "update",
   "purchase_receipt_section",
-  "item_code",
-  "prec_details"
+  "prec_item",
+  "column_break_6",
+  "supplier",
+  "supplier_invoice_no",
+  "column_break_8",
+  "warehouse",
+  "supplier_invoice_date",
+  "section_break_10",
+  "prec_details",
+  "create_purchase_receipt"
  ],
  "fields": [
   {
@@ -35,20 +43,59 @@
    "label": "Purchase Receipt"
   },
   {
-   "fieldname": "item_code",
-   "fieldtype": "Data",
-   "label": "Item"
-  },
-  {
    "fieldname": "prec_details",
    "fieldtype": "Table",
    "label": "PREC Details",
    "options": "PREC Details",
    "read_only": 1
+  },
+  {
+   "fieldname": "prec_item",
+   "fieldtype": "Data",
+   "label": "Scan Item"
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "section_break_10",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "create_purchase_receipt",
+   "fieldtype": "Button",
+   "label": "Create Purchase Receipt"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier"
+  },
+  {
+   "fieldname": "supplier_invoice_no",
+   "fieldtype": "Data",
+   "label": "Supplier Invoice No"
+  },
+  {
+   "fieldname": "supplier_invoice_date",
+   "fieldtype": "Date",
+   "label": "Supplier Invoice Date"
   }
  ],
  "issingle": 1,
- "modified": "2022-09-13 14:51:32.240466",
+ "modified": "2022-09-15 14:21:19.820296",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "Stock Adjustment And PREC API",

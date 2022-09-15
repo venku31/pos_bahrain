@@ -16,10 +16,10 @@ from frappe.utils import (
 from datetime import date,timedelta
 
 @frappe.whitelist()
-def search_prec(batch):
-    item_data = search_serial_or_batch_or_barcode_number(batch)
+def search_prec_item(item):
+    item_data = search_serial_or_batch_or_barcode_number(item)
     if item_data != 0:
-        stock = frappe.db.sql("""select prec.supplier,prec.posting_date,item.batch_no,item.item_code,item.warehouse, item.qty,item.stock_uom from `tabPurchase Receipt` prec LEFT JOIN `tabPurchase Receipt Item` item ON(prec.name=item.parent) where item.item_code = '%(item_code)s' """%{"item_code": item_data['item_code']}, as_dict = 1)
+        stock = frappe.db.sql("""SELECT item_code,item_name,description,stock_uom,last_purchase_rate From `tabItem` Where item_code = '%(item_code)s' """%{"item_code": item_data['item_code']}, as_dict = 1)
         return stock
     
     return "Item/Price not found"
@@ -50,3 +50,117 @@ def search_serial_or_batch_or_barcode_number(search_value):
         return serial_no_data
 
     return 0  
+
+@frappe.whitelist()
+def create_purchase_receipt(data=None):
+    status = frappe.db.get_single_value("Price Checker API Settings", "purchase_receipt_status")
+    data=json.loads(frappe.request.data)
+    if status == "Draft" :
+        try:
+            prec_doc = frappe.new_doc("Purchase Receipt")
+            prec_doc.supplier = data.get("supplier")
+            prec_doc.posting_date = today()
+            prec_doc.supplier_delivery_note = data.get("supplier_invoice_no")
+            prec_doc.supplier_invoice_date = data.get("supplier_invoice_date")
+            items=[]
+            for item in data["items"]:
+                prec_doc.append("items",
+                {
+                    "item_code": item["item_code"],
+                    "item_name": frappe.db.get_value("Item", item["item_code"],"item_name"),
+                    "description" : frappe.db.get_value("Item", item["item_code"],"description"),
+                    "qty":item["qty"],
+                    "rate": item["rate"],
+                    "uom": item["uom"],
+                    "warehouse": item["warehouse"],
+                    "pb_expiry_date" : item["expiry_date"],
+                })
+            prec_doc.set_missing_values()
+            prec_doc.insert(ignore_permissions=True)
+            # prec_doc.submit()
+            if prec_doc :
+                return prec_doc.name
+        except Exception as e:
+            return {"error":e}
+    else :
+        try:
+            prec_doc = frappe.new_doc("Purchase Receipt")
+            prec_doc.supplier = data.get("supplier")
+            prec_doc.posting_date = today()
+            prec_doc.supplier_delivery_note = data.get("supplier_invoice_no")
+            prec_doc.supplier_invoice_date = data.get("supplier_invoice_date")
+            items=[]
+            for item in data["items"]:
+                prec_doc.append("items",
+                {
+                    "item_code": item["item_code"],
+                    "item_name": frappe.db.get_value("Item", item["item_code"],"item_name"),
+                    "description" : frappe.db.get_value("Item", item["item_code"],"description"),
+                    "qty":item["qty"],
+                    "rate": item["rate"],
+                    "uom": item["uom"],
+                    "warehouse": item["warehouse"],
+                    "pb_expiry_date" : item["expiry_date"],
+                })
+            prec_doc.set_missing_values()
+            prec_doc.insert(ignore_permissions=True)
+            prec_doc.submit()
+            frappe.db.commit()
+            if prec_doc :
+                return prec_doc.name
+        except Exception as e:
+            return {"error":e}
+        
+@frappe.whitelist()
+def create_prec(supplier,item_code,warehouse,qty,uom,rate,supplier_invoice_no,supplier_invoice_date):
+    status = frappe.db.get_single_value("Price Checker API Settings", "purchase_receipt_status")
+    if status == "Draft" :
+        try:
+            prec_doc = frappe.new_doc("Purchase Receipt")
+            prec_doc.supplier = supplier
+            prec_doc.posting_date = today()
+            prec_doc.supplier_delivery_note = supplier_invoice_no
+            prec_doc.supplier_invoice_date = supplier_invoice_date
+            prec_doc.append("items",
+                {
+                    "item_code": item_code,
+                    "item_name": frappe.db.get_value("Item",item_code,"item_name"),
+                    "description" : frappe.db.get_value("Item",item_code,"description"),
+                    "qty":qty,
+                    "rate": rate,
+                    "uom": uom,
+                    "warehouse": warehouse
+                })
+            prec_doc.insert(ignore_permissions=True)
+            # prec_doc.submit()
+            if prec_doc :
+                return prec_doc.name
+        except Exception as e:
+            return {"error":e}
+    else :
+        try:
+            prec_doc = frappe.new_doc("Purchase Receipt")
+            prec_doc.supplier = supplier
+            prec_doc.posting_date = today()
+            prec_doc.supplier_delivery_note = supplier_invoice_no
+            prec_doc.supplier_invoice_date = supplier_invoice_date
+            prec_doc.append("items",
+                {
+                    "item_code": item_code,
+                    "item_name": frappe.db.get_value("Item",item_code,"item_name"),
+                    "description" : frappe.db.get_value("Item",item_code,"description"),
+                    "qty":qty,
+                    "rate": rate,
+                    "uom": uom,
+                    "warehouse": warehouse
+                })
+            prec_doc.insert(ignore_permissions=True)
+            prec_doc.submit()
+            frappe.db.commit()
+            if prec_doc :
+                return prec_doc.name
+        except Exception as e:
+            return {"error":e}
+
+
+

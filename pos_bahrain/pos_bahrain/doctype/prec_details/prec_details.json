@@ -4,43 +4,17 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "prec_no",
-  "supplier",
-  "batch_no",
   "item_code",
-  "warehouse",
+  "item_name",
+  "description",
   "qty",
-  "stock_uom"
+  "stock_uom",
+  "rate",
+  "amount"
  ],
  "fields": [
   {
    "columns": 2,
-   "fieldname": "prec_no",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "PREC No",
-   "options": "Purchase Receipt",
-   "read_only": 1
-  },
-  {
-   "columns": 2,
-   "fieldname": "supplier",
-   "fieldtype": "Link",
-   "label": "Supplier",
-   "options": "Supplier",
-   "read_only": 1
-  },
-  {
-   "columns": 1,
-   "fieldname": "batch_no",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Batch no",
-   "options": "Batch",
-   "read_only": 1
-  },
-  {
-   "columns": 1,
    "fieldname": "item_code",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -49,11 +23,42 @@
    "read_only": 1
   },
   {
-   "columns": 2,
-   "fieldname": "warehouse",
+   "columns": 1,
+   "fieldname": "stock_uom",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Warehouse",
+   "label": "UOM",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Description",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Rate",
+   "width": "1"
+  },
+  {
+   "columns": 1,
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount",
    "read_only": 1
   },
   {
@@ -62,19 +67,11 @@
    "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Qty",
-   "read_only": 1
-  },
-  {
-   "columns": 1,
-   "fieldname": "stock_uom",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Stock uom",
-   "read_only": 1
+   "reqd": 1
   }
  ],
  "istable": 1,
- "modified": "2022-09-13 14:50:44.054719",
+ "modified": "2022-09-14 16:18:52.162228",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "PREC Details",

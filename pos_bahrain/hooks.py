@@ -236,6 +236,7 @@ fixtures = [
                     "Customer-cr_no",
                     "Customer-pb_country",
                     "Customer-customer_price_list",
+                    "Purchase Receipt-supplier_invoice_date",
                 ],
             ],
         ],
