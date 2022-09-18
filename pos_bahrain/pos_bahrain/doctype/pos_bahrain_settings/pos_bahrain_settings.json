@@ -16,8 +16,9 @@
   "disable_standard_pf",
   "default_supplier_items_limit",
   "price_list_section",
-  "discount_on_retail",
+  "apply_offer_pricelist",
   "column_break_3",
+  "discount_on_retail",
   "retail_price_list",
   "wholesale_price_list",
   "valuation_price_list",
@@ -400,10 +401,17 @@
    "fieldname": "enable_jv_concept",
    "fieldtype": "Check",
    "label": "Enable JV Concept"
+  },
+  {
+   "description": "Price list restrictions on Sales Order Item,Sales Invoice Item",
+   "fieldname": "apply_offer_pricelist",
+   "fieldtype": "Table",
+   "label": "Pricelists for Item",
+   "options": "Apply Offer Pricelist"
   }
  ],
  "issingle": 1,
- "modified": "2022-06-07 11:15:42.261403",
+ "modified": "2022-09-18 10:13:17.197585",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "POS Bahrain Settings",
