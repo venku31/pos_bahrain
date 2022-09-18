@@ -13,6 +13,23 @@ def get_selling_rate(item, price_list, currency):
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
 def price_list_query(doctype, txt, searchfield, start, page_len, filters):
+    includes = frappe.db.sql(""" SELECT price_list from `tabApply Offer Pricelist` """, as_dict = 0)
+    print("///////////",includes) 
+    # query = """
+    #     SELECT 
+    #         pl.name,
+    #         CONCAT_WS(": ", "Rate", ifnull(round(ip.price_list_rate, 2), 0 )) rate
+    #     FROM `tabPrice List` pl
+    #     LEFT JOIN `tabItem Price` ip ON ip.price_list = pl.name
+    #     WHERE pl.name LIKE {txt}
+    #     AND ip.item_code = %(item_code)s
+    #     AND pl.currency = %(currency)s
+    #     AND pl.selling = %(selling)s
+    #     AND (pl.name = %(regural_price_list)s or pl.name = %(customer_price_list)s or pl.name = %(preferred)s)
+    #     LIMIT {start}, {page_len}
+    # """.format(
+    #     txt=frappe.db.escape("%{0}%".format(txt)), start=start, page_len=page_len
+    # )
     query = """
         SELECT 
             pl.name,
@@ -23,12 +40,11 @@ def price_list_query(doctype, txt, searchfield, start, page_len, filters):
         AND ip.item_code = %(item_code)s
         AND pl.currency = %(currency)s
         AND pl.selling = %(selling)s
-        AND (pl.name = %(regural_price_list)s or pl.name = %(customer_price_list)s or pl.name = %(preferred)s)
+        AND pl.name IN (select price_list from `tabApply Offer Pricelist`)
         LIMIT {start}, {page_len}
     """.format(
         txt=frappe.db.escape("%{0}%".format(txt)), start=start, page_len=page_len
     )
-
     return frappe.db.sql(query, filters)
 
 
