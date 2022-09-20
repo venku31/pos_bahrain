@@ -165,10 +165,31 @@ frappe.ui.form.on('Sales Invoice Advance',"advances_add", function(){
   cur_frm.doc.credit_note_invoice=cur_frm.doc.advances[i].reference_name
   // var main_si = frappe.db.get_value("Sales Invoice",{"name":cur_frm.doc.advances[i].reference_name},"return_against")
   // cur_frm.doc.main_si =main_si.return_against
+
   }
    }
    }
   })
+  frappe.ui.form.on("Sales Invoice Advance", {
+    advances_add: function (frm, cdt, cdn) {
+        sales_invoice_advance(frm, cdt, cdn);
+    },
+    refresh: function (frm, cdt, cdn) {
+      sales_invoice_advance(frm, cdt, cdn);
+  },
+    advances_remove: function (frm, cdt, cdn) {
+        sales_invoice_advance(frm, cdt, cdn);
+    }, 
+    validate: function (frm, cdt, cdn) {
+      sales_invoice_advance(frm, cdt, cdn);
+  },   
+});
+function sales_invoice_advance(frm, cdt, cdn) {
+var d = locals[cdt][cdn];
+var total_advance = 0;
+frm.doc.advances.forEach(function(d) { total_advance += d.allocated_amount});
+frm.set_value('total_advance', total_advance);
+ }	
 frappe.ui.form.on('Sales Invoice',"validate", function(){
   if (cur_frm.doc.advances){
   for (var i =0; i < cur_frm.doc.advances.length; i++){

@@ -199,7 +199,7 @@ def get_si_credit_notes(party_type, party, limit=None, condition=None):
 			from `tabSales Invoice`
 			where
 				customer = %s 
-				and docstatus = 1 and is_return = 1 and credit_note_balance !=0 {condition}
+				and docstatus = 1 and is_return = 1 and credit_note_balance <-0.5 {condition}
 			order by posting_date {0}
 		""".format(limit_cond, condition=condition or ""),
 		(party), as_dict=1)
