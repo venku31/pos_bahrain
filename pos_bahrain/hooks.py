@@ -241,6 +241,7 @@ fixtures = [
                     "Sales Invoice-credit_note_balance",
                     "Sales Invoice-main_si",
                     "Sales Invoice-credit_note_invoice",
+                    "Sales Invoice-ignore_payments_for_return",
                 ],
             ],
         ],
