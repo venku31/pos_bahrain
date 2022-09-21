@@ -141,6 +141,9 @@ frappe.ui.form.on('Sales Invoice', {
     if (cur_frm.doc.is_return) {
       cur_frm.set_value("main_invoice", "");
       cur_frm.set_value("return_si_no", "");
+      cur_frm.set_value("credit_note_invoice", "");
+      cur_frm.set_value("main_si", "");
+      cur_frm.set_value("credit_note_balance", cur_frm.doc.grand_total);
      }
   }
 })
@@ -155,3 +158,97 @@ cur_frm.fields_dict.return_si_no.get_query = function(doc) {
 		}
 	}
 }
+// frappe.ui.form.on('Sales Invoice Advance',"advances_add", function(){
+//   if (cur_frm.doc.advances){
+//   for (var i =0; i < cur_frm.doc.advances.length; i++){
+//    if (cur_frm.doc.items[i].reference_type = "Sales Invoice") {  
+//   cur_frm.doc.credit_note_invoice=cur_frm.doc.advances[i].reference_name
+//   // var main_si = frappe.db.get_value("Sales Invoice",{"name":cur_frm.doc.advances[i].reference_name},"return_against")
+//   // cur_frm.doc.main_si =main_si.return_against
+
+//   }
+//    }
+//    }
+//   })
+  frappe.ui.form.on("Sales Invoice Advance", {
+    advances_add: function (frm, cdt, cdn) {
+        sales_invoice_advance(frm, cdt, cdn);
+    },
+    refresh: function (frm, cdt, cdn) {
+      sales_invoice_advance(frm, cdt, cdn);
+  },
+    advances_remove: function (frm, cdt, cdn) {
+        sales_invoice_advance(frm, cdt, cdn);
+    }, 
+//     validate: function (frm, cdt, cdn) {
+//       sales_invoice_advance(frm, cdt, cdn);
+//   },   
+});
+function sales_invoice_advance(frm, cdt, cdn) {
+var d = locals[cdt][cdn];
+var total_advance = 0;
+frm.doc.advances.forEach(function(d) { total_advance += d.allocated_amount});
+frm.set_value('total_advance', total_advance);
+ }	
+frappe.ui.form.on('Sales Invoice',"before_save", function(){
+  if (cur_frm.doc.advances){
+  for (var i =0; i < cur_frm.doc.advances.length; i++){
+  // var main_si = frappe.db.get_value("Sales Invoice",{"name":cur_frm.doc.advances[i].reference_name},"return_against")
+   if (cur_frm.doc.items[i].reference_type = "Sales Invoice") {  
+  cur_frm.doc.credit_note_invoice=cur_frm.doc.advances[i].reference_name
+  // cur_frm.doc.main_si =main_si.return_against
+  }
+   }
+   }
+  })
+  frappe.ui.form.on('Sales Invoice',"before_submit", function(){
+    if (cur_frm.doc.advances){
+    for (var i =0; i < cur_frm.doc.advances.length; i++){
+    // var main_si = frappe.db.get_value("Sales Invoice",{"name":cur_frm.doc.advances[i].reference_name},"return_against")
+     if (cur_frm.doc.items[i].reference_type = "Sales Invoice") {  
+    cur_frm.doc.credit_note_invoice=cur_frm.doc.advances[i].reference_name
+    // cur_frm.doc.main_si =main_si.return_against
+    }
+     }
+     }
+    })
+
+ frappe.ui.form.on("Sales Invoice", "ignore_payments_for_return", function(frm, doctype, name){
+    if (frm.doc.is_return && frm.doc.ignore_payments_for_return){
+    cur_frm.clear_table("payments"); 
+    frm.doc.is_pos = 0
+    cur_frm.refresh_fields();
+    }
+    });
+  // frappe.ui.form.on("Sales Invoice", "validate", function(frm, doctype, name){
+  //     if (frm.doc.is_return && frm.doc.ignore_payments_for_return){
+  //     cur_frm.clear_table("payments"); 
+  //     frm.doc.is_pos = 0
+  //     cur_frm.refresh_fields();
+  //     }
+  //     });
+      frappe.ui.form.on("Sales Invoice Item", "qty", function(frm, cdt, cdn) {
+        $.each(frm.doc.advances || [], function(i, d) {
+            d.allocated_amount=cur_frm.doc.rounded_total-cur_frm.doc.base_write_off_amount;
+        });
+        refresh_field("advances");
+        })
+        frappe.ui.form.on("Sales Invoice Item", "rate", function(frm, cdt, cdn) {
+        $.each(frm.doc.advances || [], function(i, d) {
+            d.allocated_amount=cur_frm.doc.rounded_total-cur_frm.doc.base_write_off_amount;
+        });
+        refresh_field("advances");
+        })
+        // frappe.ui.form.on("Sales Invoice", "validate", function(frm, cdt, cdn) {
+        // $.each(frm.doc.advances || [], function(i, d) {
+        //     if(cur_frm.doc.grand_total<=d.advance_amount){
+        //     d.allocated_amount=cur_frm.doc.rounded_total-cur_frm.doc.base_write_off_amount;
+        //     }
+        //     else{
+        //        d.allocated_amount=d.advance_amount;
+        //     }
+        // });
+        // refresh_field("advances");
+        
+        // })
+      
