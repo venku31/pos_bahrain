@@ -1,3 +1,4 @@
+import json
 import frappe
 from frappe import auth
 
@@ -29,10 +30,9 @@ def authentication_api(usr, pwd):
         "token": "token"+" "+user.api_key+":"+api_generate,
         "username":user.username,
         "email":user.email,
-        "mobile_no":user.mobile_no
+        "mobile_no":user.mobile_no,
+        "phone":user.phone
     }
-
-
 
 def generate_keys(user):
     user_details = frappe.get_doc('User', user)
@@ -46,3 +46,29 @@ def generate_keys(user):
     user_details.save()
 
     return api_secret
+
+@frappe.whitelist(allow_guest=True)
+def logout():
+    try:
+        login_manager = frappe.auth.LoginManager()
+        user = frappe.session.user
+        # login_manager = LoginManager()
+        login_manager.logout(user=user)
+        # return generate_response("S", "200", message="Logged Out")
+        return "Logout"
+    except Exception as e:
+        raise Exception(e)
+def manage_user():
+    args = json.loads(frappe.form_dict.args)
+    sid = args.get('sid')
+
+    if not sid:
+        raise Exception("sid not provided")
+
+    else:
+        try:
+            frappe.form_dict["sid"] = sid 
+            loginmgr = frappe.auth.LoginManager()
+            return True
+        except:
+            raise Exception(e.message)
