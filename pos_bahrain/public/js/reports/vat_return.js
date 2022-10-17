@@ -17,6 +17,14 @@ export default function () {
         reqd: 1,
         default: frappe.datetime.month_end(),
       },
+      {
+        fieldname: 'company',
+        label: __('Company'),
+        fieldtype: 'Link',
+        options: 'Company',
+        required: 1,
+        default: frappe.defaults.get_user_default('Company'),
+      },
     ],
     formatter: function (value, row, column, data, default_formatter) {
       const formatted = default_formatter(value, row, column, data);

@@ -31,6 +31,14 @@ export default function () {
         ],
         default: 'Standard Rated',
       },
+      {
+        fieldname: 'company',
+        label: __('Company'),
+        fieldtype: 'Link',
+        options: 'Company',
+        required: 1,
+        default: frappe.defaults.get_user_default('Company'),
+      },
     ],
   };
 }

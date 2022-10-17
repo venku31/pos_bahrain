@@ -30,7 +30,7 @@ def _get_columns(filters):
 
 def _get_filters(filters):
     values = merge(
-        {"from_date": filters.date_range[0], "to_date": filters.date_range[1],},
+        {"from_date": filters.date_range[0], "to_date": filters.date_range[1],"company":filters.company},
     )
     return "", values
 
