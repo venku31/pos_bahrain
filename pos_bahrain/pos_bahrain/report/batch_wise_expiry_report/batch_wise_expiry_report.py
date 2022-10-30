@@ -76,7 +76,7 @@ def _get_keys(args):
 def _item_price_clauses(alias):
     return """
         {alias}.item_code = sle.item_code AND
-        IFNULL({alias}.uom, '') IN ('', i.stock_uom) AND
+        IFNULL({alias}.uom, '') = i.stock_uom AND
         IFNULL({alias}.customer, '') = '' AND
         IFNULL({alias}.supplier, '') = '' AND
         %(query_date)s BETWEEN
