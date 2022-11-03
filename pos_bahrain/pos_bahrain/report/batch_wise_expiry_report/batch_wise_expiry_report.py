@@ -114,8 +114,8 @@ def _get_data(args, keys):
                 i.brand AS brand,
                 id.default_supplier AS supplier,
                 b.expiry_date AS expiry_date,
-                p1.price_list_rate AS price1,
-                p2.price_list_rate AS price2
+                (select price_list_rate FROM `tabItem Price`  where item_code = sle.item_code AND IFNULL(uom, '') IN ('', i.stock_uom) AND price_list = %(price_list1)s LIMIT 1) as price1,
+                (select price_list_rate FROM `tabItem Price`  where item_code = sle.item_code AND IFNULL(uom, '') IN ('', i.stock_uom) AND price_list = %(price_list2)s LIMIT 1) as price2
             FROM `tabStock Ledger Entry` AS sle
             LEFT JOIN `tabItem` AS i ON
                 i.item_code = sle.item_code
@@ -123,19 +123,13 @@ def _get_data(args, keys):
                 id.parent = i.name
             LEFT JOIN `tabBatch` AS b ON
                 b.batch_id = sle.batch_no
-            LEFT JOIN `tabItem Price` AS p1 ON
-                {p1_clauses}
-                AND p1.price_list = %(price_list1)s
-            LEFT JOIN `tabItem Price` AS p2 ON
-                {p2_clauses}
-                AND p2.price_list = %(price_list2)s
+            
             WHERE {sle_clauses}
             GROUP BY sle.batch_no, sle.warehouse
             ORDER BY sle.item_code, sle.warehouse
         """.format(
             sle_clauses=_sle_clauses(args),
-            p1_clauses=_item_price_clauses("p1"),
-            p2_clauses=_item_price_clauses("p2"),
+            
         ),
         values=args,
         as_dict=1,
