@@ -9,6 +9,8 @@
   "description",
   "qty",
   "stock_uom",
+  "uom",
+  "conversion_factor",
   "rate",
   "amount"
  ],
@@ -25,9 +27,10 @@
   {
    "columns": 1,
    "fieldname": "stock_uom",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "UOM",
+   "label": "Stock UOM",
+   "options": "UOM",
    "read_only": 1
   },
   {
@@ -68,10 +71,22 @@
    "in_list_view": 1,
    "label": "Qty",
    "reqd": 1
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM"
+  },
+  {
+   "default": "1",
+   "fieldname": "conversion_factor",
+   "fieldtype": "Float",
+   "label": "Conversion Factor"
   }
  ],
  "istable": 1,
- "modified": "2022-09-14 16:18:52.162228",
+ "modified": "2022-11-07 14:02:01.204440",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "PREC Details",
