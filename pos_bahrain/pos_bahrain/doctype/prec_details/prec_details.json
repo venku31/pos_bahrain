@@ -34,7 +34,7 @@
    "read_only": 1
   },
   {
-   "columns": 2,
+   "columns": 1,
    "fieldname": "description",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -73,20 +73,26 @@
    "reqd": 1
   },
   {
+   "columns": 1,
    "fieldname": "uom",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "UOM",
-   "options": "UOM"
+   "options": "UOM",
+   "read_only": 1
   },
   {
+   "columns": 1,
    "default": "1",
    "fieldname": "conversion_factor",
    "fieldtype": "Float",
-   "label": "Conversion Factor"
+   "in_list_view": 1,
+   "label": "Conversion Factor",
+   "read_only": 1
   }
  ],
  "istable": 1,
- "modified": "2022-11-07 14:02:01.204440",
+ "modified": "2022-11-08 17:35:19.132840",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "PREC Details",
