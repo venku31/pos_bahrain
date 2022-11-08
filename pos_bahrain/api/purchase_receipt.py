@@ -19,7 +19,11 @@ from datetime import date,timedelta
 def search_prec_item(item):
     item_data = search_serial_or_batch_or_barcode_number(item)
     if item_data != 0:
-        stock = frappe.db.sql("""SELECT item_code,item_name,description,stock_uom,stock_uom as uom,1 as conversion_factor,last_purchase_rate From `tabItem` Where item_code = '%(item_code)s' """%{"item_code": item_data['item_code']}, as_dict = 1)
+        #stock = frappe.db.sql("""SELECT item_code,item_name,description,stock_uom,stock_uom as uom,1 as conversion_factor,last_purchase_rate From `tabItem` Where item_code = '%(item_code)s' """%{"item_code": item_data['item_code']}, as_dict = 1)
+        stock = frappe.db.sql("""SELECT item.item_code,item.item_name,item.description,item.stock_uom,
+IFNULL(uom.uom,item.stock_uom) as uom,IFNULL(uom.conversion_factor,1) as conversion_factor,item.last_purchase_rate From `tabItem` item left join `tabUOM Conversion Detail` uom
+ON item.name=uom.parent and uom.conversion_factor>1 Where item.item_code = '%(item_code)s' """%{"item_code": item_data['item_code']}, as_dict = 1)
+
         return stock
     
     return "Item/Price not found"
