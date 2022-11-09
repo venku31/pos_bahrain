@@ -53,7 +53,7 @@ doctype_js = {
         "public/js/branch.js",
         "public/js/sales_invoice.js",
         "public/js/includes/discount_percentage.js",
-        "public/js/includes/salesinvoicecontroller.js",
+        # "public/js/includes/salesinvoicecontroller.js",
     ],
     "Sales Order": [
         "public/js/alternate_discount.js",
