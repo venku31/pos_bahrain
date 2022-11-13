@@ -168,6 +168,9 @@ fixtures = [
                     "Quotation-pb_discount_percentage",
                     "Sales Order-pb_discount_percentage",
                     "Sales Invoice-pb_discount_percentage",
+                    "Item-authorized_representative_name",
+                    "Item-authorized_representative_contact",
+                    "Item-authorized_representative_email",
                 ],
             ]
         ],
