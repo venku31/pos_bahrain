@@ -236,9 +236,75 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
     this._super();
     this.frm.doc.posting_date = frappe.datetime.get_today();
     this.frm.doc.posting_time = frappe.datetime.now_time();
-  }
+  },
+  render_list_customers: function () {
+		var me = this;
+
+		this.removed_items = [];
+		// this.list_customers.empty();
+		this.si_docs = this.get_doc_from_localstorage();
+		if (!this.si_docs.length) {
+			this.list_customers.find('.list-customers-table').html("");
+			return;
+		}
+
+		var html = "";
+		if(this.si_docs.length) {
+			this.si_docs.forEach(function (data, i) {
+				for (var key in data) {
+					html += frappe.render_template("pos_invoice_list", {
+						sr: i + 1,
+						name: key,
+						customer: data[key].customer,
+            customer_name: data[key].customer_name,
+						paid_amount: format_currency(data[key].paid_amount, me.frm.doc.currency),
+						grand_total: format_currency(data[key].grand_total, me.frm.doc.currency),
+						data: me.get_doctype_status(data[key])
+					});
+				}
+			});
+		}
+		this.list_customers.find('.list-customers-table').html(html);
+
+		this.list_customers.on('click', '.customer-row', function () {
+			me.list_customers.hide();
+			me.numeric_keypad.show();
+			me.list_customers_btn.toggleClass("view_customer");
+			me.pos_bill.show();
+			me.list_customers_btn.show();
+			me.frm.doc.offline_pos_name = $(this).parents().attr('invoice-name');
+			me.edit_record();
+		})
+
+		//actions
+		$(this.wrapper).find('.list-select-all').click(function () {
+			me.list_customers.find('.list-delete').prop("checked", $(this).is(":checked"))
+			me.removed_items = [];
+			if ($(this).is(":checked")) {
+				$.each(me.si_docs, function (index, data) {
+					for (key in data) {
+						me.removed_items.push(key)
+					}
+				});
+			}
+
+			me.toggle_delete_button();
+		});
+
+		$(this.wrapper).find('.list-delete').click(function () {
+			me.frm.doc.offline_pos_name = $(this).parent().parent().attr('invoice-name');
+			if ($(this).is(":checked")) {
+				me.removed_items.push(me.frm.doc.offline_pos_name);
+			} else {
+				me.removed_items.pop(me.frm.doc.offline_pos_name)
+			}
+
+			me.toggle_delete_button();
+		});
+	},
 });
 
 erpnext.pos.PointOfSale = pos_bahrain.addons.extend_pos(
   erpnext.pos.PointOfSale
 );
+
