@@ -484,7 +484,8 @@ def update_credit_note(doc, cancel=False):
                 # frappe.db.set_value("GL Entry", name, "against_voucher", doc.name)
                 # frappe.db.set_value("GL Entry", name, "voucher_no", doc.name)
                 frappe.db.set_value("GL Entry", name, "remarks", "Credit Note Adjustment")
-                frappe.db.set_value("Sales Invoice", return_against, "outstanding_amount", main_outstanding+doc.total_advance)
+                main_outstandings=main_outstanding or 0
+                frappe.db.set_value("Sales Invoice", return_against, "outstanding_amount", main_outstandings+doc.total_advance)
                 frappe.db.set_value("Sales Invoice", doc.name, "main_si", return_against)
                 doc.set_status(update=True)
         gl_name = frappe.db.sql(
@@ -530,7 +531,8 @@ def update_credit_note_cancel(doc):
             # frappe.db.set_value("GL Entry", name, "against_voucher", doc.main_si)
             # frappe.db.set_value("GL Entry", name, "voucher_no", doc.main_si)
             frappe.db.set_value("GL Entry", name, "remarks", "Credit Note Adjustment")
-            frappe.db.set_value("Sales Invoice", return_against, "outstanding_amount", main_outstanding-doc.total_advance)
+            main_outstandings=main_outstanding or 0
+            frappe.db.set_value("Sales Invoice", return_against, "outstanding_amount", main_outstandings-doc.total_advance)
             doc.set_status(update=True)
 
 
