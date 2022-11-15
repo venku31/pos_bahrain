@@ -199,9 +199,11 @@ frappe.ui.form.on('Sales Invoice',"before_save", function(){
   if (cur_frm.doc.advances){
   for (var i =0; i < cur_frm.doc.advances.length; i++){
   // var main_si = frappe.db.get_value("Sales Invoice",{"name":cur_frm.doc.advances[i].reference_name},"return_against")
-   if (cur_frm.doc.items[i].reference_type = "Sales Invoice") {  
+  if (cur_frm.doc.advances[i].reference_type = "Sales Invoice") {  
+    if (cur_frm.doc.advances[i].allocated_amount > 0) {    
   cur_frm.doc.credit_note_invoice=cur_frm.doc.advances[i].reference_name
   // cur_frm.doc.main_si =main_si.return_against
+  }
   }
    }
    }
@@ -210,7 +212,7 @@ frappe.ui.form.on('Sales Invoice',"before_save", function(){
     if (cur_frm.doc.advances){
     for (var i =0; i < cur_frm.doc.advances.length; i++){
     // var main_si = frappe.db.get_value("Sales Invoice",{"name":cur_frm.doc.advances[i].reference_name},"return_against")
-     if (cur_frm.doc.items[i].reference_type = "Sales Invoice") {  
+     if (cur_frm.doc.advances[i].reference_type = "Sales Invoice") {  
     cur_frm.doc.credit_note_invoice=cur_frm.doc.advances[i].reference_name
     // cur_frm.doc.main_si =main_si.return_against
     }
