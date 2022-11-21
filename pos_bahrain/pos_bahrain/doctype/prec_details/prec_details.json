@@ -7,10 +7,14 @@
   "item_code",
   "item_name",
   "description",
+  "warehouse",
+  "available_qty",
   "qty",
   "stock_uom",
+  "conversion_factor_stock_uom",
   "uom",
   "conversion_factor",
+  "last_purchase_rate",
   "rate",
   "amount"
  ],
@@ -69,7 +73,7 @@
    "fieldname": "qty",
    "fieldtype": "Float",
    "in_list_view": 1,
-   "label": "Qty",
+   "label": "Qty PREC",
    "reqd": 1
   },
   {
@@ -87,12 +91,40 @@
    "fieldname": "conversion_factor",
    "fieldtype": "Float",
    "in_list_view": 1,
-   "label": "Conversion Factor",
+   "label": "Conversion Factor UOM",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "warehouse",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Warehouse",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "available_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Available Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "conversion_factor_stock_uom",
+   "fieldtype": "Float",
+   "label": "Conversion Factor Stock UOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_purchase_rate",
+   "fieldtype": "Currency",
+   "label": "Stock uom Last Purchase Rate",
    "read_only": 1
   }
  ],
  "istable": 1,
- "modified": "2022-11-08 17:35:19.132840",
+ "modified": "2022-11-21 09:48:04.940382",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "PREC Details",
