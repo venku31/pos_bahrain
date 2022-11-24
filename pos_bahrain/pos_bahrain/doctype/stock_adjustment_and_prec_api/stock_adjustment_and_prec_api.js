@@ -153,10 +153,14 @@ frappe.ui.form.on("Stock Adjustment And PREC API", "update", function(frm, cdt, 
 			  frappe.model.set_value(child.doctype, child.name, "item_code", stock.item_code)
 			  frappe.model.set_value(child.doctype, child.name, "item_name", stock.item_name)
 			  frappe.model.set_value(child.doctype, child.name, "description", stock.description)
+			  frappe.model.set_value(child.doctype, child.name, "warehouse", stock.warehouse)
+			  frappe.model.set_value(child.doctype, child.name, "available_qty", stock.available_qty)
 			  frappe.model.set_value(child.doctype, child.name, "stock_uom", stock.stock_uom)
+			  frappe.model.set_value(child.doctype, child.name, "conversion_factor_stock_uom", stock.uom_conversion_factor)
 			  frappe.model.set_value(child.doctype, child.name, "uom", stock.uom)
-			  frappe.model.set_value(child.doctype, child.name, "conversion_factor", stock.conversion_factor)
-			  frappe.model.set_value(child.doctype, child.name, "rate", stock.last_purchase_rate)
+			  frappe.model.set_value(child.doctype, child.name, "conversion_factor", stock.uom_conversion_factor)
+			  frappe.model.set_value(child.doctype, child.name, "last_purchase_rate", stock.stock_uom_last_purchase_rate)
+
 			  });
 			cur_frm.refresh_fields()
 				
