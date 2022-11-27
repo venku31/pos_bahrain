@@ -124,21 +124,29 @@ def get_data(from_date, to_date):
 								si.name AS invoice_no,
 								( SELECT sum( inv_item.price_list_rate * inv_item.qty )
 								AS amount_before_discount FROM `tabSales Invoice Item` inv_item 
-								WHERE parent = si.name ) AS amount_before_discount,
+								WHERE parent = si.name ) AS amount_before_discount1,
+								( SELECT sum(inv_item.discount_amount  * inv_item.qty ) 
+								AS discount FROM `tabSales Invoice Item` inv_item 
+								WHERE parent = si.name )+ si.discount_amount+si.total as amount_before_discount,
 								( SELECT sum(inv_item.discount_amount  * inv_item.qty ) 
 								AS discount FROM `tabSales Invoice Item` inv_item 
 								WHERE parent = si.name )+ si.discount_amount AS discount,
 								( SELECT sum(inv_item.amount) AS amount_after_discount1
 								FROM `tabSales Invoice Item` inv_item WHERE parent = si.name )
 								AS amount_after_discount1,
-								si.grand_total AS amount_after_discount,
+								si.total AS amount_after_discount,
 								si.discount_amount as discount1,
 								si.total_taxes_and_charges AS vat,
 								%(total_field)s AS total_sales,
 								(%(total_field)s - si.outstanding_amount) AS payment,
 								si.outstanding_amount AS outstanding1, 
 								ip.mode_of_payment AS mop,
-								si.pb_discount_percentage as disc_percent,
+								si.pb_discount_percentage as disc_percent1,
+								round((( SELECT sum(inv_item.discount_amount  * inv_item.qty ) 
+								AS discount FROM `tabSales Invoice Item` inv_item 
+								WHERE parent = si.name )+ si.discount_amount)/(( SELECT sum(inv_item.discount_amount  * inv_item.qty ) 
+								AS discount FROM `tabSales Invoice Item` inv_item 
+								WHERE parent = si.name )+ si.discount_amount+si.total)*100,3) as disc_percent,
 								si.docstatus as docstatus,
 								si.is_return
 								
