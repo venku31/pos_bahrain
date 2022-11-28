@@ -143,6 +143,7 @@ frappe.ui.form.on("Stock Adjustment And PREC API", "update", function(frm, cdt, 
 		  "method": "pos_bahrain.api.purchase_receipt.search_prec_item",
 		  "args": {
 			"item": frm.doc.prec_item,
+			"warehouse": frm.doc.warehouse,
 		   },
 		  callback: function (r) {
 			console.log(r)
