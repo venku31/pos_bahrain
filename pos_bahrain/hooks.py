@@ -343,6 +343,10 @@ doc_events = {
         "before_cancel": "pos_bahrain.doc_events.sales_invoice.before_cancel",
         "on_cancel": "pos_bahrain.doc_events.sales_invoice.on_cancel",
     },
+    "Journal Entry": {
+        # "before_cancel": "pos_bahrain.doc_events.journal_entry.cancel_jv",
+        "on_cancel": "pos_bahrain.doc_events.journal_entry.on_cancel",
+    },
     "Purchase Receipt": {
         "before_save": "pos_bahrain.doc_events.purchase_receipt.before_validate",
         "on_submit": "pos_bahrain.doc_events.purchase_receipt.set_batch_references",
@@ -462,8 +466,9 @@ from erpnext.controllers import sales_and_purchase_return as _sales_and_purchase
 from erpnext.controllers import taxes_and_totals as _taxes_and_totals
 from pos_bahrain.api.sales_invoice import set_advances_ov,get_advance_entries,reconcile_against_document_ov,update_against_document_in_jv_ov
 from pos_bahrain.api.sales_and_purchase_return import set_missing_values
-from pos_bahrain.api.taxes_and_totals import calculate_change_amount,calculate_write_off_amount,set_total_amount_to_default_mop
+from pos_bahrain.api.taxes_and_totals import calculate_change_amount,calculate_write_off_amount,set_total_amount_to_default_mop,update_paid_amount_for_return_ov
 _AccountsController.set_advances = set_advances_ov
 _AccountsController.get_advance_entries = get_advance_entries
 _AccountsController.update_against_document_in_jv = update_against_document_in_jv_ov
-# _taxes_and_totals.calculate_write_off_amount = calculate_write_off_amount
+_taxes_and_totals.calculate_write_off_amount = calculate_write_off_amount
+_taxes_and_totals.update_paid_amount_for_return = update_paid_amount_for_return_ov
