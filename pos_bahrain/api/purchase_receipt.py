@@ -28,9 +28,9 @@ def search_prec_item(warehouse,item):
 # ON item.name=uom.parent and uom.conversion_factor>1) item
 # LEFT JOIN (Select warehouse,item_code,actual_qty from `tabBin` where actual_qty>0) bin ON (item.item_code=bin.item_code) 
 # Where bin.warehouse = '%(warehouse)s' and item.item_code = '%(item_code)s' """%{"warehouse":warehouse,"item_code": item_data['item_code']}, as_dict = 1)
-        stock = frappe.db.sql("""SELECT item.name as item_code,item.item_name,item.description,item.warehouse,item.actual_qty as available_qty,uom_price.uom1,uom_price.conversion_factor1,uom_price.uom1_price,uom_price.uom2,uom_price.conversion_factor2,uom_price.uom2_price,uom_price.uom3,uom_price.conversion_factor3,uom_price.uom3_price
+        stock = frappe.db.sql("""SELECT item.name as item_code,item.item_name,item.description,item.last_purchase_rate,standard_price.price_list_rate as standard_price,item.warehouse,item.actual_qty as available_qty,uom_price.uom1,uom_price.conversion_factor1,IFNULL(uom_price.uom1_price,standard_price.price_list_rate) as uom1_price,uom_price.uom2,uom_price.conversion_factor2,uom_price.uom2_price,uom_price.uom3,uom_price.conversion_factor3,uom_price.uom3_price
 FROM
-(SELECT item.name,item.item_name,item.description,bin.warehouse,bin.actual_qty from `tabItem` item LEFT JOIN `tabBin` bin 
+(SELECT item.name,item.item_name,item.description,item.last_purchase_rate,bin.warehouse,bin.actual_qty from `tabItem` item LEFT JOIN `tabBin` bin 
 ON (item.name=bin.item_code and bin.actual_qty>0)) item
 LEFT JOIN 
 (SELECT u1.parent,u1.uom1,u1.conversion_factor1,u1.uom1_price,u2.uom2,u2.conversion_factor2,u2.uom2_price,u3.uom3,u3.conversion_factor3,u3.uom3_price FROM
@@ -43,6 +43,8 @@ LEFT JOIN(Select a.parent as parent3,a.uom as uom3,a.conversion_factor as conver
 LEFT JOIN `tabItem Price` b ON (a.parent=b.item_code and b.buying=1 and a.uom=b.uom) where a.idx=3)u3
 ON(u1.parent=u3.parent3))uom_price
 ON(item.name=uom_price.parent)
+LEFT JOIN `tabItem Price` standard_price 
+ON(item.name=standard_price.item_code and standard_price.buying=1 and standard_price.pb_conversion_factor=0)
 Where item.warehouse = '%(warehouse)s' and item.name = '%(item_code)s' """%{"warehouse":warehouse,"item_code": item_data['item_code']}, as_dict = 1)
         return stock
     
