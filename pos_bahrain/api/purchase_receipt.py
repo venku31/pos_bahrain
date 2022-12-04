@@ -44,7 +44,7 @@ LEFT JOIN `tabItem Price` b ON (a.parent=b.item_code and b.buying=1 and a.uom=b.
 ON(u1.parent=u3.parent3))uom_price
 ON(item.name=uom_price.parent)
 LEFT JOIN `tabItem Price` standard_price 
-ON(item.name=standard_price.item_code and standard_price.buying=1 and standard_price.pb_conversion_factor=0)
+ON(item.name=standard_price.item_code and standard_price.buying=1 and standard_price.pb_conversion_factor IN(0,1))
 Where item.warehouse = '%(warehouse)s' and item.name = '%(item_code)s' """%{"warehouse":warehouse,"item_code": item_data['item_code']}, as_dict = 1)
         return stock
     
