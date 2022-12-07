@@ -139,7 +139,7 @@ def get_data(from_date, to_date):
 								si.total_taxes_and_charges AS vat,
 								%(total_field)s AS total_sales,
 								(%(total_field)s - si.outstanding_amount) AS payment,
-								si.outstanding_amount AS outstanding1, 
+								si.outstanding_amount AS outstanding, 
 								ip.mode_of_payment AS mop,
 								si.pb_discount_percentage as disc_percent1,
 								round((( SELECT sum(inv_item.discount_amount  * inv_item.qty ) 
