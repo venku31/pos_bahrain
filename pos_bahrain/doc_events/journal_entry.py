@@ -40,7 +40,9 @@ def update_gl_on_jv_cancel(doc):
         for name in gl_no:
             
             frappe.db.set_value("GL Entry", name, "credit",ref_name[0].credit_in_account_currency)
+            frappe.db.set_value("GL Entry", name, "credit_in_account_currency",ref_name[0].credit_in_account_currency)
             frappe.db.set_value("Sales Invoice", ref_name[0].reference_name, "status", "Paid")
+            frappe.db.set_value("Sales Invoice", ref_name[0].reference_name, "outstanding_amount", 0)
             # doc.set_status(update=True)
     cn_no=frappe.db.get_value("Sales Invoice",{"pb_credit_note_no":doc.name}, "name")
     if cn_no :
@@ -53,6 +55,7 @@ def update_gl_on_jv_cancel(doc):
         for name in gl_no2:
             
             frappe.db.set_value("GL Entry", name, "debit",doc.total_debit)
+            frappe.db.set_value("GL Entry", name, "debit_in_account_currency",doc.total_debit)
         doc.flags.ignore_links = True
 # def cancel_jv(doc):
 #     jv_doc = frappe.get_doc("Journal Entry", doc.name)
