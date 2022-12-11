@@ -156,10 +156,10 @@ frappe.ui.form.on("Stock Adjustment And PREC API", "update", function(frm, cdt, 
 			  frappe.model.set_value(child.doctype, child.name, "description", stock.description)
 			  frappe.model.set_value(child.doctype, child.name, "warehouse", stock.warehouse)
 			  frappe.model.set_value(child.doctype, child.name, "available_qty", stock.available_qty)
-			  frappe.model.set_value(child.doctype, child.name, "stock_uom", stock.stock_uom)
-			  frappe.model.set_value(child.doctype, child.name, "conversion_factor_stock_uom", stock.uom_conversion_factor)
-			  frappe.model.set_value(child.doctype, child.name, "uom", stock.uom)
-			  frappe.model.set_value(child.doctype, child.name, "conversion_factor", stock.uom_conversion_factor)
+			  frappe.model.set_value(child.doctype, child.name, "stock_uom", stock.uom1)
+			  frappe.model.set_value(child.doctype, child.name, "conversion_factor_stock_uom", stock.conversion_factor1)
+			  frappe.model.set_value(child.doctype, child.name, "uom", stock.uom2)
+			  frappe.model.set_value(child.doctype, child.name, "conversion_factor", stock.conversion_factor2)
 			  frappe.model.set_value(child.doctype, child.name, "last_purchase_rate", stock.stock_uom_last_purchase_rate)
 
 			  });
@@ -185,8 +185,9 @@ frappe.ui.form.on("Stock Adjustment And PREC API", "update", function(frm, cdt, 
 						warehouse:cur_frm.doc.warehouse,
 						qty:d.qty,
 						stock_uom:d.stock_uom,
-						uom:d.uom,
-						conversion_factor:d.conversion_factor,
+						// uom:d.uom,
+						// conversion_factor_stock_uom:d.conversion_factor12,
+						conversion_factor:conversion_factor_stock_uom,
 						rate : d.rate
 					},
 					callback: function(r) {

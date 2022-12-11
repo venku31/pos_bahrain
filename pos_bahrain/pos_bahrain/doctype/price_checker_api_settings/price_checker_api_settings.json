@@ -7,7 +7,9 @@
   "enabled",
   "price_list",
   "stock_reconciliation_status",
-  "purchase_receipt_status"
+  "purchase_receipt_status",
+  "default_purchase_tax_template",
+  "taxes"
  ],
  "fields": [
   {
@@ -33,10 +35,23 @@
    "fieldtype": "Select",
    "label": "Purchase Receipt Status",
    "options": "Draft\nSubmit"
+  },
+  {
+   "fieldname": "default_purchase_tax_template",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Default Purchase Tax Template",
+   "options": "Purchase Taxes and Charges Template"
+  },
+  {
+   "fieldname": "taxes",
+   "fieldtype": "Table",
+   "label": "Purchase Taxes and Charges",
+   "options": "Purchase Taxes API"
   }
  ],
  "issingle": 1,
- "modified": "2022-09-15 10:12:51.029744",
+ "modified": "2022-12-11 09:46:12.259899",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "Price Checker API Settings",
