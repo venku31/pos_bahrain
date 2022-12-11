@@ -101,6 +101,7 @@ def search_serial_or_batch_or_barcode_number(search_value):
 @frappe.whitelist()
 def create_purchase_receipt(data=None):
     status = frappe.db.get_single_value("Price Checker API Settings", "purchase_receipt_status")
+    tax_template = frappe.db.get_single_value("Price Checker API Settings", "default_purchase_tax_template")
     data=json.loads(frappe.request.data)
     if status == "Draft" :
         try:
@@ -122,6 +123,17 @@ def create_purchase_receipt(data=None):
                     "conversion_factor": item["conversion_factor"],
                     "warehouse": item["warehouse"],
                     "pb_expiry_date" : item["expiry_date"],
+                })
+            taxes = frappe.db.sql("""SELECT account_head,rate FROM `tabPurchase Taxes API` """, as_dict = 1)
+            for row in taxes:
+                prec_doc.append("taxes",
+                {
+                    "category": "Total",
+                    "add_deduct_tax": "Add",
+                    "charge_type": "On Net Total",
+                    "account_head":row["account_head"],
+                    "description": "VAT",
+                    "rate": row["rate"],
                 })
             prec_doc.set_missing_values()
             prec_doc.insert(ignore_permissions=True)
@@ -151,6 +163,17 @@ def create_purchase_receipt(data=None):
                     "warehouse": item["warehouse"],
                     "pb_expiry_date" : item["expiry_date"],
                 })
+            taxes = frappe.db.sql("""SELECT account_head,rate FROM `tabPurchase Taxes API` """, as_dict = 1)
+            for row in taxes:
+                prec_doc.append("taxes",
+                {
+                    "category": "Total",
+                    "add_deduct_tax": "Add",
+                    "charge_type": "On Net Total",
+                    "account_head":row["account_head"],
+                    "description": "VAT",
+                    "rate": row["rate"],
+                })
             prec_doc.set_missing_values()
             prec_doc.insert(ignore_permissions=True)
             prec_doc.submit()
@@ -161,7 +184,7 @@ def create_purchase_receipt(data=None):
             return {"error":e}
         
 @frappe.whitelist()
-def create_prec(supplier,item_code,warehouse,qty,stock_uom,uom,conversion_factor,rate,supplier_invoice_no,supplier_invoice_date):
+def create_prec(supplier,item_code,warehouse,qty,stock_uom,conversion_factor,rate,supplier_invoice_no,supplier_invoice_date):
     status = frappe.db.get_single_value("Price Checker API Settings", "purchase_receipt_status")
     if status == "Draft" :
         try:
@@ -178,10 +201,21 @@ def create_prec(supplier,item_code,warehouse,qty,stock_uom,uom,conversion_factor
                     "qty":qty,
                     "rate": rate,
                     "stock_uom": stock_uom,
-                    "uom": uom,
+                    # "uom": uom,
                     "conversion_factor": conversion_factor,
                     "warehouse": warehouse
             })
+            taxes = frappe.db.sql("""SELECT account_head,rate FROM `tabPurchase Taxes API` """, as_dict = 1)
+            for row in taxes:
+                prec_doc.append("taxes",
+                {
+                    "category": "Total",
+                    "add_deduct_tax": "Add",
+                    "charge_type": "On Net Total",
+                    "account_head":row["account_head"],
+                    "description": "VAT",
+                    "rate": row["rate"],
+                })
             prec_doc.set_missing_values()
             prec_doc.insert(ignore_permissions=True)
             # prec_doc.submit()
@@ -205,9 +239,20 @@ def create_prec(supplier,item_code,warehouse,qty,stock_uom,uom,conversion_factor
                     "qty":qty,
                     "rate": rate,
                     "stock_uom": stock_uom,
-                    "uom": uom,
+                    # "uom": uom,
                     "conversion_factor": conversion_factor,
                     "warehouse": warehouse
+                })
+            taxes = frappe.db.sql("""SELECT account_head,rate FROM `tabPurchase Taxes API` """, as_dict = 1)
+            for row in taxes:
+                prec_doc.append("taxes",
+                {
+                    "category": "Total",
+                    "add_deduct_tax": "Add",
+                    "charge_type": "On Net Total",
+                    "account_head":row["account_head"],
+                    "description": "VAT",
+                    "rate": row["rate"],
                 })
             prec_doc.insert(ignore_permissions=True)
             prec_doc.submit()
