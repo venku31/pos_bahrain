@@ -93,3 +93,30 @@ def calculate_outstanding_amount(self):
 			if self.doc.doctype == 'Sales Invoice' and self.doc.get('is_pos') and self.doc.get('is_return'):
 				self.set_total_amount_to_default_mop(total_amount_to_pay)
 				self.calculate_paid_amount()
+
+def update_paid_amount_for_return_ov(self, total_amount_to_pay):
+		existing_amount = 0
+
+		for payment in self.doc.payments:
+			existing_amount += payment.amount
+
+		# do not override user entered amount if equal to total_amount_to_pay
+		if existing_amount != total_amount_to_pay:
+			default_mode_of_payment = frappe.db.get_value('Sales Invoice Payment',
+				{'parent': self.doc.pos_profile, 'default': 1},
+				['mode_of_payment', 'type', 'account'], as_dict=1)
+
+			self.doc.payments = []
+
+			if default_mode_of_payment:
+				self.doc.append('payments', {
+					'mode_of_payment': default_mode_of_payment.mode_of_payment,
+					'type': default_mode_of_payment.type,
+					'account': default_mode_of_payment.account,
+					'amount': total_amount_to_pay
+				})
+			else:
+				self.doc.is_pos = 0
+				self.doc.pos_profile = ''
+
+		self.calculate_paid_amount()

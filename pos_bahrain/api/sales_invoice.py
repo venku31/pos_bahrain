@@ -313,3 +313,6 @@ def update_against_document_in_jv_ov(self):
             # reconcile_dr_cr_note(si_lst, self.company)
             
         
+def validate_pos_paid_amount_ov(self):
+		if len(self.payments) == 0 and self.is_pos and self.grand_total== 0:
+			frappe.throw(_("At least one mode of payment is required for POS invoice."))
