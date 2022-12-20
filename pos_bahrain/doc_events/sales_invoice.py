@@ -198,8 +198,9 @@ def _make_return_dn(doc):
 
     item_warehouses = {x.get("item_code"): x.get("warehouse") for x in dns}
     item_batch_nos = {x.get("item_code"): x.get("batch_no") for x in dns}
-
-    dn_doc = make_delivery_note(doc.return_against)
+    return_againsts= frappe.db.get_value("Sales Invoice",doc.name,"return_against")
+    # dn_doc = make_delivery_note(doc.return_against)
+    dn_doc = make_delivery_note(doc.name)
 
     excluded_items = []
     for item in dn_doc.items:
