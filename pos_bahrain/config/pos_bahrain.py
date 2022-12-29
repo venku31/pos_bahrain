@@ -149,6 +149,7 @@ def get_data():
             [
                 make_item("doctype", "Opening Cash", "Opening Cash"),
                 make_item("doctype", "Barcode Print", "Barcode Print"),
+                make_item("doctype", "Branch Barcode Print", "Branch Barcode Print"),
                 make_item(
                     "doctype",
                     "Backported Stock Reconciliation",
