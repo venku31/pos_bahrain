@@ -316,3 +316,50 @@ def update_against_document_in_jv_ov(self):
 def validate_pos_paid_amount_ov(self):
 		if len(self.payments) == 0 and self.is_pos and self.grand_total== 0:
 			frappe.throw(_("At least one mode of payment is required for POS invoice."))
+
+def get_payments(doc):
+    if doc.doctype == "Sales Invoice":
+        sales_orders = _get_sales_orders(doc.name)
+        so_payments = get_payments_against("Sales Order", sales_orders)
+        si_payments = get_payments_against("Sales Invoice", [doc.name])
+        self_payments = _get_si_self_payments(doc)
+        return so_payments + si_payments + self_payments
+    if doc.doctype == "Sales Order":
+        so_payments = get_payments_against("Sales Order", [doc.name])
+        sales_invoices = _get_sales_invoices(doc.name)
+        si_payments = get_payments_against("Sales Invoice", sales_invoices)
+
+        get_si_self_payment = compose(
+            _get_si_self_payments, partial(frappe.get_doc, "Sales Invoice")
+        )
+        si_self_payments = compose(list, concat, partial(map, get_si_self_payment))(
+            sales_invoices
+        )
+        return so_payments + si_payments + si_self_payments
+    return []
+    
+def get_payments_against(doctype, names):
+    if not names:
+        return []
+    return frappe.db.sql(
+        """
+            SELECT
+                pe.name AS payment_name,
+                'Payment Entry' AS payment_doctype,
+                pe.posting_date AS posting_date,
+                pe.mode_of_payment AS mode_of_payment,
+                per.reference_doctype AS reference_doctype,
+                per.reference_name AS reference_name,
+                SUM(per.allocated_amount) AS paid_amount
+            FROM `tabPayment Entry Reference` AS per
+            LEFT JOIN `tabPayment Entry` AS pe ON
+                per.parent = pe.name
+            WHERE
+                pe.docstatus = 1 AND
+                per.reference_doctype = %(doctype)s AND
+                per.reference_name IN %(names)s
+            GROUP BY pe.name
+        """,
+        values={"doctype": doctype, "names": list(names)},
+        as_dict=1,
+    )

@@ -142,6 +142,7 @@ def get_data():
                 make_item("report", "Branch Stock And Value", "Branch Stock And Value", True),
                 make_item("report", "General Ledger with Party Names", "General Ledger with Party Names", True),
                 make_item("report", "Sales Gross Profit", "Sales Gross Profit", True),
+                make_item("report", "Sales summary by product", "Sales summary by product", True),
             ],
         ),
         make_section(
