@@ -54,3 +54,12 @@ def make_period_list(start_date, end_date):
     r = relativedelta.relativedelta(end_date.replace(day=1), start_date.replace(day=1))
     period_by_months = list(map(make_date, range(r.months + 1)))
     return list(map(make_data, period_by_months))
+
+def with_report_generation_time(rows, keys, field=None):
+    if not rows or not frappe.db.get_single_value(
+        "Optical Store Settings", "include_report_generation_time"
+    ):
+        return rows
+    template = reduce(lambda a, x: merge(a, {x: None}), keys, {})
+    get_stamp = compose(format_datetime, now)
+    return [merge(template, {field or first(keys): get_stamp()})] + rows

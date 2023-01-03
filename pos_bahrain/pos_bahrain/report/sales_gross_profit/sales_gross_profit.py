@@ -134,10 +134,11 @@ def get_data(from_date, to_date):
 								( SELECT sum(inv_item.amount) AS amount_after_discount1
 								FROM `tabSales Invoice Item` inv_item WHERE parent = si.name )
 								AS amount_after_discount1,
-								si.total AS amount_after_discount,
+								si.net_total AS amount_after_discount,
 								si.discount_amount as discount1,
 								si.total_taxes_and_charges AS vat,
-								%(total_field)s AS total_sales,
+								si.grand_total as total_sales,
+								%(total_field)s AS total_sales1,
 								(%(total_field)s - si.outstanding_amount) AS payment,
 								si.outstanding_amount AS outstanding, 
 								ip.mode_of_payment AS mop,
