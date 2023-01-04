@@ -42,6 +42,7 @@
   "reports_sec",
   "use_daily_email",
   "manager_email",
+  "include_report_generation_time",
   "reports_col",
   "vat_tax_categories",
   "section_break_17",
@@ -440,10 +441,15 @@
    "fieldname": "cancel_credit_note_jv",
    "fieldtype": "Button",
    "label": "Cancel Credit Note JV"
+  },
+  {
+   "fieldname": "include_report_generation_time",
+   "fieldtype": "Data",
+   "label": "include_report_generation_time"
   }
  ],
  "issingle": 1,
- "modified": "2022-12-14 11:31:28.042937",
+ "modified": "2023-01-04 14:33:48.421307",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "POS Bahrain Settings",

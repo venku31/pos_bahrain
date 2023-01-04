@@ -26,6 +26,13 @@ frappe.query_reports["Sales summary by product"] = {
       fieldtype: 'Link',
       options: 'Warehouse',
     },
+    {
+      fieldname: 'report_type',
+      label: __('Report Type'),
+      fieldtype: 'Select',
+      options: ['Achieved','Collected'],
+      default : 'Collected',
+    },
   ],
 };
 // frappe.query_reports['Sales summary by product'] =

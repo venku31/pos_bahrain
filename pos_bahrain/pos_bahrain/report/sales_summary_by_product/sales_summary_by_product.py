@@ -1,12 +1,6 @@
-# Copyright (c) 2013, 	9t9it and contributors
+# Copyright (c) 2013, 9T9IT and contributors
 # For license information, please see license.txt
 
-# from __future__ import unicode_literals
-# # import frappe
-
-# def execute(filters=None):
-# 	columns, data = [], []
-# 	return columns, data
 from __future__ import unicode_literals
 import frappe
 from functools import partial, reduce
@@ -128,7 +122,7 @@ def _get_filters(filters):
         [
             "dn.docstatus = 1",
             "dn.posting_date BETWEEN %(from_date)s AND %(to_date)s",
-            # "so.workflow_state = 'Collected'",
+            "so.workflow_state = 'Collected'",
         ],
         ["dn.pb_branch IN %(branches)s"] if branches else [],
     )
@@ -305,8 +299,8 @@ def _query(clauses, values):
                     'Yes',
                     'No'
                 ) AS below_ms2,
-                si.pb_sales_person AS sales_person,
-                si.pb_sales_person_name AS sales_person_name,
+                si.pb_sales_employee AS sales_person,
+                si.pb_sales_employee_name AS sales_person_name,
                 IF(
                     si.total = 0,
                     0,
@@ -318,7 +312,7 @@ def _query(clauses, values):
                 si.orx_dispensor AS dispensor,
                 si.pb_branch AS branch,
                 IF(
-                    si.update_stock = 1 ,
+                    si.update_stock = 1 OR so.workflow_state = 'Collected',
                     'Collected',
                     'Achieved'
                 ) AS sales_status,
