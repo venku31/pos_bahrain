@@ -11,11 +11,11 @@
 #     }, kwargs)
 import frappe
 from frappe import _
-from frappe.utils import getdate
+from frappe.utils import getdate,now, format_datetime
 from dateutil import relativedelta
-from toolz import merge
+from toolz import merge, compose, first
 import calendar
-
+from functools import reduce
 
 def make_column(key, label=None, type="Data", width=120, **kwargs):
     return merge({
@@ -57,7 +57,7 @@ def make_period_list(start_date, end_date):
 
 def with_report_generation_time(rows, keys, field=None):
     if not rows or not frappe.db.get_single_value(
-        "Optical Store Settings", "include_report_generation_time"
+        "POS Bahrain Settings", "include_report_generation_time"
     ):
         return rows
     template = reduce(lambda a, x: merge(a, {x: None}), keys, {})
