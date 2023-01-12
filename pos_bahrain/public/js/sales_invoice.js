@@ -225,19 +225,46 @@ frappe.ui.form.on('Sales Invoice',"before_save", function(){
        }
        }
       })
-
- frappe.ui.form.on("Sales Invoice", "ignore_payments_for_return", function(frm, doctype, name){
-    if (frm.doc.is_return && frm.doc.ignore_payments_for_return){
-    cur_frm.clear_table("payments"); 
-    frm.doc.is_pos = 0
-    cur_frm.refresh_fields();
-    }
-    });
-  // frappe.ui.form.on("Sales Invoice", "validate", function(frm, doctype, name){
-  //     if (frm.doc.is_return && frm.doc.ignore_payments_for_return){
+  function sales_invoice_payment(frm, cdt, cdn) {
+        // var d = locals[cdt][cdn];
+        // // var amount = 0;
+        // if (frm.doc.is_pos && frm.doc.ignore_payments_for_return){
+        // frm.doc.payments.forEach(function(d) { d.amount = 0});
+        // // frm.set_value('amount', amount);
+        //  }
+        //  else if(frm.doc.is_pos && !frm.doc.ignore_payments_for_return){
+        //   frm.doc.payments.forEach(function(d) { d.amount = frm.doc.rounded_total}); 
+        //  }
+        if(frm.doc.ignore_payments_for_return == 1){
+    	    $.each(frm.doc.payments,  function(i,  d) {
+                 d.amount = 0;
+                 d.base_amount=0;
+            });
+            
+            frm.refresh();
+	    }
+        }	
+//  frappe.ui.form.on("Sales Invoice", "ignore_payments_for_return", function(frm, doctype, name){
+//     // if (frm.doc.is_return && frm.doc.ignore_payments_for_return){
+//     if (frm.doc.ignore_payments_for_return){
+//     cur_frm.clear_table("payments"); 
+//     // frm.doc.is_pos = 1;
+//     cur_frm.refresh_fields();
+//     }
+//     });
+  frappe.ui.form.on("Sales Invoice", {
+    ignore_payments_for_return: function (frm, cdt, cdn) {
+      sales_invoice_payment(frm, cdt, cdn);
+      },
+    refresh: function (frm, cdt, cdn) {
+      sales_invoice_payment(frm, cdt, cdn);
+        },
+   });
+  // frappe.ui.form.on("Sales Invoice", "after_insert", function(frm, doctype, name){
+  //     if (frm.doc.ignore_payments_for_return){
   //     cur_frm.clear_table("payments"); 
-  //     frm.doc.is_pos = 0
-  //     cur_frm.refresh_fields();
+  //     // frm.doc.is_pos = 0
+  //     // cur_frm.refresh_fields();
   //     }
   //     });
       frappe.ui.form.on("Sales Invoice Item", "qty", function(frm, cdt, cdn) {

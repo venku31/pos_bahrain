@@ -71,6 +71,7 @@ def create_stock_adjustment(data=None):
                 "warehouse":item["warehouse"],
                 "qty": item["qty"],
                 "batch_no" : item["batch_no"],
+                "allow_zero_valuation_rate" : 1,
                 })
    
             sa_doc.insert(ignore_permissions=True)
@@ -91,6 +92,7 @@ def create_stock_adjustment(data=None):
                 "warehouse":item["warehouse"],
                 "qty": item["qty"],
                 "batch_no" : item["batch_no"],
+                "allow_zero_valuation_rate" : 1,
                 })
    
             sa_doc.insert(ignore_permissions=True)
