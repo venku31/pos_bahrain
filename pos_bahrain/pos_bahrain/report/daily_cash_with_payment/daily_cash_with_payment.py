@@ -37,6 +37,10 @@ def _get_columns(mop, filters):
 		columns.append(
 			make_column("invoice", type="Link", options="Sales Invoice")
 		)
+	if not summary_view:
+		columns.append(
+			make_column("pe", type="Link", options="Payment Entry",width='50')
+		)
 
 	columns.append(make_column("posting_date", "Date", type="Date"))
 
@@ -83,6 +87,7 @@ def _get_data(clauses, filters, mop):
 		"""
 			SELECT
 				si.name AS invoice,
+				"" as pe,
 				pp.warehouse AS warehouse,
 				si.posting_date AS posting_date,
 				si.posting_time AS posting_time,
@@ -122,6 +127,7 @@ def _get_data(clauses, filters, mop):
 	payment_entry = frappe.db.sql(
 		"""SELECT
 				pe.name AS invoice,
+				pe.name as pe,
 				pp.warehouse AS warehouse,
 				pe.posting_date AS posting_date,
 				pe.pb_posting_time AS posting_time,
@@ -260,6 +266,8 @@ def _make_payment_row(mop_cols, _, row):
 
 	if not _.get('invoice'):
 		_['invoice'] = row.get('invoice')
+	if not _.get('pe'):
+		_['pe'] = row.get('pe')
 	if not _.get('change'):
 		_['change'] = row.get('change_amount')
 	if not _.get('posting_date'):
@@ -295,6 +303,7 @@ def _get_mop():
 def _new_invoice_payment(mop_cols):
 	invoice_payment = {
 		'invoice': None,
+		'payment_entry':None,
 		'posting_date': None,
 		'posting_time': None,
 		'change': None,

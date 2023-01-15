@@ -84,6 +84,7 @@ def on_submit(doc, method):
     _make_return_dn(doc)
     gl_entries_update(doc)
     update_credit_note(doc)
+    update_against_sales_invoice(doc)
 
 
 def before_cancel(doc, method):
@@ -424,7 +425,8 @@ def gl_entries_cancel(doc):
             frappe.db.set_value("GL Entry", name, "credit_in_account_currency", doc.paid_amount)
             frappe.db.set_value("Sales Invoice", doc.main_invoice, "outstanding_amount", -doc.paid_amount)
             doc.set_status(update=True)
-
+    doc.flags.ignore_links = True
+    
 def gl_entries_update(doc):
     return_against = frappe.db.get_value("Sales Invoice",doc.return_si_no, "return_against")
     gl_name = frappe.db.sql(
@@ -544,3 +546,51 @@ def update_cn_write_off_amt_amount(doc):
         cn_balance = frappe.db.get_value("Sales Invoice",doc.credit_note_invoice,"credit_note_balance")
         frappe.db.set_value("Sales Invoice", doc.credit_note_invoice, "credit_note_balance", cn_balance-doc.total_advance)
     
+@frappe.whitelist()
+def update_against_sales_invoice(doc):
+    get_dns = compose(
+        list,
+        unique,
+        partial(pluck, "delivery_note"),
+        frappe.db.sql,
+    )
+    get_sos = compose(
+        list,
+        unique,
+        partial(pluck, "sales_order"),
+        frappe.db.sql,
+    )   
+    dns = get_dns(
+        """
+            Select delivery_note From `tabSales Invoice Item` where docstatus = 1 AND parent=%(invoice)s
+        """,
+        values={"invoice": doc.name},
+        as_dict=1,
+    )
+    sos = get_sos(
+        """
+            Select sales_order From `tabSales Invoice Item` where docstatus = 1 AND parent=%(invoice)s
+        """,
+        values={"invoice": doc.name},
+        as_dict=1,
+    )   
+    if not doc.is_return:
+        if dns :
+            for row in dns:
+            
+                frappe.db.sql("""
+				update `tabDelivery Note Item` 
+					set against_sales_invoice = "{sales_invoice}"
+					where docstatus=1 AND parent = "{delivery_note}";""".format( sales_invoice= doc.name,
+						delivery_note = row))
+                frappe.db.commit()
+        if sos :
+            for row in sos:
+            
+                frappe.db.sql("""
+				update `tabDelivery Note Item` 
+					set against_sales_invoice = "{sales_invoice}"
+					where docstatus=1 AND against_sales_order = "{sales_order}";""".format( sales_invoice= doc.name,
+						sales_order = row))
+                frappe.db.commit()
+                # return True
