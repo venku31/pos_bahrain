@@ -148,14 +148,17 @@ def search_batch_details(batch):
     item_data = search_serial_or_batch_or_barcode_number(batch)
     batch_no_data = frappe.db.get_value('Batch', batch, ['name as batch_no', 'item as item_code'], as_dict=True)
     batch_exists = frappe.db.sql("""SELECT * from `tabItem` WHERE name = '%(item_code)s' and has_batch_no=1 """%{"item_code": batch}, as_dict = 1)
-    print('/////////',batch_exists)
+    # print('/////////',batch_exists)
     if item_data != 0 and batch_exists:
         if batch_no_data:
+#             stock = frappe.db.sql("""SELECT batch_no,item_code,warehouse, sum(actual_qty) as qty,stock_uom 
+# from `tabStock Ledger Entry` sl LEFT JOIN `tabBatch` batch ON(sl.item_code=batch.item and sl.batch_no=batch.name)
+# WHERE sl.is_cancelled = 0 and batch.expiry_date>=CURDATE() and sl.batch_no = '%(item_code)s' group by sl.warehouse,sl.batch_no """%{"item_code": item_data['batch_no']}, as_dict = 1)
+#             return stock
             stock = frappe.db.sql("""SELECT batch_no,item_code,warehouse, sum(actual_qty) as qty,stock_uom 
 from `tabStock Ledger Entry` sl LEFT JOIN `tabBatch` batch ON(sl.item_code=batch.item and sl.batch_no=batch.name)
 WHERE sl.is_cancelled = 0 and batch.expiry_date>=CURDATE() and sl.batch_no = '%(item_code)s' group by sl.warehouse,sl.batch_no """%{"item_code": item_data['batch_no']}, as_dict = 1)
             return stock
-    
         else :
             stock = frappe.db.sql("""SELECT batch_no,item_code,warehouse, sum(actual_qty) as qty,stock_uom 
 from `tabStock Ledger Entry` sl LEFT JOIN `tabBatch` batch ON(sl.item_code=batch.item and sl.batch_no=batch.name)

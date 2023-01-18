@@ -27,7 +27,7 @@ frappe.ui.form.on("PREC Details", {
 	},
 	});
 function clear_fields(){
-	console.log("Clear field ::::::::::::::::::::::s")
+	console.log("Clear field :::::::::::::::::::::s")
 }
 
 function fetch_batch_entry(frm, cdt, cdn) {
