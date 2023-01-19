@@ -260,6 +260,7 @@ fixtures = [
                     "Item-authorized_representative_name",
                     "Item-authorized_representative_email_field",
                     "authorized_representative_contact_person_number",
+                    "Quotation-sales_order",
                 ],
             ],
         ],
