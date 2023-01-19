@@ -235,14 +235,26 @@ frappe.ui.form.on('Sales Invoice',"before_save", function(){
         //  else if(frm.doc.is_pos && !frm.doc.ignore_payments_for_return){
         //   frm.doc.payments.forEach(function(d) { d.amount = frm.doc.rounded_total}); 
         //  }
-        if(frm.doc.ignore_payments_for_return == 1){
+        if (frm.doc.is_return==0){
+        if(frm.doc.ignore_payments_for_return == 1 && frm.doc.docstatus==0 && frm.doc.paid_amount!=0){
     	    $.each(frm.doc.payments,  function(i,  d) {
                  d.amount = 0;
                  d.base_amount=0;
-            });
+                 frm.doc.paid_amount=0;
+                 });
             
             frm.refresh();
-	    }
+	    }}
+      else {
+        if(frm.doc.ignore_payments_for_return == 1 && frm.doc.docstatus==0 && frm.doc.paid_amount!=0){
+    	    $.each(frm.doc.payments,  function(i,  d) {
+                 d.amount = 0;
+                 d.base_amount=0;
+                 });
+            
+            frm.refresh();
+	    }  
+      }
         }	
 //  frappe.ui.form.on("Sales Invoice", "ignore_payments_for_return", function(frm, doctype, name){
 //     // if (frm.doc.is_return && frm.doc.ignore_payments_for_return){
