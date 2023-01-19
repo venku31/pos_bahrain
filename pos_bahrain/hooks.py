@@ -341,6 +341,8 @@ doc_events = {
     },
     "Sales Order": {
         "before_save": "pos_bahrain.doc_events.sales_order.before_save",
+        "on_submit": "pos_bahrain.doc_events.sales_order.on_submit",
+        "before_cancel": "pos_bahrain.doc_events.sales_order.before_cancel",
     },
     "Sales Invoice": {
         "validate": "pos_bahrain.doc_events.sales_invoice.validate",

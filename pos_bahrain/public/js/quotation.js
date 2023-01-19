@@ -27,6 +27,13 @@ function get_employee(frm) {
     })
   }
 }
+frappe.ui.form.on("Quotation", {
+	refresh:function(frm){
+		cur_frm.custom_buttons["Sales Order"].hide()
+		
+	},
+	
+})
 
 function _create_custom_buttons(frm) {
   if (frm.doc.docstatus === 1 && frm.doc.status !== 'Lost') {
@@ -78,3 +85,6 @@ function get_total_stock_qty(frm, cdt, cdn) {
       }
   })
 }
+
+
+
