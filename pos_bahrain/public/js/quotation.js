@@ -29,8 +29,9 @@ function get_employee(frm) {
 }
 frappe.ui.form.on("Quotation", {
 	refresh:function(frm){
+    if (frm.doc.status =="Ordered" && frm.doc.status !== 'Lost') {
 		cur_frm.custom_buttons["Sales Order"].hide()
-		
+    }
 	},
 	
 })
