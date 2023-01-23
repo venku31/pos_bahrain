@@ -20,3 +20,12 @@ function get_total_stock_qty(frm, cdt, cdn) {
         }
     })
 }
+
+frappe.ui.form.on('Purchase Invoice', {
+	validate: function(frm) {
+	       if(frm.doc.is_paid == 0 && frm.doc.docstatus==0){
+        frm.set_value("paid_amount", 0);
+        frm.set_value("base_paid_amount", 0);
+	}
+}
+})
