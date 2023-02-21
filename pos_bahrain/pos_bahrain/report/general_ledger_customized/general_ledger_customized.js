@@ -22,7 +22,8 @@ frappe.query_reports["General Ledger Customized"] = {
 			"fieldname":"from_date",
 			"label": __("From Date"),
 			"fieldtype": "Date",
-			"default": frappe.datetime.add_months(frappe.datetime.get_today(), -1),
+			"default": frappe.datetime.get_today(),
+			// "default": frappe.datetime.add_months(frappe.datetime.get_today(), -1),
 			"reqd": 1,
 			"width": "60px"
 		},
@@ -62,7 +63,7 @@ frappe.query_reports["General Ledger Customized"] = {
 			"label": __("Party Type"),
 			"fieldtype": "Link",
 			"options": "Party Type",
-			"default": "",
+			"default": "Customer",
 			on_change: function() {
 				frappe.query_report.set_filter_value('party', "");
 			}
@@ -86,40 +87,54 @@ frappe.query_reports["General Ledger Customized"] = {
 				if(!party_type || parties.length === 0 || parties.length > 1) {
 					frappe.query_report.set_filter_value('party_name', "");
 					frappe.query_report.set_filter_value('tax_id', "");
-            //    frappe.query_report.set_filter_value('drug_license_no', "");
                frappe.query_report.set_filter_value('customer_primary_address', "");
 			   frappe.query_report.set_filter_value('primary_address', "");
 					return;
 				} else {
 					var party = parties[0];
 					var fieldname = erpnext.utils.get_party_name(party_type) || "name";
-					frappe.db.get_value(party_type, party, fieldname, function(value) {
+					frappe.query_report.get_filter_value(party_type, party, fieldname, function(value) {
 						frappe.query_report.set_filter_value('party_name', value[fieldname]);
 					});
 
 					if (party_type === "Customer" || party_type === "Supplier") {
-						frappe.db.get_value(party_type, party, "tax_id", function(value) {
+						frappe.query_report.get_filter_value(party_type, party, "tax_id", function(value) {
 							frappe.query_report.set_filter_value('tax_id', value["tax_id"]);
 						});
 					}
-            //    if (party_type === "Customer") {
-			// 			frappe.db.get_value(party_type, party, "drug_license_no", function(value) {
-			// 				frappe.query_report.set_filter_value('drug_license_no', value["drug_license_no"]);
-			// 			});
-			// 		}
                if (party_type === "Customer") {
-						frappe.db.get_value(party_type, party, "customer_primary_address", function(value) {
+						frappe.query_report.get_filter_value(party_type, party, "customer_primary_address", function(value) {
 							frappe.query_report.set_filter_value('customer_primary_address', value["customer_primary_address"]);
 						});
 					}
-
-					if (party_type === "Customer") {
-						frappe.db.get_value(party_type, party, "primary_address", function(value) {
-							frappe.query_report.set_filter_value('primary_address', value["primary_address"]);
-						});
-					}
 				}
-			}
+				// 			frappe.call({
+				// 				method: 'pos_bahrain.pos_bahrain.report.general_ledger_customized.general_ledger_customized.get_addr',
+				// 				args: {
+				// 					"party_type":frappe.query_report.get_filter_value('party_type'),
+				// 					"party":frappe.query_report.get_filter_value('party')
+				// 				},
+				// 				callback: function(r) {
+				// 					console.log( r.message);
+				// 					frappe.query_report.set_filter_value('primary_address', r.message);
+				// 				}
+				// 			});
+				
+				// frappe.query_report.refresh();
+			},
+			validate: function() {
+			frappe.call({
+				method: 'pos_bahrain.pos_bahrain.report.general_ledger_customized.general_ledger_customized.get_addr',
+				args: {
+					"party_type":frappe.query_report.get_filter_value('party_type'),
+					"party":frappe.query_report.get_filter_value('party')
+				},
+				callback: function(r) {
+					console.log( r.message);
+					frappe.query_report.set_filter_value('primary_address', r.message);
+				}
+			});
+		},
 		},
 		{
 			"fieldname":"party_name",
@@ -159,22 +174,16 @@ frappe.query_reports["General Ledger Customized"] = {
 			"hidden": 1
 		},
       {
-			"fieldname":"drug_license_no",
-			"label": __("Drug License"),
-			"fieldtype": "Data",
-			"hidden": 1
-		},
-      {
 			"fieldname":"customer_primary_address",
 			"label": __("Primary Address"),
 			"fieldtype": "Link",
-			"hidden": 1
+			"hidden":1
 		},
 		{
 			"fieldname":"primary_address",
 			"label": __("Address"),
 			"fieldtype": "Text",
-			"hidden": 1
+			"hidden":1
 		},
 		{
 			"fieldname": "presentation_currency",
@@ -227,6 +236,12 @@ frappe.query_reports["General Ledger Customized"] = {
 			"fieldname": "show_net_values_in_party_account",
 			"label": __("Show Net Values in Party Account"),
 			"fieldtype": "Check"
+		},
+		{
+			"fieldname": "show_post_dated_cheques",
+			"label": __("Show Post Dated Cheques"),
+			"fieldtype": "Check",
+			"default" :1
 		}
 	]
 }
