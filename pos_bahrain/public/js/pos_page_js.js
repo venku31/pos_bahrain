@@ -215,6 +215,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       this.frm.doc.posting_date = frappe.datetime.get_today();
       this.frm.doc.posting_time = frappe.datetime.now_time();
       this.frm.doc.pos_total_qty = this.frm.doc.qty_total;
+	//   this.frm.doc.email_id = this.frm.doc.email_id;
       this.frm.doc.pos_profile = this.pos_profile_data['name'];
       this.frm.doc.pb_set_cost_center = this.pos_profile_data['write_off_cost_center'];
       invoice_data[this.frm.doc.offline_pos_name] = this.frm.doc;
