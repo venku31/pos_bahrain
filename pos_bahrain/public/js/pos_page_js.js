@@ -659,8 +659,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 				{
 					"label": __("ZIP Code"),
 					"fieldname": "pincode",
-					"fieldtype": "Data",
-					"default" : "0"
+					"fieldtype": "Data"
 				},
 				{
 					"label": __("Customer POS Id"),
