@@ -303,4 +303,12 @@ frappe.ui.form.on('Sales Invoice',"before_save", function(){
         // refresh_field("advances");
         
         // })
-      
+        frappe.ui.form.on("Sales Invoice Item", {
+          items_remove: function(frm, cdt, cdn) {
+         if (cur_frm.doc.is_return==1) {     
+           var d = locals[cdt][cdn];
+           frm.set_value('outstanding_amount', 0);
+             refresh_field("items");
+           }
+          }
+           });
