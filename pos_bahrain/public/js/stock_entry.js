@@ -42,3 +42,14 @@ function _set_repack_warehouses_read_only(frm) {
     frm.fields_dict["items"].grid.toggle_enable("t_warehouse", 0);
   }
 }
+
+// frappe.ui.form.on('Stock Entry', {
+// 	setup: function(frm) {
+//     frappe.db.get_single_value('POS Bahrain Settings', 'disable_serial_no_and_batch_selector')
+// 		.then((value) => {
+// 			if (value) {
+// 				frappe.flags.hide_serial_batch_dialog = true;
+// 			}
+// 		});
+//   },
+// }) 
