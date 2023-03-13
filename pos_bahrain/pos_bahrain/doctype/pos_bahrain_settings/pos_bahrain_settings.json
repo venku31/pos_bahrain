@@ -68,7 +68,8 @@
   "journa_entry_cancel_with_payment_reco",
   "cancel_credit_note_jv",
   "column_break_62",
-  "customer"
+  "customer",
+  "disable_serial_no_and_batch_selector"
  ],
  "fields": [
   {
@@ -446,10 +447,16 @@
    "fieldname": "include_report_generation_time",
    "fieldtype": "Data",
    "label": "include_report_generation_time"
+  },
+  {
+   "default": "1",
+   "fieldname": "disable_serial_no_and_batch_selector",
+   "fieldtype": "Check",
+   "label": "Disable Serial No And Batch Selector"
   }
  ],
  "issingle": 1,
- "modified": "2023-01-04 14:33:48.421307",
+ "modified": "2023-03-12 14:24:23.977348",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "POS Bahrain Settings",

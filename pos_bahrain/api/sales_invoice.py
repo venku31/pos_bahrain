@@ -14,7 +14,7 @@ def make_purchase_invoice(source_name, target_doc=None):
     def set_missing_values(source, target):
         target.due_date = source.posting_date
         target.bill_date = source.posting_date
-        target.bill_no = source.name
+    # target_doc.bill_no = source_name.name,
         target.run_method("set_missing_values")
         target.run_method("calculate_taxes_and_totals")
 
@@ -31,7 +31,10 @@ def make_purchase_invoice(source_name, target_doc=None):
         "Payment Schedule": {
             "doctype": "Payment Schedule",
         },
+    
     }, target_doc, set_missing_values)
+    doc.bill_no = source_name
+    doc.shipping_address = ""
 
     return doc
 

@@ -7,6 +7,8 @@ export default async function(frm, cdt, cdn) {
 
   const d = frappe.get_doc(cdt, cdn);
   if (d.item_code) {
+    // exists=frappe.db.get_single_value('POS Bahrain Settings', 'disable_serial_no_and_batch_selector')
+    // if (!exists){
     const { company, doctype: voucher_type } = frm.doc;
     const {
       item_code,
@@ -45,7 +47,15 @@ export default async function(frm, cdt, cdn) {
         }
       });
       refresh_field('items');
-      erpnext.stock.select_batch_and_serial_no(frm, d);
+      return frappe.db.get_single_value('POS Bahrain Settings', 'disable_serial_no_and_batch_selector')
+											.then((value) => {
+												if (!value) {
+													erpnext.stock.select_batch_and_serial_no(frm, d);
+												}
+											});
+								
+      
     }
   }
 }
+// }
