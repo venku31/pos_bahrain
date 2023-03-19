@@ -225,6 +225,15 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 	  this.frm.doc.address_line1 = this.customer_doc.get_values().address_line1 || " ";
 	  this.frm.doc.address_line2 = this.customer_doc.get_values().address_line2 || " ";
 	  }
+	  else {
+		this.frm.doc.phone = " ";
+		this.frm.doc.customer_name = this.frm.doc.customer;
+		this.frm.doc.email_id = " ";
+		this.frm.doc.city =  " ";
+		this.frm.doc.state =  " ";
+		this.frm.doc.address_line1 =  " ";
+		this.frm.doc.address_line2 = " ";
+		};
       this.frm.doc.pos_profile = this.pos_profile_data['name'];
       this.frm.doc.pb_set_cost_center = this.pos_profile_data['write_off_cost_center'];
       invoice_data[this.frm.doc.offline_pos_name] = this.frm.doc;
