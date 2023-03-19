@@ -216,6 +216,24 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
       this.frm.doc.posting_time = frappe.datetime.now_time();
       this.frm.doc.pos_total_qty = this.frm.doc.qty_total;
 	//   this.frm.doc.email_id = this.frm.doc.email_id;
+	  if(this.customer_doc){
+	  this.frm.doc.phone = this.customer_doc.get_values().phone || " ";
+	  this.frm.doc.customer_name = this.customer_doc.get_values().full_name || " ";
+	  this.frm.doc.email_id = this.customer_doc.get_values().email_id || " ";
+	  this.frm.doc.city = this.customer_doc.get_values().city || " ";
+	  this.frm.doc.state = this.customer_doc.get_values().state || " ";
+	  this.frm.doc.address_line1 = this.customer_doc.get_values().address_line1 || " ";
+	  this.frm.doc.address_line2 = this.customer_doc.get_values().address_line2 || " ";
+	  }
+	  else {
+		this.frm.doc.phone = " ";
+		this.frm.doc.customer_name = this.frm.doc.customer;
+		this.frm.doc.email_id = " ";
+		this.frm.doc.city =  " ";
+		this.frm.doc.state =  " ";
+		this.frm.doc.address_line1 =  " ";
+		this.frm.doc.address_line2 = " ";
+		};
       this.frm.doc.pos_profile = this.pos_profile_data['name'];
       this.frm.doc.pb_set_cost_center = this.pos_profile_data['write_off_cost_center'];
       invoice_data[this.frm.doc.offline_pos_name] = this.frm.doc;
@@ -593,7 +611,8 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 					"label": __("Full Name"),
 					"fieldname": "full_name",
 					"fieldtype": "Data",
-					"reqd": 1
+					"reqd": 0
+					
 				},
 				{
 					"fieldtype": "Section Break"
@@ -602,6 +621,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 					"label": __("Email Id"),
 					"fieldname": "email_id",
 					"fieldtype": "Data"
+					
 				},
 				{
 					"fieldtype": "Column Break"
@@ -610,6 +630,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 					"label": __("Contact Number"),
 					"fieldname": "phone",
 					"fieldtype": "Data"
+				
 				},
 				{
 					"fieldtype": "Section Break"
@@ -624,11 +645,13 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 					"label": __("Address Line 1"),
 					"fieldname": "address_line1",
 					"fieldtype": "Data"
+					
 				},
 				{
 					"label": __("Address Line 2"),
 					"fieldname": "address_line2",
 					"fieldtype": "Data"
+					
 				},
 				{
 					"fieldtype": "Column Break"
@@ -637,16 +660,19 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 					"label": __("City"),
 					"fieldname": "city",
 					"fieldtype": "Data"
+					
 				},
 				{
 					"label": __("State"),
 					"fieldname": "state",
 					"fieldtype": "Data"
+					
 				},
 				{
 					"label": __("ZIP Code"),
 					"fieldname": "pincode",
 					"fieldtype": "Data"
+					
 				},
 				{
 					"label": __("Customer POS Id"),
@@ -674,7 +700,7 @@ render_address_data: function() {
 
 		this.customer_doc.set_values(this.address_data)
 		if(!this.customer_doc.fields_dict.full_name.$input.val()) {
-			this.customer_doc.set_value("full_name", this.frm.doc.customer_name)
+			this.customer_doc.set_value("full_name", this.frm.doc.customer_name)||this.frm.doc.customer
 		}
 
 		if(!this.customer_doc.fields_dict.customer_pos_id.value) {
@@ -726,7 +752,7 @@ render_address_data: function() {
 	update_customer_data: function (doc) {
 		var me = this;
 		this.frm.doc.customer = doc.label || doc.customer_name;
-		this.frm.doc.customer_name = doc.customer_name;
+		this.frm.doc.customer_name = doc.customer_name||doc.label;
 		this.frm.doc.mobile_no = doc.mobile_no;
 		this.frm.doc.phone = doc.phone;
 		this.frm.doc.email_id = doc.email_id;
