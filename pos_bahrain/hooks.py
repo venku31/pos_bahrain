@@ -261,7 +261,6 @@ fixtures = [
                     "Item-authorized_representative_email_field",
                     "authorized_representative_contact_person_number",
                     "Quotation-sales_order",
-                    "Sales Invoice-mobile_no",
                     "Sales Invoice-phone",
                     "Sales Invoice-email_id",
                     "Sales Invoice-city",
