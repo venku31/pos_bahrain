@@ -36,8 +36,8 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
           method: 'erpnext.accounts.doctype.sales_invoice.pos.get_pos_data',
         });
         localStorage.setItem('doc', JSON.stringify(r.message.doc));
-        this.init_master_data(r, false);
-        this.load_data(false);
+        this.init_master_data(r, true);
+        this.load_data(true);
         this.make_item_list();
         this.set_missing_values();
       }
@@ -413,14 +413,14 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 			});
 
 			this.party_field.make_input();
-			setTimeout(this.set_focus.bind(this), 500);
+			setTimeout(this.set_focus.bind(this), 1500);
 			me.toggle_delete_button();
 		}
 
 		this.party_field.awesomeplete =
 			new Awesomplete(this.party_field.$input.get(0), {
 				minChars: 0,
-				maxItems: 99,
+				maxItems: 9999,
 				autoFirst: true,
 				list: [],
 				filter: function (item, input) {
@@ -540,7 +540,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 		this.customers_mapper = [];
 
 		customer_data.forEach(function (c, index) {
-			if(index < 30) {
+			if(index < 3000) {
 				contact = me.contacts[c.name];
 				if(contact && !c['phone']) {
 					c["phone"] = contact["phone"];
@@ -558,7 +558,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 					cr_no:c.cr_no,
 					phone: contact ? contact["phone"] : '',
 					mobile_no: contact ? contact["mobile_no"] : '',
-					email_id: contact ? contact["email_id"] : '',
+					email_id: contact ? contact["email_id"] : '0',
 					searchtext: ['customer_name', 'customer_group', 'name', 'value','cr_no',
 						'label', 'email_id', 'phone', 'mobile_no']
 						.map(key => c[key]).join(' ')
@@ -620,7 +620,8 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 				{
 					"label": __("Email Id"),
 					"fieldname": "email_id",
-					"fieldtype": "Data"
+					"fieldtype": "Data",
+					"default": "."
 					
 				},
 				{
@@ -755,7 +756,7 @@ render_address_data: function() {
 		this.frm.doc.customer_name = doc.customer_name||doc.label;
 		this.frm.doc.mobile_no = doc.mobile_no;
 		this.frm.doc.phone = doc.phone;
-		this.frm.doc.email_id = doc.email_id;
+		this.frm.doc.email_id = doc.email_id || ".";
 		this.frm.doc.customer_group = doc.customer_group;
 		this.frm.doc.territory = doc.territory;
 		this.pos_bill.show();

@@ -15,6 +15,7 @@ from functools import partial
 from toolz import groupby, merge, valmap, compose, get, excepts, first, pluck
 
 from pos_bahrain.utils import key_by
+from six import string_types, iteritems
 
 
 @frappe.whitelist()
@@ -105,7 +106,24 @@ def get_pos_data():
             )
         },
     )
+def get_customers_address(customers):
+	customer_address = {}
+	if isinstance(customers, string_types):
+		customers = [frappe._dict({'name': customers})]
 
+	for data in customers:
+		address = frappe.db.sql(""" select name, address_line1, address_line2, city, state,
+			IFNULL(email_id,".") as email_id, IFNULL(phone,0) as phone, fax, pincode from `tabAddress` where is_primary_address =1 and name in
+			(select parent from `tabDynamic Link` where link_doctype = 'Customer' and link_name = %s
+			and parenttype = 'Address')""", data.name, as_dict=1)
+		address_data = {}
+		if address:
+			address_data = address[0]
+
+		address_data.update({'full_name': data.customer_name, 'customer_pos_id': data.customer_pos_id})
+		customer_address[data.name] = address_data
+
+	return customer_address
 
 @frappe.whitelist()
 def get_more_pos_data(profile, company):

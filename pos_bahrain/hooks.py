@@ -482,12 +482,15 @@ from erpnext.controllers.accounts_controller import AccountsController as _Accou
 from erpnext.controllers import sales_and_purchase_return as _sales_and_purchase_return
 from erpnext.controllers import taxes_and_totals as _taxes_and_totals
 from erpnext.accounts.doctype.sales_invoice.sales_invoice import SalesInvoice
+from erpnext.accounts.doctype.sales_invoice import pos as _pos
 from pos_bahrain.api.sales_invoice import set_advances_ov,get_advance_entries,reconcile_against_document_ov,update_against_document_in_jv_ov,validate_pos_paid_amount_ov
 from pos_bahrain.api.sales_and_purchase_return import set_missing_values
 from pos_bahrain.api.taxes_and_totals import calculate_change_amount,calculate_write_off_amount,update_paid_amount_for_return_ov
+from pos_bahrain.api.item import get_customers_address as _get_customers_address
 _AccountsController.set_advances = set_advances_ov
 _AccountsController.get_advance_entries = get_advance_entries
 _AccountsController.update_against_document_in_jv = update_against_document_in_jv_ov
 _taxes_and_totals.calculate_write_off_amount = calculate_write_off_amount
 # _taxes_and_totals.update_paid_amount_for_return = update_paid_amount_for_return_ov
 SalesInvoice.validate_pos_paid_amount = validate_pos_paid_amount_ov
+_pos.get_customers_address = _get_customers_address
