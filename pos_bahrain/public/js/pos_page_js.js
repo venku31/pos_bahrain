@@ -36,8 +36,8 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
           method: 'erpnext.accounts.doctype.sales_invoice.pos.get_pos_data',
         });
         localStorage.setItem('doc', JSON.stringify(r.message.doc));
-        this.init_master_data(r, true);
-        this.load_data(true);
+        this.init_master_data(r, false);
+        this.load_data(false);
         this.make_item_list();
         this.set_missing_values();
       }
@@ -413,14 +413,14 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 			});
 
 			this.party_field.make_input();
-			setTimeout(this.set_focus.bind(this), 1500);
+			setTimeout(this.set_focus.bind(this), 500);
 			me.toggle_delete_button();
 		}
 
 		this.party_field.awesomeplete =
 			new Awesomplete(this.party_field.$input.get(0), {
 				minChars: 0,
-				maxItems: 9999,
+				maxItems: 199,
 				autoFirst: true,
 				list: [],
 				filter: function (item, input) {
@@ -540,7 +540,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 		this.customers_mapper = [];
 
 		customer_data.forEach(function (c, index) {
-			if(index < 3000) {
+			if(index < 300) {
 				contact = me.contacts[c.name];
 				if(contact && !c['phone']) {
 					c["phone"] = contact["phone"];
