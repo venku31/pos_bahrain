@@ -36,6 +36,12 @@ export default function withStockValidator(Pos) {
             const selected_qty = qty * conversion_factor;
             const new_qty = this.batch_qty[batch_no] - selected_qty;
             if (new_qty < 0) {
+                const pay_button = document.querySelector(".pos-pay");
+                pay_button.disabled = true;
+
+                setTimeout(function(){
+                    pay_button.disabled = false;
+                }, 1000)
                 frappe.throw(
                     __(`Row ${index + 1} with ${item.item_code} has only ${this.batch_qty[batch_no]} ${item.stock_uom} in batch ${batch_no}. Please select another batch which has ${selected_qty} ${item.uom} in the warehouse.`)
                 );
