@@ -1,6 +1,8 @@
 erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
   onload: function() {
     this._super();
+	this.reset_customer_local_storage();
+	this.add_new_doc_event();
     this.setinterval_to_sync_master_data(600000);
   },
   init_master_data: async function(r, freeze = true) {
@@ -820,6 +822,42 @@ render_address_data: function() {
 			this.add_to_cart();
 		}
 	},
+
+	add_new_doc_event: function() {
+		document.addEventListener("click", function(event) {
+			var element = event.target;
+			if(element.classList.contains("new_doc")) {
+				localStorage.setItem("address_line1", "");
+				localStorage.setItem("address_line2", "");
+				localStorage.setItem("contact", "");
+
+				//Fetch customer name
+				frappe.call({
+					method: "pos_bahrain.api.get_customer_details.get_default_customer_name",
+					args: {
+					customer_name: e.originalEvent.text.value
+					},
+					callback: (r) => {
+					localStorage.setItem("customer_name", r.message.customer_name);
+					}
+				});
+			}
+		});
+	},
+
+	reset_customer_local_storage: function () {
+		localStorage.setItem("address_line1", "");
+		localStorage.setItem("address_line2", "");
+		localStorage.setItem("contact", "");
+
+		//Fetch customer name
+		frappe.call({
+            method: "pos_bahrain.api.get_customer_details.get_default_customer_name",
+            callback: (r) => {
+            	localStorage.setItem("customer_name", r.message.customer_name);
+            }
+        });
+	}
 });
 
 
