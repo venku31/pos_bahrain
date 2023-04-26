@@ -127,6 +127,12 @@ def get_data():
                 ),
                 make_item(
                     "report",
+                    "Item-wise Sales and Discount",
+                    "Item-wise Sales and Discount",
+                    True,
+                ),
+                make_item(
+                    "report",
                     "Item-wise Sales Register with Employee",
                     "Item-wise Sales Register with Employee",
                     True,
