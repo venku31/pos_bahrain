@@ -46,8 +46,8 @@ export default function withCustomerContacts(Pos) {
             }
           });
 
-          const customer = e.originalEvent.text.value;
-          me.frm.doc.phone = me.customer_contacts[customer] || '';
+          //const customer = e.originalEvent.text.value;
+          //me.frm.doc.phone = me.customer_contacts[customer] || '';
         });
       }
     };
