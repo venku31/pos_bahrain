@@ -93,7 +93,7 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 			'stock_uom': d.stock_uom,
 			'pb_sales_employee': d.pb_sales_employee,
 			'pb_sales_employee_name': d.pb_sales_employee_name,
-			'pb_discount_percentage': d.pb_discount_percentage,
+			'pb_discount_percentage': d.discount_percentage,
 			'brand': brand,
 			'default_supplier': supplier,
 		})
@@ -250,12 +250,6 @@ def get_columns(additional_table_columns, filters):
 			'width': 80
 		},
 		{
-			'label': _('Discount'),
-			'fieldname': 'pb_discount_percentage',
-			'fieldtype': 'Data',
-			'width': 80
-		},
-		{
 			'label': _('Brand'),
 			'fieldname': 'brand',
 			'fieldtype': 'Link',
@@ -319,6 +313,12 @@ def get_columns(additional_table_columns, filters):
 			'width': 100
 		},
 		{
+			'label': _('Discount'),
+			'fieldname': 'pb_discount_percentage',
+			'fieldtype': 'Data',
+			'width': 80
+		},
+		{
 			'label': _('Rate'),
 			'fieldname': 'rate',
 			'fieldtype': 'Float',
@@ -378,13 +378,13 @@ def get_conditions(filters):
 		conditions +=  """and ifnull(`tabSales Invoice`.pb_sales_employee, '') = %(pb_sales_employee)s"""
 
 	if filters.get("show_only_discounted_sales"):
-		conditions +=  """and ifnull(`tabSales Invoice`.pb_discount_percentage, '') > 0.0"""
+		conditions +=  """ and ifnull(`tabSales Invoice Item`.discount_percentage, '') > 0 """
 
 	if filters.get("item_group"):
 		conditions +=  """and ifnull(`tabSales Invoice Item`.item_group, '') = %(item_group)s"""
 
 	if filters.get("pb_discount_percentage"):
-		conditions +=  """and ifnull(`tabSales Invoice`.pb_discount_percentage, '') = %(pb_discount_percentage)s"""
+		conditions +=  """and ifnull(`tabSales Invoice Item`.discount_percentage, '') = %(pb_discount_percentage)s"""
 
 	#if filters.get("supplier"):
 	#	conditions +=  """and ifnull(`tabSales Invoice Item`.name, '') = %(supplier)s"""
@@ -414,10 +414,11 @@ def get_items(filters, additional_query_columns):
 	else:
 		additional_query_columns = ''
 
-	return frappe.db.sql("""
+	query = frappe.db.sql("""
 		select
 			`tabSales Invoice Item`.name, `tabSales Invoice Item`.parent,
 			`tabSales Invoice`.posting_date, `tabSales Invoice`.debit_to,
+			`tabSales Invoice Item`.discount_percentage,
 			`tabSales Invoice`.pb_sales_employee, `tabSales Invoice`.pb_sales_employee_name,
 			`tabSales Invoice`.pb_discount_percentage, 
 			`tabSales Invoice`.project, `tabSales Invoice`.customer, `tabSales Invoice`.remarks,
@@ -434,6 +435,9 @@ def get_items(filters, additional_query_columns):
 		where `tabSales Invoice`.name = `tabSales Invoice Item`.parent
 			and `tabSales Invoice`.docstatus = 1 {1}
 		""".format(additional_query_columns or '', conditions), filters, as_dict=1) #nosec
+	#frappe.msgprint(f"str{query}")
+	frappe.errprint(query)
+	return query
 
 def get_delivery_notes_against_sales_order(item_list):
 	so_dn_map = frappe._dict()
