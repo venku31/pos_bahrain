@@ -830,6 +830,7 @@ render_address_data: function() {
 				localStorage.setItem("address_line1", "");
 				localStorage.setItem("address_line2", "");
 				localStorage.setItem("contact", "");
+				this.reset_customer_local_storage();
 
 				//Fetch customer name
 				frappe.call({

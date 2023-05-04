@@ -390,7 +390,7 @@ doc_events = {
     "Bank Reconciliation": {
         "get_payment_entries": "pos_bahrain.doc_events.bank_reconciliation.get_payment_entries",
         "update_clearance_date": "pos_bahrain.doc_events.bank_reconciliation.update_clearance_date",
-    },
+    }
 }
 
 boot_session = "pos_bahrain.doc_events.boot.boot_session"
