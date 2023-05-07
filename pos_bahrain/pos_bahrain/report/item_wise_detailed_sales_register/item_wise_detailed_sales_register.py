@@ -94,6 +94,7 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 			'pb_sales_employee': d.pb_sales_employee,
 			'pb_sales_employee_name': d.pb_sales_employee_name,
 			'pb_discount_percentage': d.discount_percentage,
+			'discount_amount': d.discount_amount,
 			'brand': brand,
 			'default_supplier': supplier,
 		})
@@ -313,10 +314,16 @@ def get_columns(additional_table_columns, filters):
 			'width': 100
 		},
 		{
-			'label': _('Discount'),
+			'label': _('Discount %'),
 			'fieldname': 'pb_discount_percentage',
 			'fieldtype': 'Data',
-			'width': 80
+			'width': 100
+		},
+		{
+			'label': _('Discount Amount'),
+			'fieldname': 'discount_amount',
+			'fieldtype': 'Currency',
+			'width': 100
 		},
 		{
 			'label': _('Rate'),
@@ -418,7 +425,7 @@ def get_items(filters, additional_query_columns):
 		select
 			`tabSales Invoice Item`.name, `tabSales Invoice Item`.parent,
 			`tabSales Invoice`.posting_date, `tabSales Invoice`.debit_to,
-			`tabSales Invoice Item`.discount_percentage,
+			`tabSales Invoice Item`.discount_percentage, `tabSales Invoice Item`.discount_amount,
 			`tabSales Invoice`.pb_sales_employee, `tabSales Invoice`.pb_sales_employee_name,
 			`tabSales Invoice`.pb_discount_percentage, 
 			`tabSales Invoice`.project, `tabSales Invoice`.customer, `tabSales Invoice`.remarks,
