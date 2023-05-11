@@ -96,7 +96,7 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 			'pb_discount_percentage': d.discount_percentage,
 			'discount_amount': d.discount_amount,
 			'brand': brand,
-			'default_supplier': supplier,
+			'supplier': d.supplier,
 		})
 
 		if d.stock_uom != d.uom and d.stock_qty:
@@ -179,6 +179,13 @@ def get_columns(additional_table_columns, filters):
 		])
 
 	columns.extend([
+		{
+			'label': _('Supplier'),
+			'fieldname': 'supplier',
+			'fieldtype': 'Link',
+			'options': 'Supplier',
+			'width': 150
+		},
 		{
 			'label': _('Description'),
 			'fieldname': 'description',
@@ -316,7 +323,8 @@ def get_columns(additional_table_columns, filters):
 		{
 			'label': _('Discount %'),
 			'fieldname': 'pb_discount_percentage',
-			'fieldtype': 'Data',
+			'fieldtype': 'Percent',
+			'precision': '2',
 			'width': 100
 		},
 		{
@@ -361,7 +369,8 @@ def get_columns(additional_table_columns, filters):
 def get_conditions(filters):
 	conditions = ""
 
-	for opts in (("company", " and company=%(company)s"),
+	#for opts in (("company", " and company=%(company)s"),
+	for opts in (("company", " and `tabSales Invoice`.company=%(company)s"),
 		("customer", " and `tabSales Invoice`.customer = %(customer)s"),
 		("item_code", " and `tabSales Invoice Item`.item_code = %(item_code)s"),
 		("from_date", " and `tabSales Invoice`.posting_date>=%(from_date)s"),
@@ -437,9 +446,12 @@ def get_items(filters, additional_query_columns):
 			`tabSales Invoice Item`.stock_qty, `tabSales Invoice Item`.stock_uom,
 			`tabSales Invoice Item`.base_net_rate, `tabSales Invoice Item`.base_net_amount,
 			`tabSales Invoice`.customer_name, `tabSales Invoice`.customer_group, `tabSales Invoice Item`.so_detail,
+			`tabItem Default`.default_supplier as supplier,
 			`tabSales Invoice`.update_stock, `tabSales Invoice Item`.uom, `tabSales Invoice Item`.qty {0}
 		from `tabSales Invoice`, `tabSales Invoice Item`
-		where `tabSales Invoice`.name = `tabSales Invoice Item`.parent
+		LEFT JOIN `tabItem Default`
+				ON (`tabItem Default`.parent = `tabSales Invoice Item`.item_code)
+		where `tabSales Invoice`.name = `tabSales Invoice Item`.parent and `tabItem Default`.company = `tabSales Invoice`.company
 			and `tabSales Invoice`.docstatus = 1 {1}
 		""".format(additional_query_columns or '', conditions), filters, as_dict=1) #nosec
 	#frappe.msgprint(f"str{query}")
