@@ -42,6 +42,7 @@ def _get_columns(filters):
         make_column("net_total", "Total Sales Value"),
         make_column("returns_grand_total", "Total Returns"),
         make_column("net_total_after_returns", "Net Sales After Tax & Returns"),
+        make_column("outstanding", "Outstanding")
     ]
     mops = pluck("name", frappe.get_all("Mode of Payment", order_by="modified desc"))
     return columns + [make_column(x, x) for x in mops]
@@ -64,6 +65,7 @@ def _get_data(clauses, values, keys):
                 SUM(si.base_grand_total) AS grand_total,
                 SUM(si.base_total_taxes_and_charges) AS tax_total,
                 SUM(si.base_net_total) AS net_total,
+                SUM(si.outstanding_amount) AS outstanding,
                 SUM(sr.base_grand_total) AS returns_grand_total
             FROM `tabSales Invoice` as s
             LEFT JOIN (
