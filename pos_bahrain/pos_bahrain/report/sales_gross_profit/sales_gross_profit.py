@@ -149,10 +149,10 @@ def get_data(from_date, to_date):
 								AS discount FROM `tabSales Invoice Item` inv_item 
 								WHERE parent = si.name )+ si.discount_amount+si.total)*100,3) as disc_percent,
 								si.docstatus as docstatus,
-								si.is_return
-								
+								si.is_return,
+								`tabSales Invoice Payment`.mode_of_payment as payment_method
 							FROM
-								`tabSales Invoice` si
+								`tabSales Invoice Payment`, `tabSales Invoice` si
 							LEFT JOIN
 								`tabSales Invoice Payment` ip ON ip.parent = si.name
 							GROUP BY
