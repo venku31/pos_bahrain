@@ -56,5 +56,11 @@ frappe.query_reports['Item Consumption Report'] = {
       fieldtype: 'Link',
       options: 'Item',
     },
+    {
+      fieldname: 'brand',
+      label: __('Brand'),
+      fieldtype: 'Link',
+      options: 'Brand',
+    },
   ],
 };
