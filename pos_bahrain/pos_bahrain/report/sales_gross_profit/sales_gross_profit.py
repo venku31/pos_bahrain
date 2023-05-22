@@ -96,7 +96,7 @@ def execute(filters=None):
 			'precision': 3
 		},
 		{
-			'fieldname': 'mop',
+			'fieldname': 'mode_of_payment' or 'mop',
 			'label': _('Payment Method'),
 			'fieldtype': 'Data',
 			"width": 100
@@ -150,9 +150,10 @@ def get_data(from_date, to_date):
 								WHERE parent = si.name )+ si.discount_amount+si.total)*100,3) as disc_percent,
 								si.docstatus as docstatus,
 								si.is_return,
-								`tabSales Invoice Payment`.mode_of_payment as payment_method
+								pe.mode_of_payment
+								
 							FROM
-								`tabSales Invoice Payment`, `tabSales Invoice` si
+								`tabPayment Entry` pe, `tabSales Invoice` si
 							LEFT JOIN
 								`tabSales Invoice Payment` ip ON ip.parent = si.name
 							GROUP BY
@@ -184,4 +185,3 @@ def negative_values_for_return(inv_data):
 			pass
 		
 	return inv_data
-

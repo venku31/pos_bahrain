@@ -87,7 +87,6 @@ def _get_columns(filters):
             width=120,
         ),
         make_column("stock", "Available Stock"),
-        make_column("hide_disabled_items", "Hide Disabled items", type="Check"),
     ]
 
     def get_warehouse_columns():
