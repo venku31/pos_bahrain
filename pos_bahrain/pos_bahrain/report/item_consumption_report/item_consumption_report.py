@@ -31,6 +31,7 @@ def _get_filters(filters):
     clauses = concatv(
         ["TRUE"],
         ["i.item_group = %(item_group)s"] if filters.item_group else [],
+        #["i.brand = %(brand)s"],
         ["i.name = %(item_code)s"] if filters.item_code else [],
         ["id.default_supplier = %(default_supplier)s"]
         if filters.default_supplier
@@ -146,7 +147,7 @@ def _get_data(clauses, values, columns):
                 ON b.item_code = i.item_code
             LEFT JOIN `tabItem Default` AS id
                 ON id.parent = i.name AND id.company = %(company)s
-            WHERE {clauses}
+            WHERE i.disabled = 0 AND {clauses}
         """.format(
             **clauses
         ),

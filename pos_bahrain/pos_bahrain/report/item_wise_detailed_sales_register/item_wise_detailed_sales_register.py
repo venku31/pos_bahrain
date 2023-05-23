@@ -45,13 +45,6 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 		item_record = item_details.get(d.item_code)
 		brand = frappe.db.get_value("Item", d.item_code, "brand")
 
-		#item_doc = frappe.get_doc("Item", d.item_code)
-		item_default_exists = frappe.db.exists("Item Default", {"parent": d.item_code})
-		supplier = ""
-		if item_default_exists:
-			item_default_doc = frappe.get_doc("Item Default", item_default_exists)
-			supplier = item_default_doc.default_supplier
-
 		delivery_note = None
 		if d.delivery_note:
 			delivery_note = d.delivery_note
@@ -97,6 +90,7 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 			'discount_amount': d.discount_amount,
 			'brand': brand,
 			'supplier': d.supplier,
+			'total_discount': d.total_discount
 		})
 
 		if d.stock_uom != d.uom and d.stock_qty:
@@ -334,6 +328,12 @@ def get_columns(additional_table_columns, filters):
 			'width': 100
 		},
 		{
+			'label': _('Total Discount'),
+			'fieldname': 'total_discount',
+			'fieldtype': 'Currency',
+			'width': 100
+		},
+		{
 			'label': _('Rate'),
 			'fieldname': 'rate',
 			'fieldtype': 'Float',
@@ -444,6 +444,7 @@ def get_items(filters, additional_query_columns):
 			`tabSales Invoice Item`.sales_order, `tabSales Invoice Item`.delivery_note,
 			`tabSales Invoice Item`.income_account, `tabSales Invoice Item`.cost_center,
 			`tabSales Invoice Item`.stock_qty, `tabSales Invoice Item`.stock_uom,
+			`tabSales Invoice Item`.stock_qty * `tabSales Invoice Item`.discount_amount AS total_discount,
 			`tabSales Invoice Item`.base_net_rate, `tabSales Invoice Item`.base_net_amount,
 			`tabSales Invoice`.customer_name, `tabSales Invoice`.customer_group, `tabSales Invoice Item`.so_detail,
 			`tabItem Default`.default_supplier as supplier,
