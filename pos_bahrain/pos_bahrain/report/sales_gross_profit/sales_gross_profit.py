@@ -150,7 +150,12 @@ def get_data(from_date, to_date):
 								WHERE parent = si.name )+ si.discount_amount+si.total)*100,3) as disc_percent,
 								si.docstatus as docstatus,
 								si.is_return,
-								pe.mode_of_payment
+								CASE
+									WHEN si.is_return = 0 AND si.ignore_payments_for_return = 0 THEN
+									(SELECT `tabPayment Entry`.mode_of_payment FROM `tabPayment Entry` WHERE `tabPayment Entry`.name IN 
+										(SELECT `tabPayment Entry Reference`.parent FROM `tabPayment Entry Reference` WHERE reference_name = si.name))
+									ELSE NULL
+								END AS mode_of_payment
 								
 							FROM
 								`tabPayment Entry` pe, `tabSales Invoice` si
