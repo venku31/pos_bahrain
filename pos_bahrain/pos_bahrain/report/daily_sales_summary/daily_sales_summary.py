@@ -40,6 +40,7 @@ def _get_columns(filters):
         make_column("grand_total"),
         make_column("tax_total"),
         make_column("net_total", "Total Sales Value"),
+        make_column("change_amount", "Change Amount"),
         make_column("returns_grand_total", "Total Returns"),
         make_column("net_total_after_returns", "Net Sales After Tax & Returns"),
         make_column("outstanding", "Outstanding")
@@ -66,6 +67,7 @@ def _get_data(clauses, values, keys):
                 SUM(si.base_total_taxes_and_charges) AS tax_total,
                 SUM(si.base_net_total) AS net_total,
                 SUM(si.outstanding_amount) AS outstanding,
+                SUM(si.change_amount) AS change_amount,
                 SUM(sr.base_grand_total) AS returns_grand_total
             FROM `tabSales Invoice` as s
             LEFT JOIN (
