@@ -40,7 +40,6 @@ def _get_columns(filters):
         make_column("grand_total"),
         make_column("tax_total"),
         make_column("net_total", "Total Sales Value"),
-        make_column("change_amount", "Change Amount"),
         make_column("returns_grand_total", "Total Returns"),
         make_column("net_total_after_returns", "Net Sales After Tax & Returns"),
         make_column("outstanding", "Outstanding")
@@ -135,8 +134,9 @@ def _set_payments(payments):
     )(payments)
 
     def fn(row):
-        mop_payments = payments_grouped.get(row.get("posting_date")) or {}
-        cash_amount = (mop_payments.get("Cash") or 0) - (row.get("change_amount") or 0)
+        if row.get("posting_date") in payments_grouped:
+            mop_payments = payments_grouped.get(row.get("posting_date")) or {}
+            cash_amount = (mop_payments.get("Cash") or 0) - (row.get("change_amount") or 0)
         return merge(row, mop_payments, {"Cash": cash_amount})
 
     return fn
