@@ -78,7 +78,7 @@ def on_submit(doc, method):
                 "mop_amount",
                 flt(payment.base_amount) / flt(conversion_rate),
             )
-
+    enforce_full_payment(doc)
     _make_gl_entry_for_provision_credit(doc)
     _make_gl_entry_on_credit_issued(doc)
     _make_return_dn(doc)
@@ -594,3 +594,13 @@ def update_against_sales_invoice(doc):
 						sales_order = row))
                 frappe.db.commit()
                 # return True
+
+@frappe.whitelist()
+def enforce_full_payment(doc):
+    pos_bahrain_settings = frappe.get_doc('POS Bahrain Settings')
+    user_role = pos_bahrain_settings.select_role_for_this_restriction
+    enforce_payment = pos_bahrain_settings.enforce_full_payment_in_sales_invoice
+    user_logged_roles = frappe.get_roles(frappe.session.user)
+    if enforce_payment == 1 and user_role not in user_logged_roles:
+        if doc.grand_total != doc.total_advance and doc.outstanding_amount != 0 and doc.is_return != 1:
+            return frappe.throw("Your Roles Do not  Allow you to Create an Invoice With an Oustanding Amount")
