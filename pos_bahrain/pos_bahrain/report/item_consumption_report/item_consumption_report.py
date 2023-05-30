@@ -123,7 +123,7 @@ def _get_columns(filters):
     )
 
 
-def _get_data(clauses, values, columns):zz
+def _get_data(clauses, values, columns):
     items = frappe.db.sql(
         """
             SELECT
