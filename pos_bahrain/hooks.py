@@ -390,6 +390,9 @@ doc_events = {
     "Bank Reconciliation": {
         "get_payment_entries": "pos_bahrain.doc_events.bank_reconciliation.get_payment_entries",
         "update_clearance_date": "pos_bahrain.doc_events.bank_reconciliation.update_clearance_date",
+    },
+    "Contact": {
+	    "before_save": "pos_bahrain.api.customer.validate_contact"
     }
 }
 
