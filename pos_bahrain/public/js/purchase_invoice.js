@@ -29,3 +29,56 @@ frappe.ui.form.on('Purchase Invoice', {
 	}
 }
 })
+
+frappe.ui.form.on('Purchase Invoice', {
+    refresh: function(frm)
+    {
+      if (frm.doc.update_stock == 1)
+      {
+        frm.set_query("batch_no", "items", function(doc, cdt, cdn) {
+          let d = locals[cdt][cdn];
+          return {
+            query:"erpnext.controllers.queries.get_batch_no",
+          "filters": {
+            'item_code': d.item_code,
+            'warehouse':d.warehouse,
+            'posting_date':frm.doc.posting_date
+          }
+          
+        }
+        
+        })
+      
+  
+      }
+    
+  
+      
+    },
+  
+    update_stock: function(frm)
+    {
+      if (frm.doc.update_stock == 1)
+      {
+        frm.set_query("batch_no", "items", function(doc, cdt, cdn) {
+          let d = locals[cdt][cdn];
+          return {
+            query:"erpnext.controllers.queries.get_batch_no",
+          "filters": {
+            'item_code': d.item_code,
+            'warehouse':d.warehouse,
+            'posting_date':frm.doc.posting_date
+          }
+          
+        }
+        
+        })
+      
+  
+      }
+  
+      
+    },
+   
+  
+  });
