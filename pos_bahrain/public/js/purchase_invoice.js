@@ -41,7 +41,7 @@ frappe.ui.form.on('Purchase Invoice', {
             query:"erpnext.controllers.queries.get_batch_no",
           "filters": {
             'item_code': d.item_code,
-            'warehouse':frm.doc.set_warehouse,
+            'warehouse':d.warehouse,
             'posting_date':frm.doc.posting_date
           }
           
@@ -66,7 +66,7 @@ frappe.ui.form.on('Purchase Invoice', {
             query:"erpnext.controllers.queries.get_batch_no",
           "filters": {
             'item_code': d.item_code,
-            'warehouse':frm.doc.set_warehouse,
+            'warehouse':d.warehouse,
             'posting_date':frm.doc.posting_date
           }
           
