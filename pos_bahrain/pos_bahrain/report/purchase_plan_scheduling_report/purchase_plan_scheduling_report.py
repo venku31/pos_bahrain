@@ -133,14 +133,19 @@ def get_columns():
 
 
 def get_data(filters):
-	data.clear()
 	item_filters = {}
 	stock_ledger_sales_filters = {}
 	stock_ledger_purchase_filters = {}
-	if filters.item:
+	if filters.item :
 		item_filters.update({'item_code':filters.item})
-	if filters.item_group:
+	if filters.item_group and frappe.db.get_value("Item Group",filters.item_group, 'is_group' ) == 0:
 		item_filters.update({'item_group':filters.item_group})
+	if filters.item_group and frappe.db.get_value("Item Group",filters.item_group, 'is_group' ) == 1:
+		item_groups_list  = []
+		item_groups = frappe.db.get_list('Item Group', {'parent_item_group': filters.item_group})
+		for item in item_groups:
+			item_groups_list.append(item.name)
+		item_filters.update({'item_group':['in', item_groups_list]})
 	items = frappe.db.get_list('Item', filters=item_filters,  fields=['*'])
 	for item in items:
 			on_purchase = 0
