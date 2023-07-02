@@ -1,4 +1,4 @@
-# Copyright (c) 2023, reports@probasegroup.com and contributors
+# Copyright (c) 2013, 	9t9it and contributors
 # For license information, please see license.txt
 
 import frappe

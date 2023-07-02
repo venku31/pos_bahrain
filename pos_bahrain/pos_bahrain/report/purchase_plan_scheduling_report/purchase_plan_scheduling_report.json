@@ -11,40 +11,17 @@
  "is_standard": "Yes",
  "modified": "2023-06-26 03:49:16.449991",
  "modified_by": "Administrator",
- "module": "Lanzi",
+ "module": "Pos Bahrain",
  "name": "Purchase Plan Scheduling Report",
  "owner": "Administrator",
- "prepared_report": 0,
+ "prepared_report": 1,
  "ref_doctype": "Item",
  "report_name": "Purchase Plan Scheduling Report",
  "report_type": "Script Report",
  "roles": [
   {
-   "role": "Item Manager"
-  },
-  {
-   "role": "Stock Manager"
-  },
-  {
-   "role": "Stock User"
-  },
-  {
-   "role": "Sales User"
-  },
-  {
-   "role": "Purchase User"
-  },
-  {
-   "role": "Maintenance User"
-  },
-  {
-   "role": "Accounts User"
-  },
-  {
-   "role": "Manufacturing User"
-  },
-  {
-   "role": "All"
+   "role": "Accounts Manager"
   }
+
  ]
 }
