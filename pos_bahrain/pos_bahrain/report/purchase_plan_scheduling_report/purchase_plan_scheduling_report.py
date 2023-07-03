@@ -133,6 +133,7 @@ def get_columns():
 
 
 def get_data(filters):
+	data.clear()
 	item_filters = {}
 	stock_ledger_sales_filters = {}
 	stock_ledger_purchase_filters = {}
