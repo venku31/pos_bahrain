@@ -175,7 +175,7 @@ def get_data(filters):
 			if frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_purchase_filters, fields=['*']):
 				purchase_total_sales = frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_purchase_filters, fields=['*'])
 			for sale in sales_total_sales :
-				total_sales+= sale.actual_qty
+				total_sales+= -(sale.actual_qty)
 			
 			expected_sales = total_sales + (total_sales * filters.percentage/ 100)
 			total_months_in_report =  date_diff(filters.end_date , filters.start_date) / 30 if date_diff(filters.end_date , filters.start_date)>=30 else 0

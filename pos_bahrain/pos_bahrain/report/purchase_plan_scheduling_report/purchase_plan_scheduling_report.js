@@ -51,5 +51,14 @@ frappe.query_reports["Purchase Plan Scheduling Report"] = {
 	
 		
 	
-	]
+	],
+	"formatter": function (value, row, column, data, default_formatter) {
+		value = default_formatter(value, row, column, data);
+		if (column.fieldname == "expected_order_quantity" && data && data.expected_order_quantity < 0) {
+			value = "<span style='color:red'>" + value + "</span>";
+		}
+		
+
+		return value;
+	},
 };
