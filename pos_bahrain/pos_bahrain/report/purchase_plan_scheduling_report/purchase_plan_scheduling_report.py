@@ -155,7 +155,7 @@ def get_data(filters):
 			purchase_total_sales = []
 			last_purchase_invoice_date = ''
 			last_sales_invoice_date = ''
-			stock_ledger_sales_filters.update({'voucher_type':'Sales Invoice', 'item_code':item.name, 'posting_date': ['between', [filters.start_date, filters.end_date]]})
+			stock_ledger_sales_filters.update({'docstattus':1, 'item_code':item.name, 'posting_date': ['between', [filters.start_date, filters.end_date]]})
 			stock_ledger_purchase_filters.update({'voucher_type':'Purchase Invoice', 'item_code':item.name, 'posting_date': ['between', [filters.start_date, filters.end_date]]})
 			if frappe.db.get_value('Bin', {'item_code': item.name} , 'ordered_qty'):
 				on_purchase = frappe.db.get_value('Bin', {'item_code': item.name} , 'ordered_qty')
@@ -170,22 +170,23 @@ def get_data(filters):
 			if get_last_sales_stock_ledger_entry({'item_code':item.item_code, 'start_date':filters.start_date, "end_date":filters.end_date}) != []:
 				last_sales_invoice_date = get_last_sales_stock_ledger_entry({'item_code':item.item_code, 'start_date':filters.start_date, "end_date":filters.end_date})[0]["posting_date"]
 			
-			if frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_sales_filters, fields=['*']):
-				sales_total_sales = frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_sales_filters, fields=['*'])
+			if frappe.db.get_list('Sales Invoice', filters=stock_ledger_sales_filters, fields=['*']):
+				sales_total_sales = frappe.db.get_list('Sales Invoice', filters=stock_ledger_sales_filters, fields=['*'])
 			if frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_purchase_filters, fields=['*']):
 				purchase_total_sales = frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_purchase_filters, fields=['*'])
 			for sale in sales_total_sales :
-				total_sales+= -(sale.actual_qty)
+				item_sales = frappe.db.get_list('Sales Invoice Item', filters={'parent': sale.name}, fields=['*'])
+				total_sales+= item_sales.qty
 			
-			expected_sales = total_sales + (total_sales * filters.percentage/ 100)
+			expected_sales = total_sales + (total_sales * float(filters.percentage)/ 100)
 			total_months_in_report =  date_diff(filters.end_date , filters.start_date) / 30 if date_diff(filters.end_date , filters.start_date)>=30 else 0
 			monthly_sales = int(expected_sales) / int(total_months_in_report) if total_months_in_report != 0 else 0
 			annual_sales = monthly_sales * 12
-			period_expected_sales = monthly_sales * filters.months_to_arrive
+			period_expected_sales = monthly_sales * float(filters.months_to_arrive)
 			shortage_happened = (available_qty + on_purchase) -period_expected_sales 
-			min = monthly_sales * filters.minimum_months
+			min = monthly_sales * float(filters.minimum_months)
 			expected_order_quantity = shortage_happened - min - min
-			data.append([item.name , item.item_name, item.stock_uom, last_purchase_invoice_date, last_sales_invoice_date, total_sales, filters.percentage, expected_sales, min, available_qty, on_purchase, available_qty + on_purchase, total_months_in_report, monthly_sales ,annual_sales, filters.months_to_arrive, period_expected_sales, shortage_happened, expected_order_quantity])
+			data.append([item.name , item.item_name, item.stock_uom, last_purchase_invoice_date, last_sales_invoice_date, total_sales, float(filters.percentage), expected_sales, min, available_qty, on_purchase, available_qty + on_purchase, total_months_in_report, monthly_sales ,annual_sales, float(filters.months_to_arrive), period_expected_sales, shortage_happened, expected_order_quantity])
 	return data
 
 
