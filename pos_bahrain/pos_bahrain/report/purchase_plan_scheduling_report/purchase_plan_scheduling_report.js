@@ -28,24 +28,24 @@ frappe.query_reports["Purchase Plan Scheduling Report"] = {
 			"label": __("Item Group"),
 			"fieldtype": "Link",
 			"options":"Item Group",
-			"reqd": 1,
+			
 					},
 							{
 			"fieldname": "months_to_arrive",
 			"label": __("Months to Arrive"),
-			"fieldtype": "Int",
+			"fieldtype": "Data",
 			"reqd": 1,
 					},
 							{
 			"fieldname": "percentage",
 			"label": __("Percentage"),
-			"fieldtype": "Int",
+			"fieldtype": "Data",
 			"reqd": 1,
 					},
 							{
 			"fieldname": "minimum_months",
 			"label": __("Minimum Months"),
-			"fieldtype": "Int",
+			"fieldtype": "Data",
 			"reqd": 1,
 					}
 	
