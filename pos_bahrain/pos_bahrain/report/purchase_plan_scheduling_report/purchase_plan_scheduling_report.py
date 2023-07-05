@@ -173,11 +173,25 @@ def get_data(filters):
 				sales_total_sales = frappe.db.get_list('Sales Invoice', filters=stock_ledger_sales_filters, fields=['*'])
 			if frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_purchase_filters, fields=['*']):
 				purchase_total_sales = frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_purchase_filters, fields=['*'])
-			for sale in sales_total_sales :
-				item_sales = frappe.db.get_list('Sales Invoice Item', filters={'parent': sale.name, 'item_code':item.item_code}, fields=['*'])
-				if item_sales != []:
-					for item_sale in item_sales:
-						total_sales+= item_sale.qty
+			returned_invoices = frappe.db.sql(
+			"""
+			select
+				si.name, si_item.item_code, si_item.stock_qty as qty, si_item.base_net_amount as base_amount, si.return_against
+			from
+				`tabSales Invoice` si, `tabSales Invoice Item` si_item
+			where
+				si.name = si_item.parent
+				and si_item.item_code = %(item_code)s
+				and si.docstatus = 1
+				and si.posting_date BETWEEN %(start_date)s AND %(end_date)s
+				
+		""",
+			as_dict=1,
+			values={"item_code":item.item_code, "start_date":filters.start_date, "end_date":filters.end_date}
+			)
+			if returned_invoices != []:
+				for invoices in returned_invoices:
+					total_sales += invoices.qty
 			
 			expected_sales = total_sales + (total_sales * float(filters.percentage)/ 100)
 			total_months_in_report =  date_diff(filters.end_date , filters.start_date) / 30 if date_diff(filters.end_date , filters.start_date)>=30 else 0
