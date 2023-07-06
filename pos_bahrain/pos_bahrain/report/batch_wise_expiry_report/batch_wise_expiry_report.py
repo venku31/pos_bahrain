@@ -53,6 +53,7 @@ def _get_columns(args):
         make_column("brand", type="Link", options="Brand"),
         make_column("item_code", type="Link", options="Item"),
         make_column("item_name", width=200),
+        make_column("item_group", width=200),
         make_column("batch_no", "Batch", type="Link", options="Batch"),
         make_column("expiry_date", type="Date", width=90),
         make_column("expiry_in_days", "Expiry in Days", type="Int", width=90),
@@ -62,6 +63,9 @@ def _get_columns(args):
         make_column("price2", args.get("price_list2"), type="Currency"),
         make_column("warehouse"),
     ]
+    if args.get("show_value") == 1:
+        columns.append(make_column("valuation_rate", type="Data"))
+        columns.append(make_column("total_value", type="Data"))
     return (
         join_columns(columns, get_uom_columns(NUM_OF_UOM_COLUMNS))
         if args.get("show_alt_uoms")
@@ -98,6 +102,8 @@ def _sle_clauses(args):
             "id.company = %(company)s",
         ],
         ["sle.warehouse = %(warehouse)s"] if args.get("warehouse") else [],
+         ["i.item_group = %(item_group)s"] if args.get("item_group") else [],
+         ["id.default_supplier = %(supplier)s"] if args.get("supplier") else [],
     )
 
 
@@ -111,6 +117,7 @@ def _get_data(args, keys):
                 SUM(sle.actual_qty) AS qty,
                 i.stock_uom AS stock_uom,
                 i.item_name AS item_name,
+                 i.item_group as item_group,
                 i.brand AS brand,
                 id.default_supplier AS supplier,
                 b.expiry_date AS expiry_date,
@@ -146,7 +153,8 @@ def _get_data(args, keys):
             expiry_in_days = (
                 (row.expiry_date - getdate()).days if row.expiry_date else None
             )
-            return merge(row, {"expiry_in_days": expiry_in_days})
+            return merge(row, {"expiry_in_days": expiry_in_days}, {'valuation_rate':frappe.db.get_value('Item',row.item_code, 'valuation_rate' )}, {'total_value':float(frappe.db.get_value('Item',row.item_code, 'valuation_rate' )) * float(row.qty)})
+
 
         if not args.get("show_alt_uoms"):
             return compose(partial(keyfilter, lambda k: k in keys), set_expiry)

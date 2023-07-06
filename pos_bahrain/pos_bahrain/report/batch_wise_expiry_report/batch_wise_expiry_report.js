@@ -13,6 +13,18 @@ frappe.query_reports['Batch-wise Expiry Report'] = {
       default: frappe.defaults.get_user_default('company'),
     },
     {
+      fieldname: 'supplier',
+      label: __('Supplier'),
+      fieldtype: 'Link',
+      options: 'Supplier',
+      },
+      {
+      fieldname: 'item_group',
+      label: __('Item Group'),
+      fieldtype: 'Link',
+      options: 'Item Group',
+      },
+    {
       fieldname: 'warehouse',
       label: __('Warehouse'),
       fieldtype: 'Link',
@@ -34,5 +46,12 @@ frappe.query_reports['Batch-wise Expiry Report'] = {
       label: __('Show Alternate UOMs'),
       fieldtype: 'Check',
     },
+    {
+      fieldname: 'show_value',
+      label: __('Show Value'),
+      fieldtype: 'Check',
+      depends_on: "eval: frappe.user_roles.includes('Accounts Manager') || frappe.user_roles.includes('Stock Manager')"
+      
+      },
   ],
 };
