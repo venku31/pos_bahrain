@@ -33,7 +33,7 @@ frappe.ui.form.on('Purchase Invoice', {
 frappe.ui.form.on('Purchase Invoice', {
     refresh: function(frm)
     {
-      if (frm.doc.update_stock == 1)
+      if (frm.doc.update_stock == 1 && frm.doc.is_return == 1)
       {
         frm.set_query("batch_no", "items", function(doc, cdt, cdn) {
           let d = locals[cdt][cdn];
@@ -58,7 +58,7 @@ frappe.ui.form.on('Purchase Invoice', {
   
     update_stock: function(frm)
     {
-      if (frm.doc.update_stock == 1)
+      if (frm.doc.update_stock == 1 && frm.doc.is_return == 1)
       {
         frm.set_query("batch_no", "items", function(doc, cdt, cdn) {
           let d = locals[cdt][cdn];
