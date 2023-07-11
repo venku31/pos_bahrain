@@ -136,6 +136,7 @@ def get_data(filters):
 	item_filters = {}
 	stock_ledger_sales_filters = {}
 	stock_ledger_purchase_filters = {}
+	stock_ledger_delivery_note = {}
 	if filters.item :
 		item_filters.update({'item_code':filters.item})
 	# if filters.item_group and frappe.db.get_value("Item Group",filters.item_group, 'is_group' ) == 0:
@@ -152,11 +153,13 @@ def get_data(filters):
 			on_purchase = 0
 			total_sales =0
 			sales_total_sales = []
+			delivery_total_sales = []
 			purchase_total_sales = []
 			last_purchase_invoice_date = ''
 			last_sales_invoice_date = ''
 			stock_ledger_sales_filters.update({'docstatus':1, "item_code":item.item_code,  'voucher_type':'Sales Invoice', 'posting_date': ['between', [filters.start_date, filters.end_date]]})
 			stock_ledger_purchase_filters.update({'voucher_type':'Purchase Invoice', 'item_code':item.name, 'posting_date': ['between', [filters.start_date, filters.end_date]]})
+			stock_ledger_delivery_note.update({'voucher_type':'Delivery Note', 'item_code':item.name, 'posting_date': ['between', [filters.start_date, filters.end_date]]})
 			if frappe.db.get_value('Bin', {'item_code': item.name} , 'ordered_qty'):
 				on_purchase = frappe.db.get_value('Bin', {'item_code': item.name} , 'ordered_qty')
 			available_qty = 0
@@ -174,10 +177,14 @@ def get_data(filters):
 				sales_total_sales = frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_sales_filters, fields=['*'])
 			if frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_purchase_filters, fields=['*']):
 				purchase_total_sales = frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_purchase_filters, fields=['*'])
+			if frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_delivery_note, fields=['*']):
+				delivery_total_sales = frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_delivery_note, fields=['*'])
 			if sales_total_sales != []:
 				for invoices in sales_total_sales:
 					total_sales += -(invoices.actual_qty)
-			
+			if delivery_total_sales != []:
+				for delivery in delivery_total_sales:
+					total_sales += -(delivery.actual_qty)
 			expected_sales = total_sales + (total_sales * float(filters.percentage)/ 100)
 			total_months_in_report =  date_diff(filters.end_date , filters.start_date) / 30 if date_diff(filters.end_date , filters.start_date)>=30 else 0
 			monthly_sales = int(expected_sales) / int(total_months_in_report) if total_months_in_report != 0 else 0
