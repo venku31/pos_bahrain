@@ -138,14 +138,15 @@ def get_data(filters):
 	stock_ledger_purchase_filters = {}
 	if filters.item :
 		item_filters.update({'item_code':filters.item})
-	if filters.item_group and frappe.db.get_value("Item Group",filters.item_group, 'is_group' ) == 0:
+	# if filters.item_group and frappe.db.get_value("Item Group",filters.item_group, 'is_group' ) == 0:
+	# 	item_filters.update({'item_group':filters.item_group})
+	# if filters.item_group and frappe.db.get_value("Item Group",filters.item_group, 'is_group' ) == 1:
+	# 	item_groups_list  = []
+	# 	item_groups = frappe.db.get_list('Item Group', {'parent_item_group': filters.item_group})
+	# 	for item in item_groups:
+	# 		item_groups_list.append(item.name)
+	if filters.item_group :
 		item_filters.update({'item_group':filters.item_group})
-	if filters.item_group and frappe.db.get_value("Item Group",filters.item_group, 'is_group' ) == 1:
-		item_groups_list  = []
-		item_groups = frappe.db.get_list('Item Group', {'parent_item_group': filters.item_group})
-		for item in item_groups:
-			item_groups_list.append(item.name)
-		item_filters.update({'item_group':['in', item_groups_list]})
 	items = frappe.db.get_list('Item', filters=item_filters,  fields=['*'])
 	for item in items:
 			on_purchase = 0
@@ -154,7 +155,7 @@ def get_data(filters):
 			purchase_total_sales = []
 			last_purchase_invoice_date = ''
 			last_sales_invoice_date = ''
-			stock_ledger_sales_filters.update({'docstatus':1,  'posting_date': ['between', [filters.start_date, filters.end_date]]})
+			stock_ledger_sales_filters.update({'docstatus':1, "item_code":item.item_code,  'voucher_type':'Sales Invoice', 'posting_date': ['between', [filters.start_date, filters.end_date]]})
 			stock_ledger_purchase_filters.update({'voucher_type':'Purchase Invoice', 'item_code':item.name, 'posting_date': ['between', [filters.start_date, filters.end_date]]})
 			if frappe.db.get_value('Bin', {'item_code': item.name} , 'ordered_qty'):
 				on_purchase = frappe.db.get_value('Bin', {'item_code': item.name} , 'ordered_qty')
@@ -169,13 +170,13 @@ def get_data(filters):
 			if get_last_sales_stock_ledger_entry({'item_code':item.item_code, 'start_date':filters.start_date, "end_date":filters.end_date}) != []:
 				last_sales_invoice_date = get_last_sales_stock_ledger_entry({'item_code':item.item_code, 'start_date':filters.start_date, "end_date":filters.end_date})[0]["posting_date"]
 			
-			if frappe.db.get_list('Sales Invoice', filters=stock_ledger_sales_filters, fields=['*']):
-				sales_total_sales = frappe.db.get_list('Sales Invoice', filters=stock_ledger_sales_filters, fields=['*'])
+			if frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_sales_filters, fields=['*']):
+				sales_total_sales = frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_sales_filters, fields=['*'])
 			if frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_purchase_filters, fields=['*']):
 				purchase_total_sales = frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_purchase_filters, fields=['*'])
-			if get_qty_for_sales(filters, item.item_code) != []:
-				for invoices in get_qty_for_sales(filters, item.item_code):
-					total_sales += invoices.value_field
+			if sales_total_sales != []:
+				for invoices in sales_total_sales:
+					total_sales += -(invoices.actual_qty)
 			
 			expected_sales = total_sales + (total_sales * float(filters.percentage)/ 100)
 			total_months_in_report =  date_diff(filters.end_date , filters.start_date) / 30 if date_diff(filters.end_date , filters.start_date)>=30 else 0
@@ -188,22 +189,7 @@ def get_data(filters):
 			data.append([item.name , item.item_name, item.stock_uom, last_purchase_invoice_date, last_sales_invoice_date, total_sales, float(filters.percentage), expected_sales, min, available_qty, on_purchase, available_qty + on_purchase, total_months_in_report, monthly_sales ,annual_sales, float(filters.months_to_arrive), period_expected_sales, shortage_happened, expected_order_quantity])
 	return data
 
-def get_qty_for_sales(filters, item):
-	value_field = "stock_qty"
-	entries = frappe.db.sql(
-			"""
-			select i.item_code as entity, i.item_name as entity_name, i.stock_uom, i.{value_field} as value_field, s.{date_field}
-			from `tab{doctype} Item` i , `tab{doctype}` s
-			where s.name = i.parent and i.docstatus = 1 
-			and i.item_code = "{item}"
-			and s.{date_field} between %s and %s
-		""".format(
-				date_field="posting_date", value_field=value_field, doctype="Sales Invoice", item=item,
-			),
-	(filters.start_date, filters.end_date),
-			as_dict=1,
-		)
-	return entries
+
 
 def get_last_sales_stock_ledger_entry(filters=None):
 	query = frappe.db.sql("""
