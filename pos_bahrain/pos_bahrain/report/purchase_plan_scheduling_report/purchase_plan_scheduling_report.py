@@ -205,18 +205,19 @@ def get_data(filters):
 
 def get_last_sales_stock_ledger_entry(filters=None):
 	query = frappe.db.sql("""
-        SELECT
-            sle.posting_date
-        FROM
-            `tabStock Ledger Entry` AS sle
+		SELECT
+			MAX(sle.posting_date) AS posting_date
+		FROM
+			`tabStock Ledger Entry` AS sle
 		WHERE
-            sle.voucher_type = 'Sales Invoice'
-            AND sle.item_code = %(item_code)s
-            
-        ORDER BY
-            sle.creation DESC
-        LIMIT 1
-    """, values=filters,as_dict=1)
+			(sle.voucher_type = 'Sales Invoice' OR sle.voucher_type = 'Delivery Note')
+			AND sle.item_code = %(item_code)s
+		GROUP BY
+			sle.voucher_type
+		ORDER BY
+			posting_date DESC
+		LIMIT 1
+	""", values=filters, as_dict=1)
 	return query
 
 def get_last_purchase_stock_ledger_entry(filters=None):
