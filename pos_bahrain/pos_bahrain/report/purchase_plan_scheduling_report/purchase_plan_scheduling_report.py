@@ -156,7 +156,8 @@ def get_data(filters):
 			purchase_total_sales = []
 			last_purchase_invoice_date = ''
 			last_sales_invoice_date = ''
-			stock_ledger_sales_filters.update({'docstatus':1, "item_code":item.item_code,  'voucher_type':'Sales Invoice', 'posting_date': ['between', [filters.start_date, filters.end_date]]})
+			# stock_ledger_sales_filters.update({'docstatus':1, "item_code":item.item_code,  'voucher_type':'Sales Invoice', 'posting_date': ['between', [filters.start_date, filters.end_date]]})
+			stock_ledger_sales_filters.update({'docstatus':1, "item_code":item.item_code,  'creation': ['between', [filters.start_date, filters.end_date]]})
 			stock_ledger_purchase_filters.update({'voucher_type':'Purchase Invoice', 'item_code':item.name, 'posting_date': ['between', [filters.start_date, filters.end_date]]})
 			stock_ledger_delivery_note.update({'voucher_type':'Delivery Note', 'item_code':item.name, 'posting_date': ['between', [filters.start_date, filters.end_date]]})
 			if frappe.db.get_value('Bin', {'item_code': item.name} , 'ordered_qty'):
@@ -172,18 +173,21 @@ def get_data(filters):
 			if get_last_sales_stock_ledger_entry({'item_code':item.item_code, 'start_date':filters.start_date, "end_date":filters.end_date}) != []:
 				last_sales_invoice_date = get_last_sales_stock_ledger_entry({'item_code':item.item_code, 'start_date':filters.start_date, "end_date":filters.end_date})[0]["posting_date"]
 			
-			if frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_sales_filters, fields=['*']):
-				sales_total_sales = frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_sales_filters, fields=['*'])
+			# if frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_sales_filters, fields=['*']):
+			# 	sales_total_sales = frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_sales_filters, fields=['*'])
+			if frappe.db.get_list('Sales Invoice Item', filters=stock_ledger_sales_filters, fields=['*']):
+				sales_total_sales = frappe.db.get_list('Sales Invoice Item', filters=stock_ledger_sales_filters, fields=['*'])
 			if frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_purchase_filters, fields=['*']):
 				purchase_total_sales = frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_purchase_filters, fields=['*'])
 			if frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_delivery_note, fields=['*']):
 				delivery_total_sales = frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_delivery_note, fields=['*'])
 			if sales_total_sales != []:
 				for invoices in sales_total_sales:
-					total_sales += -(invoices.actual_qty)
-			if delivery_total_sales != []:
-				for delivery in delivery_total_sales:
-					total_sales += -(delivery.actual_qty)
+					# total_sales += -(invoices.actual_qty)
+					total_sales += (invoices.qty)
+			# if delivery_total_sales != []:
+			# 	for delivery in delivery_total_sales:
+			# 		total_sales_d += -(delivery.actual_qty)
 			expected_sales = total_sales + (total_sales * float(filters.percentage)/ 100)
 			total_months_in_report =  date_diff(filters.end_date , filters.start_date) / 30 if date_diff(filters.end_date , filters.start_date)>=30 else 0
 			monthly_sales = int(expected_sales) / int(total_months_in_report) if total_months_in_report != 0 else 0
