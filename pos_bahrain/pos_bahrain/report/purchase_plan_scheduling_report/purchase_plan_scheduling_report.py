@@ -149,7 +149,7 @@ def get_data(filters):
 		item_filters.update({'item_group':['in', item_groups_list]})
 	items = frappe.db.get_list('Item', filters=item_filters,  fields=['*'])
 	for item in items:
-			on_purchase = 0
+			# on_purchase = 0
 			total_sales =0
 			sales_total_sales = []
 			delivery_total_sales = []
@@ -160,8 +160,19 @@ def get_data(filters):
 			stock_ledger_sales_filters.update({'docstatus':1, "item_code":item.item_code,  'creation': ['between', [filters.start_date, filters.end_date]]})
 			stock_ledger_purchase_filters.update({'voucher_type':'Purchase Invoice', 'item_code':item.name, 'posting_date': ['between', [filters.start_date, filters.end_date]]})
 			stock_ledger_delivery_note.update({'voucher_type':'Delivery Note', 'item_code':item.name, 'posting_date': ['between', [filters.start_date, filters.end_date]]})
-			if frappe.db.get_value('Bin', {'item_code': item.name} , 'ordered_qty'):
-				on_purchase = frappe.db.get_value('Bin', {'item_code': item.name} , 'ordered_qty')
+			# if frappe.db.get_value('Bin', {'item_code': item.item_code} , 'ordered_qty'):
+			# 	warehouse = frappe.db.get_list('Warehouse', fields=['*'])
+			# 	# on_purchase = frappe.db.get_value('Bin', {'item_code': item.name} , 'ordered_qty')
+			# 	for ware in warehouse:
+			# 		on_purchase += frappe.db.get_value('Bin', {'item_code': item.name, 'warehouse':ware.name} , 'ordered_qty') if frappe.db.get_value('Bin', {'item_code': item.name, 'warehouse':ware.name} , 'ordered_qty') else 0
+			on_purchase = 0
+			# if frappe.db.get_value('Bin', {'item_code': item.name} , 'ordered_qty'):
+			# 	on_purchase = frappe.db.get_value('Bin', {'item_code': item.name} , 'ordered_qty')
+			# if frappe.db.get_value('Bin', {'item_code': item.name} , 'ordered_qty'):
+			warehouse = frappe.db.get_list('Warehouse', fields=['*'])
+			for ware in warehouse:
+				on_purchase += frappe.db.get_value('Bin', {'item_code': item.name, 'warehouse':ware.name} , 'ordered_qty') if frappe.db.get_value('Bin', {'item_code': item.name, 'warehouse':ware.name} , 'ordered_qty') else 0
+
 			available_qty = 0
 			if frappe.db.get_value('Bin', {'item_code': item.name} , 'actual_qty'):
 				warehouse = frappe.db.get_list('Warehouse', fields=['*'])
