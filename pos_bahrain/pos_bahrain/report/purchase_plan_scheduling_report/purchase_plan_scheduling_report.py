@@ -197,6 +197,7 @@ def get_data(filters):
 				for invoices in sales_total_sales:
 					# total_sales += -(invoices.actual_qty)
 					total_sales += (invoices.qty)
+					
 			# if delivery_total_sales != []:
 			# 	for delivery in delivery_total_sales:
 			# 		total_sales_d += -(delivery.actual_qty)
