@@ -79,7 +79,7 @@ def get_columns():
 			'fieldtype':'Float/1:60',
 			
 		},
-		{
+		 {
 			'fieldname': 'available_total_qty',
 			'label': _('Available Total Qty'),
 			'fieldtype':'Float/1:60',
