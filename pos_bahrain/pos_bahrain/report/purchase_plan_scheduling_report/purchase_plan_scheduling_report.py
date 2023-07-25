@@ -146,6 +146,12 @@ def get_data(filters):
 		item_groups = frappe.db.get_list('Item Group', {'parent_item_group': filters.item_group})
 		for item in item_groups:
 			item_groups_list.append(item.name)
+		for item_group in item_groups:
+			if frappe.db.get_value("Item Group", item_group.name, 'is_group' ) == 1:
+				children_groups = frappe.db.get_list('Item Group', {'parent_item_group': item_group.name})
+				for child in children_groups:
+					item_groups_list.append(child.name)
+	
 		item_filters.update({'item_group':['in', item_groups_list]})
 	items = frappe.db.get_list('Item', filters=item_filters,  fields=['*'])
 	for item in items:
@@ -179,11 +185,10 @@ def get_data(filters):
 				for ware in warehouse:
 					available_qty += frappe.db.get_value('Bin', {'item_code': item.name, 'warehouse':ware.name} , 'actual_qty') if frappe.db.get_value('Bin', {'item_code': item.name, 'warehouse':ware.name} , 'actual_qty') else 0
 			#frappe.throw(f"{get_last_purchase_stock_ledger_entry({'item_code':'Beans', 'start_date':filters.start_date, 'end_date':filters.end_date})}")
-
-			if get_last_purchase_stock_ledger_entry({'item_code':item.item_code}) != []:
-				last_purchase_invoice_date = get_last_purchase_stock_ledger_entry({'item_code':item.item_code})[0]["posting_date"]
-			if get_last_sales_stock_ledger_entry({'item_code':item.item_code}) != []:
-				last_sales_invoice_date = get_last_sales_stock_ledger_entry({'item_code':item.item_code})[0]["posting_date"]
+			if get_last_purchase_stock_ledger_entry({'item_code':item.item_code, 'start_date':filters.start_date, "end_date":filters.end_date}) != []:
+				last_purchase_invoice_date = get_last_purchase_stock_ledger_entry({'item_code':item.item_code, 'start_date':filters.start_date, "end_date":filters.end_date})[0]["posting_date"]
+			if get_last_sales_stock_ledger_entry({'item_code':item.item_code, 'start_date':filters.start_date, "end_date":filters.end_date}) != []:
+				last_sales_invoice_date = get_last_sales_stock_ledger_entry({'item_code':item.item_code, 'start_date':filters.start_date, "end_date":filters.end_date})[0]["posting_date"]
 			
 			# if frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_sales_filters, fields=['*']):
 			# 	sales_total_sales = frappe.db.get_list('Stock Ledger Entry', filters=stock_ledger_sales_filters, fields=['*'])
