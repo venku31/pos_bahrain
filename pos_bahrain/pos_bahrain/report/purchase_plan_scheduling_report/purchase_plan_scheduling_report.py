@@ -46,43 +46,43 @@ def get_columns():
 		{
 			'fieldname': 'total_sales',
 			'label': _(' Total Sales'),
-			'fieldtype':'Float',
+			'fieldtype':'Float/1:60',
 			
 		},
 		{
 			'fieldname': 'percentage',
 			'label': _('Percentage %'),
-			'fieldtype':'Float',
+			'fieldtype':'Float/1:60',
 			
 		},
 		{
 			'fieldname': 'expected_total_sales',
 			'label': _('Expected Total Sale'),
-			'fieldtype':'Float',
+			'fieldtype':'Float/1:60',
 			
 		},
 		{
 			'fieldname': 'min',
 			'label': _('Min'),
-			'fieldtype':'Float',
+			'fieldtype':'Float/1:60',
 			
 		},
 		{
 			'fieldname': 'available_quantity',
 			'label': _('Available Quantity'),
-			'fieldtype':'Float',
+			'fieldtype':'Float/1:60',
 			
 		},
 		{
 			'fieldname': 'on_purchase',
 			'label': _('On Purchase'),
-			'fieldtype':'Float',
+			'fieldtype':'Float/1:60',
 			
 		},
 		{
 			'fieldname': 'available_total_qty',
 			'label': _('Available Total Qty'),
-			'fieldtype':'Float',
+			'fieldtype':'Float/1:60',
 			
 		},
 		{
@@ -106,7 +106,7 @@ def get_columns():
 		{
 			'fieldname': 'months_to_arrive',
 			'label': _('Months To Arrive'),
-			'fieldtype':'Float',
+			'fieldtype':'Float/1:60',
 			
 		},
 		{
