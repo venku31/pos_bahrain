@@ -4,12 +4,36 @@ import json
 import frappe
 from six import string_types
 from toolz import merge, concat
-
+from six import string_types, iteritems
 
 @frappe.whitelist()
 def make_invoice(pos_profile, doc_list={}, email_queue_list={}, customers_list={}):
     from erpnext.accounts.doctype.sales_invoice.pos import make_invoice
-
+    from erpnext.accounts.doctype.sales_invoice.pos import get_customer_id
+    if isinstance(doc_list, string_types):
+        doc_list = json.loads(doc_list)
+                
+    enable_pos_logg = frappe.db.get_single_value('POS Bahrain Settings', 'enable_pos_log')
+    if enable_pos_logg:
+        for docs in doc_list:
+            for name, doc in iteritems(docs):
+                if not frappe.db.exists('Sales Invoice', {'offline_pos_name': name}):
+                    if isinstance(doc, dict):
+                        # get the last available Cancelled Task
+                        logg_doc = frappe.new_doc("POS Logg")
+                        logg_doc.posting_date = doc.get('posting_date')
+                        logg_doc.customer = get_customer_id(doc)
+                        logg_doc.offline_pos_name = name
+                        logg_doc.insert()
+                        # grand_total, sl_name = frappe.db.get_value('Sales Invoice', {'offline_pos_name': name}, ['total', 'name'])
+                        # logg_doc.grand_total = grand_total
+                        # logg_doc.sales_invoice_ref = sl_name
+                        # logg_doc.save()
+                        # frappe.msgprint(str(name))
+                    else:
+                        pass
+                else:
+                    pass
     result = make_invoice(
         pos_profile,
         doc_list=[],
