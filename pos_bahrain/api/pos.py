@@ -25,11 +25,6 @@ def make_invoice(pos_profile, doc_list={}, email_queue_list={}, customers_list={
                         logg_doc.customer = get_customer_id(doc)
                         logg_doc.offline_pos_name = name
                         logg_doc.insert()
-                        # grand_total, sl_name = frappe.db.get_value('Sales Invoice', {'offline_pos_name': name}, ['total', 'name'])
-                        # logg_doc.grand_total = grand_total
-                        # logg_doc.sales_invoice_ref = sl_name
-                        # logg_doc.save()
-                        # frappe.msgprint(str(name))
                     else:
                         pass
                 else:

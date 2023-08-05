@@ -4,24 +4,15 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "sales_invoice_ref",
   "posting_date",
-  "time",
   "customer",
-  "offline_pos_name",
-  "grand_total"
+  "offline_pos_name"
  ],
  "fields": [
   {
    "fieldname": "posting_date",
    "fieldtype": "Date",
    "label": "Posting Date",
-   "read_only": 1
-  },
-  {
-   "fieldname": "time",
-   "fieldtype": "Datetime",
-   "label": "Time",
    "read_only": 1
   },
   {
@@ -36,22 +27,9 @@
    "fieldtype": "Data",
    "label": "offline_pos_name",
    "read_only": 1
-  },
-  {
-   "fieldname": "grand_total",
-   "fieldtype": "Currency",
-   "label": "Grand total",
-   "read_only": 1
-  },
-  {
-   "fieldname": "sales_invoice_ref",
-   "fieldtype": "Link",
-   "label": "Sales Invoice Ref",
-   "options": "Sales Invoice",
-   "read_only": 1
   }
  ],
- "modified": "2023-08-04 18:55:09.812067",
+ "modified": "2023-08-05 11:19:23.842468",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "POS Logg",
