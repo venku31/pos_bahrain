@@ -180,10 +180,10 @@ def get_data(filters):
 				on_purchase += frappe.db.get_value('Bin', {'item_code': item.name, 'warehouse':ware.name} , 'ordered_qty') if frappe.db.get_value('Bin', {'item_code': item.name, 'warehouse':ware.name} , 'ordered_qty') else 0
 
 			available_qty = 0
-			if frappe.db.get_value('Bin', {'item_code': item.name} , 'actual_qty'):
-				warehouse = frappe.db.get_list('Warehouse', fields=['*'])
-				for ware in warehouse:
-					available_qty += frappe.db.get_value('Bin', {'item_code': item.name, 'warehouse':ware.name} , 'actual_qty') if frappe.db.get_value('Bin', {'item_code': item.name, 'warehouse':ware.name} , 'actual_qty') else 0
+			# if frappe.db.get_value('Bin', {'item_code': item.name} , 'actual_qty'):
+			warehouse = frappe.db.get_list('Warehouse', fields=['*'])
+			for ware in warehouse:
+				available_qty += frappe.db.get_value('Bin', {'item_code': item.name, 'warehouse':ware.name} , 'actual_qty') if frappe.db.get_value('Bin', {'item_code': item.name, 'warehouse':ware.name} , 'actual_qty') else 0
 			#frappe.throw(f"{get_last_purchase_stock_ledger_entry({'item_code':'Beans', 'start_date':filters.start_date, 'end_date':filters.end_date})}")
 			if get_last_purchase_stock_ledger_entry({'item_code':item.item_code}) != []:
 				last_purchase_invoice_date = get_last_purchase_stock_ledger_entry({'item_code':item.item_code})[0]["posting_date"]
