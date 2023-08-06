@@ -254,7 +254,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 		const email_queue_list = this.get_email_queue() || {};
 		const customers_list = this.get_customers_details() || {};
 		const pos_profile = this.pos_profile_data || {};
-
 		if (si_docs.length || email_queue_list || customers_list) {
 			frappe.call({
 				method: "erpnext.accounts.doctype.sales_invoice.pos.make_invoice",

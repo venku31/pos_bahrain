@@ -14,6 +14,7 @@
   "gen_col",
   "show_sales_employee",
   "disable_standard_pf",
+  "enable_pos_log",
   "default_supplier_items_limit",
   "price_list_section",
   "apply_offer_pricelist",
@@ -457,23 +458,28 @@
    "label": "Disable Serial No And Batch Selector"
   },
   {
-    "default": "0",
-    "fieldname": "enforce_full_payment_in_sales_invoice",
-    "fieldtype": "Check",
-    "label": "Enforce Full Payment In Sales Invoice"
-   },
-   {
-    "depends_on": "eval:doc.enforce_full_payment_in_sales_invoice == 1",
-    "fieldname": "select_role_for_this_restriction",
-    "fieldtype": "Link",
-    "label": "Select Role For This Restriction",
-    "mandatory_depends_on": "eval:doc.enforce_full_payment_in_sales_invoice == 1",
-    "options": "Role"
-   }
+   "default": "0",
+   "fieldname": "enforce_full_payment_in_sales_invoice",
+   "fieldtype": "Check",
+   "label": "Enforce Full Payment In Sales Invoice"
+  },
+  {
+   "depends_on": "eval:doc.enforce_full_payment_in_sales_invoice == 1",
+   "fieldname": "select_role_for_this_restriction",
+   "fieldtype": "Link",
+   "label": "Select Role For This Restriction",
+   "options": "Role"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_pos_log",
+   "fieldtype": "Check",
+   "label": "Enable POS Log"
+  }
  ],
  "issingle": 1,
- "modified": "2023-03-12 14:24:23.977348",
- "modified_by": "Administrator",
+ "modified": "2023-08-02 07:28:05.341389",
+ "modified_by": "doreen@9t9it.com",
  "module": "Pos Bahrain",
  "name": "POS Bahrain Settings",
  "owner": "Administrator",
