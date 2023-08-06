@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 import json
 import frappe
-from six import string_types
 from toolz import merge, concat
 from six import string_types, iteritems
 
