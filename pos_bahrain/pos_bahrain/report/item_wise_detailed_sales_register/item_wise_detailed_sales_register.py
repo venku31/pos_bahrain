@@ -402,8 +402,8 @@ def get_conditions(filters):
 	if filters.get("pb_discount_percentage"):
 		conditions +=  """and ifnull(`tabSales Invoice Item`.discount_percentage, '') = %(pb_discount_percentage)s"""
 
-	#if filters.get("supplier"):
-	#	conditions +=  """and ifnull(`tabSales Invoice Item`.name, '') = %(supplier)s"""
+	if filters.get("supplier"):
+		conditions +=  """and ifnull(`tabItem Default`.default_supplier, '') = %(supplier)s"""
 
 	if not filters.get("group_by"):
 		conditions += "ORDER BY `tabSales Invoice`.posting_date desc, `tabSales Invoice Item`.item_group desc"

@@ -65,10 +65,10 @@ frappe.query_reports["Item wise detailed sales register"] = {
 			"options": ["Customer Group", "Customer", "Item Group", "Item", "Territory", "Invoice"]
 		},
 		{
-			fieldname: 'supplier',
-			label: __('Default Supplier'),
-			fieldtype: 'Link',
-			options: 'Supplier',
+			"fieldname": 'supplier',
+			"label": __('Default Supplier'),
+			"fieldtype": 'Link',
+			"options": 'Supplier',
 		},
 		{
 			"label": __("Show only discounted sales"),
