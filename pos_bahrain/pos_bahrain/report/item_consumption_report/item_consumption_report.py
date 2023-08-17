@@ -31,7 +31,7 @@ def _get_filters(filters):
     clauses = concatv(
         ["TRUE"],
         ["i.item_group = %(item_group)s"] if filters.item_group else [],
-        #["i.brand = %(brand)s"],
+        ["i.brand = %(brand)s"],
         ["i.name = %(item_code)s"] if filters.item_code else [],
         ["id.default_supplier = %(default_supplier)s"]
         if filters.default_supplier
