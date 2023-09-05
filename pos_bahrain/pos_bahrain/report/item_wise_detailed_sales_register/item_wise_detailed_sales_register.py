@@ -53,6 +53,7 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 
 		if not delivery_note and d.update_stock:
 			delivery_note = d.parent
+		
 
 		row = {
 			'item_code': d.item_code,
@@ -64,6 +65,7 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 			'customer': d.customer,
 			'customer_name': customer_record.customer_name,
 			'customer_group': customer_record.customer_group,
+			'buying_price': d.buying_price if d.buying_price else 0.0, 
 		}
 
 		if additional_query_columns:
@@ -90,7 +92,7 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 			'discount_amount': d.discount_amount,
 			'brand': brand,
 			'supplier': d.supplier,
-			'total_discount': d.total_discount
+			'total_discount': d.total_discount,
 		})
 
 		if d.stock_uom != d.uom and d.stock_qty:
@@ -314,6 +316,7 @@ def get_columns(additional_table_columns, filters):
 			'options': 'UOM',
 			'width': 100
 		},
+		
 		{
 			'label': _('Discount %'),
 			'fieldname': 'pb_discount_percentage',
@@ -355,6 +358,16 @@ def get_columns(additional_table_columns, filters):
 			'hidden': 1
 		}
 	]
+	if filters.get('show_buying_price'):
+		current_user = frappe.session.user
+		if "Accounts Manager" in frappe.get_roles(current_user):
+      
+			columns.append({
+				'label': _('Buying Price'),
+				'fieldname': 'buying_price',
+				'fieldtype': 'Currency',
+				'width': 100
+			})
 
 	if filters.get('group_by'):
 		columns.append({
@@ -402,8 +415,8 @@ def get_conditions(filters):
 	if filters.get("pb_discount_percentage"):
 		conditions +=  """and ifnull(`tabSales Invoice Item`.discount_percentage, '') = %(pb_discount_percentage)s"""
 
-	if filters.get("supplier"):
-		conditions +=  """and ifnull(`tabItem Default`.default_supplier, '') = %(supplier)s"""
+	#if filters.get("supplier"):
+	#	conditions +=  """and ifnull(`tabSales Invoice Item`.name, '') = %(supplier)s"""
 
 	if not filters.get("group_by"):
 		conditions += "ORDER BY `tabSales Invoice`.posting_date desc, `tabSales Invoice Item`.item_group desc"
@@ -448,15 +461,18 @@ def get_items(filters, additional_query_columns):
 			`tabSales Invoice Item`.base_net_rate, `tabSales Invoice Item`.base_net_amount,
 			`tabSales Invoice`.customer_name, `tabSales Invoice`.customer_group, `tabSales Invoice Item`.so_detail,
 			`tabItem Default`.default_supplier as supplier,
-			`tabSales Invoice`.update_stock, `tabSales Invoice Item`.uom, `tabSales Invoice Item`.qty {0}
+			`tabSales Invoice`.update_stock, `tabSales Invoice Item`.uom, `tabSales Invoice Item`.qty {0},
+			(SELECT ip.price_list_rate FROM `tabItem Price` ip
+             WHERE ip.item_code = `tabSales Invoice Item`.item_code
+             AND ip.price_list = 'Standard Buying') AS buying_price
 		from `tabSales Invoice`, `tabSales Invoice Item`
 		LEFT JOIN `tabItem Default`
 				ON (`tabItem Default`.parent = `tabSales Invoice Item`.item_code)
 		where `tabSales Invoice`.name = `tabSales Invoice Item`.parent and `tabItem Default`.company = `tabSales Invoice`.company
 			and `tabSales Invoice`.docstatus = 1 {1}
-		""".format(additional_query_columns or '', conditions), filters, as_dict=1) #nosec
+		""".format(additional_query_columns or '', conditions), filters, as_dict=1) #nosec4
 	#frappe.msgprint(f"str{query}")
-	frappe.errprint(query)
+	# frappe.errprint(query)
 	return query
 
 def get_delivery_notes_against_sales_order(item_list):
