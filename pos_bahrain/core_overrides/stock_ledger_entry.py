@@ -15,7 +15,10 @@ def _validate_batch(self):
             expiry_date = frappe.db.get_value('Batch', self.batch_no, 'expiry_date')
             if expiry_date:
                 if getdate(self.posting_date) > getdate(expiry_date):
-                    frappe.throw(_('Batch {0} of Item {1} has expired.').format(self.batch_no, self.item_code))
+                    # print("ok")
+                    pass
+                
+                    # frappe.throw(_('Batch {0} of Item {1} has expired.').format(self.batch_no, self.item_code))
 
 
 def _get_purchase_return(voucher_type, voucher_no):
