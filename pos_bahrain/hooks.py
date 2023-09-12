@@ -431,11 +431,6 @@ scheduler_events = {
 # override_doctype_class = {
 #     "Sales Invoice": "pos_bahrain.api.sales_invoice.CustomAccountsController"
 # }
-
-override_doctype_class = {
-    "Stock Ledger Entry": "pos_bahrain.core_overrides.purchase_receipt_override.customStockledgerentry",
-    # "Purchase Invoice": "pos_bahrain.core_overrides.purchase_receipt_override.CustomStockController",
-}
 # Overriding Whitelisted Methods
 # ------------------------------
 #
