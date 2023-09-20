@@ -12,6 +12,12 @@ from pos_bahrain.api.sales_invoice import get_customer_account_balance
 from functools import partial
 from toolz import first, compose, pluck, unique
 
+@frappe.whitelist()
+def set_discount_on_return(doc):
+    # frappe.msgprint(doc)
+    if isinstance(doc,str):
+        doc = frappe.get_doc('Sales Invoice', doc)
+        return doc
 
 def validate(doc, method):
     if (
