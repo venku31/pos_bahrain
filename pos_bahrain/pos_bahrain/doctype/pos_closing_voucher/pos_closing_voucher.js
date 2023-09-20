@@ -111,3 +111,21 @@ frappe.ui.form.on('POS Voucher Payment', {
     }
   },
 });
+
+
+frappe.ui.form.on('POS Voucher Payment', {
+  expected_amount: function(frm, cdt, cdn) {
+      calculateDifference(frm, cdt, cdn);
+  },
+  collected_amount: function(frm, cdt, cdn) {
+      calculateDifference(frm, cdt, cdn);
+  }
+});
+
+function calculateDifference(frm, cdt, cdn) {
+  var child = locals[cdt][cdn];
+  var expected_amount = child.expected_amount || 0;
+  var collected_amount = child.collected_amount || 0;
+  var difference = expected_amount - collected_amount;
+  frappe.model.set_value(cdt, cdn, 'difference', difference);
+}
