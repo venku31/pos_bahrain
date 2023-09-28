@@ -16,12 +16,13 @@ from toolz import groupby, merge, valmap, compose, get, excepts, first, pluck
 
 from pos_bahrain.utils import key_by
 from six import string_types, iteritems
+from erpnext.stock.get_item_details import get_pos_profile
 
 
 @frappe.whitelist()
 def get_pos_data():
     from erpnext.accounts.doctype.sales_invoice.pos import get_pos_data
-
+    
     get_price = compose(
         partial(get, "price_list_rate", default=0),
         excepts(StopIteration, first, lambda __: {}),
@@ -42,6 +43,7 @@ def get_pos_data():
         return [merge(x, max_discounts_by_item.get(x.get("name")), {}) for x in items]
 
     def get_pricing_rule_item_groups(pricing_rules):
+        
         names = compose(list, partial(pluck, "name"))(pricing_rules)
         # item_groups_by_parent = compose(partial(key_by, "parent"), frappe.db.sql)(
         #     """
@@ -71,6 +73,22 @@ def get_pos_data():
         ]
 
     data = get_pos_data()
+    doc = frappe.new_doc('Sales Invoice')
+    doc.is_pos = 1
+    pos_profile = get_pos_profile(doc.company) or {}
+    if not pos_profile:
+        frappe.throw(_("POS Profile is required to use Point-of-Sale"))
+
+    if not doc.company:
+        doc.company = pos_profile.get('company')
+
+    doc.update_stock = pos_profile.get('update_stock')
+
+    if pos_profile.get('name'):
+        pos_profile = frappe.get_doc('POS Profile', pos_profile.get('name'))
+        pos_profile.validate()
+        
+    serial_no = get_serial_no_data(pos_profile, doc.company)
     pricing_rules = (
         get_pricing_rule_item_groups(data.get("pricing_rules"))
         if data.get("pricing_rules")
@@ -94,9 +112,12 @@ def get_pos_data():
         return valmap(
             lambda x: {k: v for k, v in x.items() if k in tax_accounts}, tax_data
         )
+    
+   
 
     return merge(
         data,
+        {'serial_no_data':serial_no},
         {"price_list_data": get_price_list_data(data.get("doc").selling_price_list)},
          {"items": add_discounts(data.get("items"))},
          {"pricing_rules": pricing_rules},
@@ -105,7 +126,10 @@ def get_pos_data():
                 data.get("tax_data"), data.get("pos_profile").company
             )
         },
-    )
+       
+
+        )
+    
 def get_customers_address(customers):
 	customer_address = {}
 	if isinstance(customers, string_types):
@@ -532,3 +556,21 @@ def _get_customer_contacts():
         customer: phone_contacts.get(contact, "")
         for contact, customer in dynamic_links.items()
     }
+
+def get_serial_no_data(pos_profile, company):
+    from erpnext.accounts.doctype.sales_invoice.pos import get_serial_no_data
+
+    if pos_profile.get('update_stock') and pos_profile.get('warehouse'):
+        cond = "AND warehouse = '{}'".format(pos_profile.get('warehouse'))
+
+    serial_nos = frappe.db.sql("""select name, warehouse, item_code 
+                                from `tabSerial No` 
+                                where 1=1 {0} AND company = '{1}' 
+                               """.format(cond, company), as_dict=1)
+
+    itemwise_serial_no = {}
+    for sn in serial_nos:
+        if sn.item_code not in itemwise_serial_no:
+            itemwise_serial_no.setdefault(sn.item_code, {})
+        itemwise_serial_no[sn.item_code][sn.name] = sn.warehouse
+    return itemwise_serial_no
