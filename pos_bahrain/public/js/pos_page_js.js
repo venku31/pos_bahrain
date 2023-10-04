@@ -831,6 +831,117 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 		}
 	},
 
+	add_to_cart: function () {
+		var me = this;
+		var caught = false;
+		var no_of_items = me.wrapper.find(".pos-bill-item").length;
+
+		this.customer_validate();
+		this.mandatory_batch_no();
+		this.validate_serial_no();
+		this.validate_warehouse();
+
+		if (no_of_items != 0) {
+			$.each(this.frm.doc["items"] || [], function (i, d) {
+				if (d.item_code == me.items[0].item_code) {
+					caught = true;
+					d.qty += 1;
+					d.amount = flt(d.rate) * flt(d.qty);
+					if (me.item_serial_no[d.item_code]) {
+						d.serial_no += '\n' + me.item_serial_no[d.item_code][0]
+						d.warehouse = me.item_serial_no[d.item_code][1]
+					}
+
+					if (me.item_batch_no.length) {
+						d.batch_no = me.item_batch_no[d.item_code]
+					}
+				}
+			});
+		}
+
+		// if item not found then add new item
+		if (!caught)
+			this.add_new_item_to_grid();
+
+		this.update_paid_amount_status(false)
+		this.wrapper.find(".item-cart-items").scrollTop(1000);
+	},
+	
+
+	validate_serial_no: function () {
+		
+		var me = this;
+		if (this.items[0].has_serial_no && !this.item_serial_no[this.items[0].item_code]) {
+			frappe.call({
+				method: 'erpnext.accounts.doctype.sales_invoice.pos.get_serial_numbers',
+				args: {
+					item_code: this.items[0].item_code
+				},
+				callback: function (r) {
+					if (r.message && r.message.length > 0) {
+						const serialNumbers = r.message;
+	
+						const dialog = new frappe.ui.Dialog({
+							title: __('Select Serial No'),
+							fields: [
+								{
+									fieldtype: 'Select',
+									fieldname: 'selected_serial_no',
+									label: __('Serial No'),
+									options: serialNumbers
+								}
+							],
+							primary_action: function () {
+								const selectedSerialNo = dialog.get_value('selected_serial_no');
+	
+								if (selectedSerialNo) {
+									me.item_serial_no[me.items[0].item_code] = [selectedSerialNo];
+	
+									const item = me.frm.doc.items.find(
+										({ item_code }) => item_code === me.items[0].item_code
+									);
+	
+									if (item) {
+										item.serial_no = selectedSerialNo;
+									}
+	
+									dialog.hide();
+								}
+							}
+						});
+	
+						dialog.show();
+					} else {
+						frappe.msgprint(__('No serial numbers found for this item.'));
+					}
+				}
+			});
+		}
+
+		
+		// if (this.items && this.items[0].has_serial_no && serial_no == "") {
+		// 	this.refresh();
+		// 	frappe.throw(__(repl("Error: Serial no is mandatory for item %(item)s", {
+		// 		'item': this.items[0].item_code
+		// 	})))
+		// }
+
+		// if (item_code && serial_no) {
+		// 	$.each(this.frm.doc.items, function (index, data) {
+		// 		if (data.item_code == item_code) {
+		// 			if (in_list(data.serial_no.split('\n'), serial_no)) {
+		// 				frappe.throw(__(repl("Serial no %(serial_no)s is already taken", {
+		// 					'serial_no': serial_no
+		// 				})))
+		// 			}
+		// 		}
+		// 	})
+		// }
+	},
+	
+
+	
+
 	/*add_phone_validator: function () {
 		console.log("attaching")
 		const body = document.querySelector('body');
