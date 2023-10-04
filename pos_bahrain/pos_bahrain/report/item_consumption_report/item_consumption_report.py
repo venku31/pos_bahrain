@@ -27,6 +27,7 @@ def execute(filters=None):
 def _get_filters(filters):
     if not filters.get("company"):
         frappe.throw(_("Company is required to generate report"))
+    filters.setdefault("brand", None)
 
     clauses = concatv(
         ["TRUE"],
