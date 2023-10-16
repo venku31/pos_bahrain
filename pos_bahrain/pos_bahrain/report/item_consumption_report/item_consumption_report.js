@@ -62,5 +62,11 @@ frappe.query_reports['Item Consumption Report'] = {
       fieldtype: 'Link',
       options: 'Brand',
     },
+    {
+      fieldname: 'barcode',
+      label: __('International Barcode'),
+      fieldtype: 'Data',
+      // options: 'Brand',
+    },
   ],
 };

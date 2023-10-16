@@ -8,6 +8,11 @@ from frappe.utils import today
 from functools import partial, reduce
 import operator
 from toolz import merge, pluck, get, compose, first, flip, groupby, excepts, concatv
+from frappe.utils import getdate, add_days, add_months
+from frappe.utils import cint
+from frappe.utils.data import flt
+from datetime import datetime
+
 
 from pos_bahrain.pos_bahrain.report.item_consumption_report.helpers import (
     generate_intervals,
@@ -18,7 +23,7 @@ from pos_bahrain.utils import pick
 def execute(filters=None):
     clauses, values = _get_filters(filters)
     columns = _get_columns(values)
-    data = _get_data(clauses, values, columns)
+    data = _get_data(clauses, values, columns,filters)
 
     make_column = partial(pick, ["label", "fieldname", "fieldtype", "options", "width"])
     return [make_column(x) for x in columns], data
@@ -27,7 +32,7 @@ def execute(filters=None):
 def _get_filters(filters):
     if not filters.get("company"):
         frappe.throw(_("Company is required to generate report"))
-    filters.setdefault("brand", None)
+    filters.setdefault("brand",None)
 
     clauses = concatv(
         ["TRUE"],
@@ -36,6 +41,9 @@ def _get_filters(filters):
         ["i.name = %(item_code)s"] if filters.item_code else [],
         ["id.default_supplier = %(default_supplier)s"]
         if filters.default_supplier
+        else [],
+        ["i.name IN (SELECT parent FROM `tabItem Barcode` WHERE barcode = %(barcode)s)"]
+        if filters.barcode
         else [],
     )
     warehouse_clauses = concatv(
@@ -77,6 +85,7 @@ def _get_columns(filters):
 
     columns = [
         make_column("item_code", type="Link", options="Item", width=120),
+        make_column("barcode", type="Data", width=120),
         make_column("brand", type="Link", options="Brand", width=120),
         make_column("item_group", type="Link", options="Item Group", width=120),
         make_column("item_name", type="Data", width=200),
@@ -88,6 +97,7 @@ def _get_columns(filters):
             width=120,
         ),
         make_column("stock", "Available Stock"),
+        make_column("average_sales_quantity", "Average Sales Quantity", type="Float", width=120),
     ]
 
     def get_warehouse_columns():
@@ -124,11 +134,12 @@ def _get_columns(filters):
     )
 
 
-def _get_data(clauses, values, columns):
+def _get_data(clauses, values, columns,filters):
     items = frappe.db.sql(
         """
             SELECT
                 i.item_code AS item_code,
+                (SELECT GROUP_CONCAT(barcode SEPARATOR ', ') FROM `tabItem Barcode`WHERE parent = i.name) AS barcode ,
                 i.brand AS brand,
                 i.item_name AS item_name,
                 i.item_group AS item_group,
@@ -155,6 +166,42 @@ def _get_data(clauses, values, columns):
         values=values,
         as_dict=1,
     )
+    def get_number_of_days(start_date, end_date):
+        start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").date()
+        end_date_obj = datetime.strptime(end_date, "%Y-%m-%d").date()
+
+        return (end_date_obj - start_date_obj).days
+    
+    for item in items:
+        item_qty ={item.item_code:0}
+        statuses_to_exclude = ["Cancelled", "Closed"]
+        si = frappe.get_all("Sales Order",filters={
+                                            "status": ["not in", statuses_to_exclude],
+                                            "creation": ["between", [filters["start_date"], filters["end_date"]]]
+                                        })
+
+        for i in si:
+            so = frappe.get_doc("Sales Order", i.name)
+            for x in so.items:
+                if x.item_code == item.item_code:
+                    item_qty[item.item_code] += x.qty
+            
+        # print(item_qty)
+
+        total_sales = item_qty[item.item_code]
+        number_of_days = get_number_of_days(filters["start_date"], filters["end_date"])
+        # print(number_of_days)
+        # average_sales_quantity = 0
+        if filters.get("interval") == None:
+            average_sales_quantity = total_sales / number_of_days if number_of_days > 0 else 0
+        elif filters.get("interval") == "Weekly":
+            average_sales_quantity = total_sales / 7
+        elif filters.get("interval") == "Monthly":
+            average_sales_quantity = total_sales / 30
+        else:
+            average_sales_quantity = 0
+        item["average_sales_quantity"] = average_sales_quantity
+
     sles = frappe.db.sql(
         """
             SELECT item_code, posting_date, actual_qty, warehouse
