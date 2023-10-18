@@ -61,15 +61,15 @@ function _make_sales_invoice(frm) {
   });
 }
 
-function query_override(frm){
-  if(cur_frm.doc.quotation_to == "Customer"){
-      frm.set_query("party_name", function(){
-      return {
-        query: "pos_bahrain.api.quotation.link_query_override",
-      };
-      });
-  }
-}
+// function query_override(frm){
+//   if(cur_frm.doc.quotation_to == "Customer"){
+//       frm.set_query("party_name", function(){
+//       return {
+//         query: "pos_bahrain.api.quotation.link_query_override",
+//       };
+//       });
+//   }
+// }
 
 function get_total_stock_qty(frm, cdt, cdn) {
   var d = locals[cdt][cdn];
