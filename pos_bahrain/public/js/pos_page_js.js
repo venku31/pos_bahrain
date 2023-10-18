@@ -31,6 +31,79 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 			});
 		}
 	},
+	make_control: function() {
+		this.frm = {}
+		this.frm.doc = this.doc
+		this.set_transaction_defaults("Customer");
+		this.frm.doc["allow_user_to_edit_rate"] = this.pos_profile_data["allow_user_to_edit_rate"] ? true : false;
+		this.frm.doc["allow_user_to_edit_discount"] = this.pos_profile_data["allow_user_to_edit_discount"] ? true : false;
+		this.wrapper.html(frappe.render_template("pos", this.frm.doc));
+		this.make_search();
+		this.make_customer();
+		this.make_list_customers();
+		this.bind_numeric_keypad();
+	},
+	make_search: function () {
+		var me = this;
+		this.search_item = frappe.ui.form.make_control({
+			df: {
+				"fieldtype": "Data",
+				"label": __("Item"),
+				"fieldname": "pos_item",
+				"placeholder": __("Search by item code, serial number, batch no or barcode")
+			},
+			parent: this.wrapper.find(".search-item"),
+			only_input: true,
+		});
+
+		frappe.ui.keys.on('ctrl+i', () => {
+			this.search_item.set_focus();
+		});
+
+		this.search_item.make_input();
+
+		this.search_item.$input.on("keypress", function (event) {
+
+			clearTimeout(me.last_search_timeout);
+			me.last_search_timeout = setTimeout(() => {
+				if((me.search_item.$input.val() != "") || (event.which == 13)) {
+					me.items = me.get_items();
+					me.make_item_list();
+				}
+			}, 400);
+		});
+
+		this.search_item_group = this.wrapper.find('.search-item-group');
+		sorted_item_groups = this.get_sorted_item_groups()
+		var dropdown_html = sorted_item_groups.map(function(item_group) {
+			return "<li><a class='option' data-value='"+item_group+"'>"+item_group+"</a></li>";
+		}).join("");
+
+		this.search_item_group.find('.dropdown-menu').html(dropdown_html);
+
+		this.search_item_group.on('click', '.dropdown-menu a', function() {
+			me.selected_item_group = $(this).attr('data-value');
+			me.search_item_group.find('.dropdown-text').text(me.selected_item_group);
+
+			me.page_len = 20;
+			me.items = me.get_items();
+			me.make_item_list();
+		})
+
+		me.toggle_more_btn();
+
+		this.wrapper.on("click", ".btn-more", function() {
+			me.page_len += 20;
+			me.items = me.get_items();
+			me.make_item_list();
+			me.toggle_more_btn();
+		});
+
+		this.page.wrapper.on("click", ".edit-customer-btn", function() {
+			me.update_customer()
+		})
+	},
+	
 	setinterval_to_sync_master_data: function (delay) {
 		setInterval(async () => {
 			const { message } = await frappe.call({ method: 'frappe.handler.ping' });
@@ -868,42 +941,163 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 	},
 	
 
+	mandatory_batch_no: function () {
+		var me = this;
+		if (this.items[0].has_batch_no && !this.item_batch_no[this.items[0].item_code]) {
+			frappe.prompt([{
+				'fieldname': 'batch',
+				'fieldtype': 'Select',
+				'label': __('Batch No'),
+				'reqd': 1,
+				'options': this.batch_no_data[this.items[0].item_code]
+			}],
+			function(values){
+				me.item_batch_no[me.items[0].item_code] = values.batch;
+				const item = me.frm.doc.items.find(
+					({ item_code }) => item_code === me.items[0].item_code
+				);
+				if (item) {
+					item.batch_no = values.batch;
+				}
+			},
+			__('Select Batch No'))
+		}
+	},
+	update_qty: function (item_code, qty, remove_zero_qty_items) {
+		var me = this;
+		this.items = this.get_items(item_code);
+		// this.validate_serial_no()
+		this.set_item_details(item_code, "qty", qty, remove_zero_qty_items);
+	},
+	set_item_details: function (item_code, field, value, remove_zero_qty_items) {
+		var me = this;
+		if (value < 0) {
+			frappe.throw(__("Enter value must be positive"));
+		}
+
+		this.remove_item = []
+		$.each(this.frm.doc["items"] || [], function (i, d) {
+			if (d.item_code == item_code) {
+				// if (d.serial_no && field == 'qty') {
+				// 	me.validate_serial_no_qty(d, item_code, field, value)
+				// }
+
+				d[field] = flt(value);
+				d.amount = flt(d.rate) * flt(d.qty);
+				if (d.qty == 0 && remove_zero_qty_items) {
+					me.remove_item.push(d.idx)
+				}
+
+				if(field=="discount_percentage" && value == 0) {
+					d.rate = d.price_list_rate;
+				}
+			}
+		});
+
+		if (field == 'qty') {
+			this.remove_zero_qty_items_from_cart();
+		}
+
+		this.update_paid_amount_status(false)
+	},
+
+	add_new_item_to_grid: function () {
+		alert("hi")
+		var me = this;
+		this.child = frappe.model.add_child(this.frm.doc, this.frm.doc.doctype + " Item", "items");
+		this.child.item_code = this.items[0].item_code;
+		this.child.item_name = this.items[0].item_name;
+		this.child.stock_uom = this.items[0].stock_uom;
+		this.child.uom = this.items[0].sales_uom || this.items[0].stock_uom;
+		this.child.conversion_factor = this.items[0].conversion_factor || 1;
+		this.child.brand = this.items[0].brand;
+		this.child.description = this.items[0].description || this.items[0].item_name;
+		this.child.discount_percentage = 0.0;
+		this.child.qty = 1;
+		this.child.item_group = this.items[0].item_group;
+		this.child.cost_center = this.pos_profile_data['cost_center'] || this.items[0].cost_center;
+		this.child.income_account = this.pos_profile_data['income_account'] || this.items[0].income_account;
+		this.child.warehouse = (this.item_serial_no[this.child.item_code]
+			? this.item_serial_no[this.child.item_code][1] : (this.pos_profile_data['warehouse'] || this.items[0].default_warehouse));
+
+		customer = this.frm.doc.customer;
+		let rate;
+
+		customer_price_list = this.customer_wise_price_list[customer]
+		if (customer_price_list && customer_price_list[this.child.item_code]){
+			rate = flt(this.customer_wise_price_list[customer][this.child.item_code] * this.child.conversion_factor, 9) / flt(this.frm.doc.conversion_rate, 9);
+		}
+		else{
+			rate = flt(this.price_list_data[this.child.item_code] * this.child.conversion_factor, 9) / flt(this.frm.doc.conversion_rate, 9);
+		}
+
+		this.child.price_list_rate = rate;
+		this.child.rate = rate;
+		this.child.actual_qty = me.get_actual_qty(this.items[0]);
+		this.child.amount = flt(this.child.qty) * flt(this.child.rate);
+		this.child.batch_no = this.item_batch_no[this.child.item_code];
+		this.child.serial_no = (this.item_serial_no[this.child.item_code]
+			? this.item_serial_no[this.child.item_code][0] : '');
+
+		const tax_template_is_valid = true;
+		if (this.items && this.items[0].valid_from) {
+			tax_template_is_valid = frappe.datetime.get_diff(frappe.datetime.now_date(),
+				this.items[0].valid_from) > 0;
+		}
+
+		this.child.item_tax_template = tax_template_is_valid ? this.items[0].item_tax_template : '';
+		this.child.item_tax_rate = JSON.stringify(this.tax_data[this.child.item_tax_template]);
+
+		if (this.child.item_tax_rate) {
+			this.add_taxes_from_item_tax_template(this.child.item_tax_rate);
+		}
+	},
+	
+
+	
+	// for fetch multiple serial no !
 	validate_serial_no: function () {
-		
 		var me = this;
 		if (this.items[0].has_serial_no && !this.item_serial_no[this.items[0].item_code]) {
 			frappe.call({
-				method: 'erpnext.accounts.doctype.sales_invoice.pos.get_serial_numbers',
+				method: 'pos_bahrain.api.item.get_serial_numbers',
 				args: {
-					item_code: this.items[0].item_code
+					item_code: this.items[0].item_code,
+					batch_no: this.item_batch_no[this.items[0].item_code] // Add batch_no filter
 				},
 				callback: function (r) {
 					if (r.message && r.message.length > 0) {
 						const serialNumbers = r.message;
+						
+						const options = serialNumbers.map(item => item);
+						console.log(options)
 	
 						const dialog = new frappe.ui.Dialog({
 							title: __('Select Serial No'),
 							fields: [
 								{
-									fieldtype: 'Select',
-									fieldname: 'selected_serial_no',
-									label: __('Serial No'),
-									options: serialNumbers
+									fieldtype: 'MultiSelectList',
+									fieldname: 'selected_serial_nos',
+									label: __('Serial Numbers'),
+									options: options
 								}
 							],
 							primary_action: function () {
-								const selectedSerialNo = dialog.get_value('selected_serial_no');
+								const selectedSerialNos = dialog.get_value('selected_serial_nos');
+								const serialNosLength = selectedSerialNos.length;
+								// alert(serialNosLength,selectedSerialNos);
 	
-								if (selectedSerialNo) {
-									me.item_serial_no[me.items[0].item_code] = [selectedSerialNo];
+								if (selectedSerialNos && serialNosLength > 0) {
+									me.item_serial_no[me.items[0].item_code] = selectedSerialNos;
 	
 									const item = me.frm.doc.items.find(
 										({ item_code }) => item_code === me.items[0].item_code
 									);
 	
 									if (item) {
-										item.serial_no = selectedSerialNo;
+										item.serial_no = selectedSerialNos.join('\n');
 									}
+									// alert();
 	
 									dialog.hide();
 								}
@@ -917,7 +1111,8 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 				}
 			});
 		}
-
+	},
+	
 		
 		// if (this.items && this.items[0].has_serial_no && serial_no == "") {
 		// 	this.refresh();
@@ -937,10 +1132,10 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 		// 		}
 		// 	})
 		// }
-	},
+	// },
 	
 
-	
+																																																																																																																																																																																																																																																																	
 
 	/*add_phone_validator: function () {
 		console.log("attaching")
