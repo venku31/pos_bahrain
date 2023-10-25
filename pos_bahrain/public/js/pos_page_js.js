@@ -1097,7 +1097,8 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 
 		// Access the serialNosLength property
 		// var serialNosLength = me.serialNosLength;
-		// console.log("Serial Numbers Length: " + serialNosLength);
+		console.log("Serial Numbers Length: " + $('.pos-item-serial')[0].value.split(',').length);
+
 		this.child = frappe.model.add_child(this.frm.doc, this.frm.doc.doctype + " Item", "items");
 		this.child.item_code = this.items[0].item_code;
 		this.child.item_name = this.items[0].item_name;
@@ -1107,7 +1108,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 		this.child.brand = this.items[0].brand;
 		this.child.description = this.items[0].description || this.items[0].item_name;
 		this.child.discount_percentage = 0.0;
-		this.child.qty = 1;
+		this.child.qty = $('.pos-item-serial')[0].value.split(',').length;
 		this.child.item_group = this.items[0].item_group;
 		this.child.cost_center = this.pos_profile_data['cost_center'] || this.items[0].cost_center;
 		this.child.income_account = this.pos_profile_data['income_account'] || this.items[0].income_account;

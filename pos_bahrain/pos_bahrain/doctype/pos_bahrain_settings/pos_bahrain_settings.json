@@ -12,6 +12,7 @@
   "hide_sales_return_except",
   "hide_sales_return_role",
   "gen_col",
+  "show_custom_button",
   "show_sales_employee",
   "disable_standard_pf",
   "enable_pos_log",
@@ -24,6 +25,7 @@
   "wholesale_price_list",
   "valuation_price_list",
   "valuation_warehouse",
+  "multi_warehouse",
   "minimum_price_list_section",
   "use_minimum_price_list",
   "minimum_doc",
@@ -152,14 +154,6 @@
    "fieldtype": "Link",
    "label": "Valuation Price List",
    "options": "Price List"
-  },
-  {
-   "depends_on": "valuation_price_list",
-   "description": "<strong>Item Price</strong> will update based on <code>valuation_rate</code> of this",
-   "fieldname": "valuation_warehouse",
-   "fieldtype": "Link",
-   "label": "Valuation Warehouse",
-   "options": "Warehouse"
   },
   {
    "fieldname": "pos_sec",
@@ -475,11 +469,31 @@
    "fieldname": "enable_pos_log",
    "fieldtype": "Check",
    "label": "Enable POS Log"
+  },
+  {
+   "default": "0",
+   "fieldname": "show_custom_button",
+   "fieldtype": "Check",
+   "label": "Show Custom Button"
+  },
+  {
+   "depends_on": "valuation_price_list",
+   "description": "<strong>Item Price</strong> will update based on <code>valuation_rate</code> of this",
+   "fieldname": "multi_warehouse",
+   "fieldtype": "Table",
+   "label": "Multi Warehouse",
+   "options": "Multi Warehouse"
+  },
+  {
+   "fieldname": "valuation_warehouse",
+   "fieldtype": "Link",
+   "label": "valuation warehouse",
+   "options": "Warehouse"
   }
  ],
  "issingle": 1,
- "modified": "2023-08-02 07:28:05.341389",
- "modified_by": "doreen@9t9it.com",
+ "modified": "2023-10-20 19:38:31.187935",
+ "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "POS Bahrain Settings",
  "owner": "Administrator",

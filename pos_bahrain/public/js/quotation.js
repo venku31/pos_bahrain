@@ -2,7 +2,7 @@ frappe.ui.form.on('Quotation', {
   refresh: function (frm) {
     get_employee(frm);
     _create_custom_buttons(frm);
-    query_override(frm);
+    // query_override(frm);
   },
   quotation_to: function(frm) {
     query_override(frm);
@@ -45,11 +45,24 @@ function _create_custom_buttons(frm) {
         frappe.datetime.get_today()
       ) >= 0
     ) {
-      frm.add_custom_button(
-        __('Sales Invoice'),
-        () => _make_sales_invoice(frm),
-        __('Create')
-      );
+      frappe.call({
+        method: 'frappe.client.get_value',
+        args: {
+          doctype: 'POS Bahrain Settings',
+          filters: { name: frm.doc.pos_bahrain_settings },
+          fieldname: 'show_custom_button',
+        },
+        callback: function (r) {
+          console.log(r.message.show_custom_button)
+          if (r.message.show_custom_button == 1) {
+            frm.add_custom_button(
+              __('Sales Invoice'),
+              () => _make_sales_invoice(frm),
+              __('Create')
+            );
+          }
+        },
+      });
     }
   }
 }
