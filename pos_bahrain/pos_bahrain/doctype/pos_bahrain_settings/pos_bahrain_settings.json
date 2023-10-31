@@ -25,6 +25,7 @@
   "wholesale_price_list",
   "valuation_price_list",
   "valuation_warehouse",
+  "enable_warehouse_valuation_rate",
   "multi_warehouse",
   "minimum_price_list_section",
   "use_minimum_price_list",
@@ -152,6 +153,7 @@
    "description": "This <strong>Item Price</strong> of this <strong>Price List</strong> will follow the <code>valuation_rate</code>",
    "fieldname": "valuation_price_list",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Valuation Price List",
    "options": "Price List"
   },
@@ -477,22 +479,28 @@
    "label": "Show Custom Button"
   },
   {
-   "depends_on": "valuation_price_list",
-   "description": "<strong>Item Price</strong> will update based on <code>valuation_rate</code> of this",
+   "fieldname": "valuation_warehouse",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "valuation warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_warehouse_valuation_rate",
+   "fieldtype": "Check",
+   "label": "Enable Warehouse Valuation Rate "
+  },
+  {
+   "depends_on": "eval:doc.enable_warehouse_valuation_rate == 1",
    "fieldname": "multi_warehouse",
    "fieldtype": "Table",
    "label": "Multi Warehouse",
    "options": "Multi Warehouse"
-  },
-  {
-   "fieldname": "valuation_warehouse",
-   "fieldtype": "Link",
-   "label": "valuation warehouse",
-   "options": "Warehouse"
   }
  ],
  "issingle": 1,
- "modified": "2023-10-20 19:38:31.187935",
+ "modified": "2023-10-31 17:26:04.592351",
  "modified_by": "Administrator",
  "module": "Pos Bahrain",
  "name": "POS Bahrain Settings",

@@ -65,6 +65,7 @@ def make_invoice(pos_profile, doc_list={}, email_queue_list={}, customers_list={
 
 
 def _update_contact_phones(customers_list):
+    print(customers_list)
     from erpnext.accounts.doctype.sales_invoice.pos import get_customer_id
 
     if isinstance(customers_list, string_types):
@@ -73,7 +74,6 @@ def _update_contact_phones(customers_list):
     for customer, data in customers_list.items():
         data = json.loads(data)
         customer_id = get_customer_id(data, customer)
-
         # Contact DocType
         contact_name = frappe.db.get_value(
             "Dynamic Link",
@@ -84,14 +84,13 @@ def _update_contact_phones(customers_list):
             },
             "parent",
         )
-
         if contact_name:
             contact_doc = frappe.get_doc("Contact", contact_name)
 
             phone = data.get("phone")
             phone_nos = [x.phone for x in contact_doc.phone_nos]
             is_exist = False
-
+            contact_doc.save(ignore_permissions=True)
             # check the contact child table in Customer
             if len(contact_doc.phone_nos) > 0:
                 for contact_number in contact_doc.phone_nos:
@@ -101,3 +100,21 @@ def _update_contact_phones(customers_list):
                 if is_exist is False:
                     contact_doc.add_phone(phone)
                     contact_doc.save(ignore_permissions=True)
+            else:
+                
+                is_primary_phone = 1
+                is_primary_mobile = 1
+
+                for check_nos in contact_doc.phone_nos:
+                    if check_nos.is_primary_phone == 1:
+                        is_primary_phone = 0
+                    if check_nos.is_primary_mobile == 1:
+                        is_primary_mobile = 0
+
+                contact_doc.append("phone_nos",{
+                    "phone": phone,
+                    "is_primary_phone": is_primary_phone,
+                    "is_primary_mobile_no": is_primary_mobile
+                })
+
+                contact_doc.save(ignore_permissions=True)

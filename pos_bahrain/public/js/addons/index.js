@@ -9,7 +9,6 @@ import withStockValidator from './withStockValidator';
 import withPaymentValidator from './withPaymentValidator';
 import withMorePaymentActions from './withMorePaymentActions';
 import withBatchField from './withBatchField';
-import withSerialField from './withSerialField';
 import withIdx from './withIdx';
 import withStockQty from './withStockQty';
 import withGetChildItemByIdx from './withGetChildItemByIdx';

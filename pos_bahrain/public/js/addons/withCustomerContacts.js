@@ -31,7 +31,10 @@ export default function withCustomerContacts(Pos) {
               customer_name: e.originalEvent.text.value
             },
             callback: (r) => {
+
               localStorage.setItem("contact", r.message.contact);
+
+              console.log(r.message)
             }
           });
 
