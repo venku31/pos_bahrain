@@ -3,6 +3,7 @@ import frappe
 
 def set_item_price_from_bin(bin):
     settings = frappe.get_single("POS Bahrain Settings")
+    
     if settings.enable_warehouse_valuation_rate == 1:
         for i in settings.multi_warehouse:
             if i.price_list and i.warehouse == bin.warehouse:
