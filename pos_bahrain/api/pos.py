@@ -101,6 +101,7 @@ def _update_contact_phones(customers_list):
                     contact_doc.add_phone(phone)
                     contact_doc.save(ignore_permissions=True)
             else:
+                
                 is_primary_phone = 1
                 is_primary_mobile = 1
 
