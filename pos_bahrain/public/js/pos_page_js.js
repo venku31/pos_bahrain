@@ -992,6 +992,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 	// for fetch multiple serial no !
 	validate_serial_no: function (frm) {
 		var me = this;
+		var cur_batch =  this.item_batch_no[this.items[0].item_code]
 		if (this.items[0].has_serial_no && !this.item_serial_no[this.items[0].item_code]) {
 			frappe.call({
 				method: 'pos_bahrain.api.item.get_serial_numbers',
@@ -1000,6 +1001,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 					batch_no: this.item_batch_no[this.items[0].item_code] // Add batch_no filter
 				},
 				callback: function (r) {
+					
 					if (r.message && r.message.length > 0) {
 						const serialNumbers = r.message;
 	
@@ -1019,9 +1021,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 								frappe.run_serially([
 									() => {
 										$.each(me.frm.doc["items"] || [], function (i, d) {
-											console.log(d.item_code)
-											console.log(me.items[0].item_code)
-											if (d.item_code == me.items[0].item_code) {
+											if (d.item_code == me.items[0].item_code && d.batch_no == cur_batch) {
 												
 												d.qty = flt(serialNosLength);
 												d.amount = flt(d.rate) * flt(d.qty);
@@ -1031,7 +1031,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 									},
 									() => {
 										if (selectedSerialNos && serialNosLength > 0) {
-											console.log(me.item_serial_no)
 											me.item_serial_no[me.items[0].item_code] = selectedSerialNos;
 								
 											const item = me.frm.doc.items.find(
