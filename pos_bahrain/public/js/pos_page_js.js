@@ -1028,7 +1028,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 									
 											}
 										});
-
 									},
 									() => {
 										if (selectedSerialNos && serialNosLength > 0) {
@@ -1046,8 +1045,6 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 										}
 									},
 									() => me.refresh()
-									
-
 								])			
 							}
 						});
