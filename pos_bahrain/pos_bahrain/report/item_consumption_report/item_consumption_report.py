@@ -37,7 +37,7 @@ def _get_filters(filters):
     clauses = concatv(
         ["TRUE"],
         ["i.item_group = %(item_group)s"] if filters.item_group else [],
-        ["i.brand = %(brand)s"],
+        ["i.brand = %(brand)s"] if filters.brand else [],
         ["i.name = %(item_code)s"] if filters.item_code else [],
         ["id.default_supplier = %(default_supplier)s"]
         if filters.default_supplier
@@ -64,6 +64,8 @@ def _get_filters(filters):
             "end_date": filters.end_date or today(),
         },
     )
+
+    
     return (
         {
             "clauses": " AND ".join(clauses),
