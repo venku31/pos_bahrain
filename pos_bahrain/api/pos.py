@@ -123,4 +123,3 @@ def _update_contact_phones(customers_list):
             customer_doc = frappe.get_doc("Customer", j.name)
             customer_doc.cpr_number = data.get("cpr_number")
             customer_doc.save(ignore_permissions=True)
-            # customer_doc.db_set("cpr_number", data.get("cpr_number"))
