@@ -617,6 +617,13 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 
 				},
 				{
+					"label": __("CPR Number"),
+					"fieldname": "cpr_number",
+					"fieldtype": "Data",
+					"reqd": 0
+
+				},
+				{
 					"fieldtype": "Section Break"
 				},
 				{
@@ -757,6 +764,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 		this.prompt_details['territory'] = this.pos_profile_data["territory"];
 		this.prompt_details['customer_group'] = this.pos_profile_data["customer_group"];
 		this.prompt_details['customer_pos_id'] = this.customer_doc.fields_dict.customer_pos_id.value;
+		this.prompt_details['cpr_number'] = this.customer_doc.fields_dict.cpr_number.value;
 		return JSON.stringify(this.prompt_details)
 	},
 
@@ -814,7 +822,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 					<div class="image-view-body">
 						<i class="mega-octicon octicon-package"></i>
 						<div>Load more items</div>
-					</div>
+					</div>9
 				</div>
 			`);
 
