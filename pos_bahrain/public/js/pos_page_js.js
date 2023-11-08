@@ -1030,27 +1030,33 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 									() => {
 										$.each(me.frm.doc["items"] || [], function (i, d) {
 											if (d.item_code == me.items[0].item_code && d.batch_no == cur_batch) {
-												
 												d.qty = flt(serialNosLength);
 												d.amount = flt(d.rate) * flt(d.qty);
-									
+												if (selectedSerialNos && serialNosLength > 0) {
+													d.serial_no = selectedSerialNos.join('\n');
+												}
 											}
 										});
+										dialog.hide();
 									},
-									() => {
-										if (selectedSerialNos && serialNosLength > 0) {
-											me.item_serial_no[me.items[0].item_code] = selectedSerialNos;
+									// () => {
+									// 	if (selectedSerialNos && serialNosLength > 0) {
+									// 		me.item_serial_no[me.items[0].item_code] = selectedSerialNos;
 								
-											const item = me.frm.doc.items.find(
-												({ item_code }) => item_code === me.items[0].item_code
-											);
+									// 		const item = me.frm.doc.items.find(
+									// 			({ item_code }) => item_code === me.items[0].item_code
+									// 		);
+
+									// 		const batch = me.frm.doc.items.find(
+									// 			({ batch_no }) => batch_no === cur_batch
+									// 		);
 								
-											if (item) {
-												item.serial_no = selectedSerialNos.join('\n');
-											}
-											dialog.hide();
-										}
-									},
+									// 		if (item && batch) {
+									// 			item.serial_no = selectedSerialNos.join('\n');
+									// 		}
+									// 		dialog.hide();
+									// 	}
+									// },
 									() => me.refresh()
 								])			
 							}
