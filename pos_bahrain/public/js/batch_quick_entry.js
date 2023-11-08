@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 	9t9it and contributors
+// Copyright (c) 2018, 9t9it and contributors
 // For license information, please see license.txt
 
 frappe.ui.form.BatchQuickEntryForm = frappe.ui.form.QuickEntryForm.extend({
@@ -13,7 +13,11 @@ frappe.ui.form.BatchQuickEntryForm = frappe.ui.form.QuickEntryForm.extend({
           'Purchase Invoice Item',
         ].includes(doctype)
       ) {
-        this.dialog.set_value('item', item_code);
+        this.dialog.fields_dict['item'].$input.on('change', () => {
+          this.dialog.set_value('item', this.dialog.get_value('item'));
+          this.refresh_dialog_fields();
+        });
+
         const { message: item = {} } = await frappe.db.get_value(
           'Item',
           item_code,
