@@ -843,12 +843,12 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 		var me = this;
 		var caught = false;
 		var no_of_items = me.wrapper.find(".pos-bill-item").length;
-		frappe.run_serially([
-		() => this.customer_validate(),
-		() => this.mandatory_batch_no(),
-		() => this.validate_serial_no(),
-		() => this.validate_warehouse(),
-		])
+		
+		this.customer_validate()
+		this.mandatory_batch_no()
+		this.validate_serial_no()
+		this.validate_warehouse()
+		
 		if (no_of_items != 0) {
 			$.each(this.frm.doc["items"] || [], function (i, d) {
 				if (d.item_code == me.items[0].item_code) {
@@ -1025,32 +1025,38 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 							],
 							primary_action: function (frm) {
 								const selectedSerialNos = dialog.get_value('selected_serial_nos');
-								const serialNosLength = selectedSerialNos.length; // Get the length
+								const serialNosLength = selectedSerialNos.length;
 								frappe.run_serially([
 									() => {
 										$.each(me.frm.doc["items"] || [], function (i, d) {
 											if (d.item_code == me.items[0].item_code && d.batch_no == cur_batch) {
-												
 												d.qty = flt(serialNosLength);
 												d.amount = flt(d.rate) * flt(d.qty);
-									
+												if (selectedSerialNos && serialNosLength > 0) {
+													d.serial_no = selectedSerialNos.join(' ,');
+												}
 											}
 										});
+										dialog.hide();
 									},
-									() => {
-										if (selectedSerialNos && serialNosLength > 0) {
-											me.item_serial_no[me.items[0].item_code] = selectedSerialNos;
+									// () => {
+									// 	if (selectedSerialNos && serialNosLength > 0) {
+									// 		me.item_serial_no[me.items[0].item_code] = selectedSerialNos;
 								
-											const item = me.frm.doc.items.find(
-												({ item_code }) => item_code === me.items[0].item_code
-											);
+									// 		const item = me.frm.doc.items.find(
+									// 			({ item_code }) => item_code === me.items[0].item_code
+									// 		);
+
+									// 		const batch = me.frm.doc.items.find(
+									// 			({ batch_no }) => batch_no === cur_batch
+									// 		);
 								
-											if (item) {
-												item.serial_no = selectedSerialNos.join('\n');
-											}
-											dialog.hide();
-										}
-									},
+									// 		if (item && batch) {
+									// 			item.serial_no = selectedSerialNos.join('\n');
+									// 		}
+									// 		dialog.hide();
+									// 	}
+									// },
 									() => me.refresh()
 								])			
 							}
