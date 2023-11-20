@@ -21,18 +21,23 @@ frappe.ui.form.on('Sales Invoice', {
 
 function set_discount(frm){
   if(frm.doc.is_return == 1){
-    frappe.call({
-      method: "pos_bahrain.doc_events.sales_invoice.set_discount_on_return",
-      args: {
-        doc: frm.doc.return_against
-      },
-      callback: function (r) {
-        console.log(r.message)
-        if (r.message != 0) {
-          match_set_discount(frm, r.message)
+    if(frm.doc.return_against){
+      frappe.call({
+        method: "pos_bahrain.doc_events.sales_invoice.set_discount_on_return",
+        args: {
+          doc: frm.doc.return_against
+        },
+        callback: function (r) {
+          console.log(r.message)
+          if (r.message != 0) {
+            match_set_discount(frm, r.message)
+          }
         }
-      }
-    })
+      })
+    }
+    else{
+      frappe.msgprint("Original Invoice is Required")
+    }
   }
 }
 
