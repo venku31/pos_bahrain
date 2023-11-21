@@ -9,6 +9,7 @@ from frappe.model.meta import get_field_precision
 from frappe.utils.xlsxutils import handle_html
 from erpnext.accounts.report.sales_register.sales_register import get_mode_of_payments
 from erpnext.selling.report.item_wise_sales_history.item_wise_sales_history import get_item_details, get_customer_details
+from erpnext.accounts.report.financial_statements import get_cost_centers_with_children
 
 def execute(filters=None):
 	return _execute(filters)
@@ -399,6 +400,9 @@ def get_conditions(filters):
 	if filters.get("warehouse"):
 		conditions +=  """and ifnull(`tabSales Invoice Item`.warehouse, '') = %(warehouse)s"""
 
+	if filters.get("cost_center"):
+		filters["cost_center"] = get_cost_centers_with_children(filters["cost_center"])
+		conditions += " and `tabSales Invoice Item`.cost_center in %(cost_center)s"
 
 	if filters.get("brand"):
 		conditions +=  """and ifnull(`tabSales Invoice Item`.brand, '') = %(brand)s"""
@@ -440,7 +444,6 @@ def get_group_by_conditions(filters, doctype):
 		return "ORDER BY `tab{0}`.{1}".format(doctype, frappe.scrub(filters.get('group_by')))
 
 # Inside your get_items function
-
 def get_items(filters, additional_query_columns):
     conditions = get_conditions(filters)
 
@@ -468,9 +471,9 @@ def get_items(filters, additional_query_columns):
             `tabSales Invoice`.customer_name, `tabSales Invoice`.customer_group, `tabSales Invoice Item`.so_detail,
             `tabItem Default`.default_supplier as supplier,
             `tabSales Invoice`.update_stock, `tabSales Invoice Item`.uom, `tabSales Invoice Item`.qty {0},
-            (SELECT ip.price_list_rate FROM `tabItem Price` ip
-             WHERE ip.item_code = `tabSales Invoice Item`.item_code
-             AND ip.price_list = 'Standard Buying') AS buying_price,
+            (SELECT MAX(ip.price_list_rate) FROM `tabItem Price` ip
+			WHERE ip.item_code = `tabSales Invoice Item`.item_code
+			AND ip.price_list = 'Standard Buying') AS buying_price,
             `tabSales Invoice Item`.warehouse AS warehouse  
         FROM `tabSales Invoice`, `tabSales Invoice Item`
         LEFT JOIN `tabItem Default`
