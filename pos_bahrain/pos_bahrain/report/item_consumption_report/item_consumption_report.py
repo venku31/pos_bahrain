@@ -188,21 +188,23 @@ def _get_data(clauses, values, columns,filters):
                 if x.item_code == item.item_code:
                     item_qty[item.item_code] += x.qty
             
-        # print(item_qty)
 
-        total_sales = item_qty[item.item_code]
-        number_of_days = get_number_of_days(filters["start_date"], filters["end_date"])
-        # print(number_of_days)
-        # average_sales_quantity = 0
-        if filters.get("interval") == None:
-            average_sales_quantity = total_sales / number_of_days if number_of_days > 0 else 0
-        elif filters.get("interval") == "Weekly":
-            average_sales_quantity = total_sales / 7
-        elif filters.get("interval") == "Monthly":
-            average_sales_quantity = total_sales / 30
-        else:
-            average_sales_quantity = 0
-        item["average_sales_quantity"] = average_sales_quantity
+    total_sales = item_qty[item.item_code]
+    number_of_days = get_number_of_days(filters["start_date"], filters["end_date"])
+
+    if filters.get("interval") == None:
+        average_sales_quantity = total_sales / number_of_days if number_of_days > 0 else 0
+
+    elif filters.get("interval") == "Weekly":
+        week_average = number_of_days / 7
+        average_sales_quantity = total_sales / week_average
+
+    elif filters.get("interval") == "Monthly":
+        month_average = number_of_days / 30
+        average_sales_quantity = total_sales / month_average
+    else:
+        average_sales_quantity = 0
+    item["average_sales_quantity"] = average_sales_quantity
 
     sles = frappe.db.sql(
         """

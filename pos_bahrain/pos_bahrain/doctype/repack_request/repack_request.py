@@ -30,19 +30,22 @@ class RepackRequest(Document):
         self.set_items_warehouse()
 
     def set_status(self, update=False, status=None):
-        if self.is_new():
-            if self.get("amended_from"):
-                self.status = "Draft"
-            return
+        self.status = "Pending"
 
-        # Newly submitted is Pending
-        if self.status == "Draft":
-            self.status = "Pending"
-
-        # Current status is not equal
         if self.status != status and update:
             self.add_comment("Label", _(status))
             self.db_set("status", status, update_modified=True)
+    #     if self.is_new():
+    #         if self.get("amended_from"):
+    #             self.status = "Draft"
+    #         return
+
+    #     # Newly submitted is Pending
+    #     if self.status == "Draft":
+    #         self.status = "Pending"
+
+    #     # Current status is not equal
+        
 
     def set_items_warehouse(self):
         for item in self.items:
@@ -75,6 +78,12 @@ def make_stock_entry(source_name, target_doc=None):
         target.pb_repack_request = source.name
         target.run_method("calculate_rate_and_amount")
         target.set_job_card_data()
+        # print(source.name)
+        # print(target)
+        # repackdoc = frappe.get_doc("Repack Request",source.name)
+        # print(repackdoc.name)
+        # repackdoc.db_set("stock_entry",target.name)
+
 
     doclist = get_mapped_doc(
         "Repack Request",
@@ -120,7 +129,7 @@ def make_stock_entry(source_name, target_doc=None):
 @frappe.whitelist()
 def get_item_details(args):
     args = process_args(args)
-    print(args)
+    # print(args)
     item = frappe.get_cached_doc("Item", args.item_code)
     _validate_item_details(args, item)
     return _get_basic_details(args, item)

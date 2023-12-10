@@ -405,6 +405,8 @@ def get_conversion_factor(item_code, uom):
 
 @frappe.whitelist()
 def get_item_rate(item_code, uom, price_list="Standard Selling"):
+    if not item_code:
+        frappe.throw("Please Enter Item")
     get_price = compose(
         lambda x: x[1] if x else None,
         excepts(StopIteration, first, lambda __: None),
