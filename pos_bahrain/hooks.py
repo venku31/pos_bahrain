@@ -103,6 +103,7 @@ fixtures = [
                     "Mode of Payment-pb_alt_col",
                     "Mode of Payment-pb_bank_method",
                     "POS Profile-pb_max_discount",
+					"POS Profile-pos_abbreviation", 
                     "Sales Invoice Payment-pos_section",
                     "Sales Invoice Payment-mop_currency",
                     "Sales Invoice Payment-cb11",
@@ -291,11 +292,15 @@ fixtures = [
                     "Sales Order Item-discount_percentage-depends_on",
                     "Payment Entry Reference-total_amount-in_list_view",
                     "Sales Invoice-customer_name-default",
+					"POS Profile-pos_abbreviation-reqd",
+                    "POS Profile-pos_abbreviation-unique"
                 ],
             ]
         ],
     },
 ]
+
+after_migrate = "pos_bahrain.install.after_install"
 
 # Home Pages
 # ----------
