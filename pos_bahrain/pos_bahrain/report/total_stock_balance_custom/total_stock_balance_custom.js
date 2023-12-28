@@ -66,6 +66,13 @@ frappe.query_reports["Total Stock Balance Custom"] = {
 			}
 		},
 		{
+			"fieldname": "supplier",
+			"label": __("Supplier"),
+			"fieldtype": "Link",
+			"width": "80",
+			"options": "Supplier"
+		},
+		{
 			"fieldname": "warehouse_type",
 			"label": __("Warehouse Type"),
 			"fieldtype": "Link",

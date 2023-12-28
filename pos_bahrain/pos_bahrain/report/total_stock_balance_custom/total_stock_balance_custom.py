@@ -57,6 +57,21 @@ def execute(filters=None):
 			expiry_date = ""
 			supplier  = ""
 			expiry_in_days = ""
+			standard_buying = 0 
+			standard_selling = 0  
+
+			# Fetch data from Item doctype
+			item_doc = frappe.get_all("Item Price",filters = {"item_code":item})
+			for i in item_doc:
+				itemdoc = frappe.get_doc("Item Price",i.name)
+				if itemdoc:
+										
+					if itemdoc.buying == 1:
+						standard_buying = itemdoc.price_list_rate
+					
+					if itemdoc.selling == 1:
+						standard_selling = itemdoc.price_list_rate
+
 			if batch_no:
 				batch_doc = frappe.get_doc("Batch", batch_no)
 				if batch_doc:
@@ -75,6 +90,8 @@ def execute(filters=None):
 				'expiry_date':expiry_date,
 				'supplier':supplier,
 				'expiry_in_days':expiry_in_days,
+				'standard_buying': standard_buying,
+                'standard_selling': standard_selling, 
 			}
 			report_data.update(item_map[item])
 			report_data.update(qty_dict)
@@ -127,11 +144,13 @@ def get_columns(filters):
 		{"label": _("Reorder Level"), "fieldname": "reorder_level", "fieldtype": "Float", "width": 80, "convertible": "qty"},
 		{"label": _("Reorder Qty"), "fieldname": "reorder_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
 		{"label": _("Company"), "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 100},
-		{"label": _("Batch No"), "fieldname": "batch_no", "fieldtype": "Data", "width": 100},
+		{"label": _("Batch No"), "fieldname": "batch_no", "fieldtype": "Link","options": "Batch", "width": 100},
 		{"label": _("Expiry Date"), "fieldname": "expiry_date", "fieldtype": "Date", "width": 100},
 		{"label": _("Expiry in Days"), "fieldname": "expiry_in_days", "fieldtype": "Int", "width": 100},
 		{"label": _("Batch Quantity"), "fieldname": "batch_quantity", "fieldtype": "Float", "width": 100},
-		{"label": _("Supplier"), "fieldname": "supplier", "fieldtype": "Link", "options": "Supplier", "width": 100},	
+		{"label": _("Supplier"), "fieldname": "supplier", "fieldtype": "Link", "options": "Supplier", "width": 100},
+		{"label": _("Standard Buying"), "fieldname": "standard_buying", "fieldtype": "Currency", "width": 100, "options": "currency"},
+        {"label": _("Standard Selling"), "fieldname": "standard_selling", "fieldtype": "Currency", "width": 100, "options": "currency"},	
 	]
 
 	if filters.get('show_stock_ageing_data'):
@@ -168,6 +187,10 @@ def get_conditions(filters):
 	if filters.get("warehouse_type") and not filters.get("warehouse"):
 		conditions += " and exists (select name from `tabWarehouse` wh \
 			where wh.warehouse_type = '%s' and sle.warehouse = wh.name)"%(filters.get("warehouse_type"))
+	
+	if filters.get("supplier"):
+		conditions += " and exists (select name from `tabBatch` batch \
+            where batch.supplier = %s and sle.batch_no = batch.name)" % frappe.db.escape(filters.get("supplier"))
 
 	return conditions
 
