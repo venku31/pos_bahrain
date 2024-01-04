@@ -199,71 +199,51 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 		// })
 	},
 	create_invoice: function () {
-		// alert("custom");
-	
 		var me = this;
 		var invoice_data = {};
-	
 		function get_barcode_uri(text) {
 			return JsBarcode(document.createElement('canvas'), text, {
 				height: 40,
 				displayValue: false,
 			})._renderProperties.element.toDataURL();
 		}
-	
 		this.si_docs = this.get_doc_from_localstorage();
-	
-		var userAbbreviation = frappe.session.user.substr(0, 3).toUpperCase();
-	
 		if (this.frm.doc.offline_pos_name) {
 			this.update_invoice();
 		} else {
-			frappe.model.with_doc("POS Profile", this.pos_profile_data['name'], function () {
-				var pos_profile_doc = frappe.get_doc("POS Profile", me.pos_profile_data['name']);
-	
-				var posAbbreviation = pos_profile_doc.pos_abbreviation;
-	
-				if (!posAbbreviation) {
-					frappe.throw("Please add POS Abbreviation in the POS Profile.");
-				}
-	
-				var currentDateTime = frappe.datetime.now_datetime().replace(/[-: ]/g, ''); 
-	
-				me.frm.doc.offline_pos_name = userAbbreviation + posAbbreviation + currentDateTime;
-				me.frm.doc.pos_name_barcode_uri = get_barcode_uri(me.frm.doc.offline_pos_name);
-	
-				me.frm.doc.posting_date = frappe.datetime.get_today();
-				me.frm.doc.posting_time = frappe.datetime.now_time();
-				me.frm.doc.pos_total_qty = me.frm.doc.qty_total;
-	
-				if (me.customer_doc) {
-					me.frm.doc.phone = me.customer_doc.get_values().phone || " ";
-					me.frm.doc.customer_name = me.customer_doc.get_values().full_name || " ";
-					me.frm.doc.email_id = me.customer_doc.get_values().email_id || " ";
-					me.frm.doc.city = me.customer_doc.get_values().city || " ";
-					me.frm.doc.state = me.customer_doc.get_values().state || " ";
-					me.frm.doc.address_line1 = me.customer_doc.get_values().address_line1 || " ";
-					me.frm.doc.address_line2 = me.customer_doc.get_values().address_line2 || " ";
-				} else {
-					me.frm.doc.phone = " ";
-					me.frm.doc.customer_name = me.frm.doc.customer;
-					me.frm.doc.email_id = " ";
-					me.frm.doc.city = " ";
-					me.frm.doc.state = " ";
-					me.frm.doc.address_line1 = " ";
-					me.frm.doc.address_line2 = " ";
-				}
-	
-				me.frm.doc.pos_profile = me.pos_profile_data['name'];
-				me.frm.doc.pb_set_cost_center = me.pos_profile_data['write_off_cost_center'];
-	
-				invoice_data[me.frm.doc.offline_pos_name] = me.frm.doc;
-				me.si_docs.push(invoice_data);
-				me.update_localstorage();
-				me.set_primary_action();
-			});
+			this.frm.doc.offline_pos_name = $.now();
+			this.frm.doc.pos_name_barcode_uri = get_barcode_uri(
+				this.frm.doc.offline_pos_name
+			);
+			this.frm.doc.posting_date = frappe.datetime.get_today();
+			this.frm.doc.posting_time = frappe.datetime.now_time();
+			this.frm.doc.pos_total_qty = this.frm.doc.qty_total;
+			//   this.frm.doc.email_id = this.frm.doc.email_id;
+			if (this.customer_doc) {
+				this.frm.doc.phone = this.customer_doc.get_values().phone || " ";
+				this.frm.doc.customer_name = this.customer_doc.get_values().full_name || " ";
+				this.frm.doc.email_id = this.customer_doc.get_values().email_id || " ";
+				this.frm.doc.city = this.customer_doc.get_values().city || " ";
+				this.frm.doc.state = this.customer_doc.get_values().state || " ";
+				this.frm.doc.address_line1 = this.customer_doc.get_values().address_line1 || " ";
+				this.frm.doc.address_line2 = this.customer_doc.get_values().address_line2 || " ";
+			}
+			else {
+				this.frm.doc.phone = " ";
+				this.frm.doc.customer_name = this.frm.doc.customer;
+				this.frm.doc.email_id = " ";
+				this.frm.doc.city = " ";
+				this.frm.doc.state = " ";
+				this.frm.doc.address_line1 = " ";
+				this.frm.doc.address_line2 = " ";
+			};
+			this.frm.doc.pos_profile = this.pos_profile_data['name'];
+			this.frm.doc.pb_set_cost_center = this.pos_profile_data['write_off_cost_center'];
+			invoice_data[this.frm.doc.offline_pos_name] = this.frm.doc;
+			this.si_docs.push(invoice_data);
+			this.update_localstorage();
+			this.set_primary_action();
 		}
-	
 		return invoice_data;
 	},
 	sync_sales_invoice: function () {
