@@ -1,6 +1,3 @@
-# Copyright (c) 2024, Indictrans and contributors
-# For license information, please see license.txt
-
 from __future__ import unicode_literals
 import frappe
 from frappe import _
@@ -57,17 +54,16 @@ def get_data(filters):
             pi.posting_date AS posting_date, 
             pi.supplier AS supplier, 
             pii.uom AS stock_uom, 
-            item_tax.gst_rate AS vat_rate,  
+            item_tax_detail.tax_rate AS vat_rate, 
             SUM(CASE WHEN pii.rate = 0 THEN pii.qty ELSE 0 END) AS bonus_qty,
             SUM(CASE WHEN pii.rate > 0 THEN pii.qty ELSE 0 END) AS paid_qty,
             SUM(pii.qty) AS total_qty, 
-            pii.rate AS rate,
-            pii.amount AS amount,
+            max_rate.rate AS rate,
+            max_rate.amount AS amount,
             pi.taxes_and_charges_added AS total_tax, 
             pi.grand_total AS grand_total,
             pi.company AS company,
-            # pii.item_tax_template AS item_tax_template,  
-            (pii.amount * item_tax.gst_rate / 100) AS vat_amount  
+            (max_rate.amount * item_tax_detail.tax_rate / 100) AS vat_amount  
         FROM
             `tabPurchase Invoice Item` pii
         JOIN
@@ -76,8 +72,22 @@ def get_data(filters):
             `tabItem` item ON pii.item_code = item.name
         LEFT JOIN
             `tabItem Tax Template` item_tax ON pii.item_tax_template = item_tax.name
+        LEFT JOIN
+            `tabItem Tax Template Detail` item_tax_detail ON item_tax_detail.parent = item_tax.name  
+        LEFT JOIN (
+            SELECT
+                item_code,
+                MAX(rate) AS rate,
+                MAX(amount) AS amount
+            FROM
+                `tabPurchase Invoice Item`
+            WHERE
+                rate > 0
+            GROUP BY
+                item_code
+        ) max_rate ON pii.item_code = max_rate.item_code
         WHERE
-            pi.docstatus = 1 {0}
+            pi.docstatus = 1
         GROUP BY
             pii.item_code, pi.name;
     """.format(conditions)
@@ -85,4 +95,3 @@ def get_data(filters):
     data = frappe.db.sql(sql_query, as_dict=True)
 
     return data
-
