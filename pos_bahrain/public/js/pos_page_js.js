@@ -200,7 +200,7 @@ erpnext.pos.PointOfSale = erpnext.pos.PointOfSale.extend({
 	},
 	create_invoice: function () {
 		// alert("custom");
-	
+		
 		var me = this;
 		var invoice_data = {};
 	
