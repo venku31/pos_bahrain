@@ -10,7 +10,7 @@ def execute(filters=None):
         {"label": _("Description"), "fieldname": "description", "fieldtype": "Data", "width": 120}, 
         {"label": _("Invoice Name"), "fieldname": "invoice_name", "fieldtype": "Link", "options": "Purchase Invoice", "width": 130},
         {"label": _("Posting Date"), "fieldname": "posting_date", "fieldtype": "Date", "width": 120}, 
-        {"label": _("Supplier"), "fieldname": "supplier", "fieldtype": "Link", "options": "Supplier", "width": 120}, 
+        {"label": _("Supplier"), "fieldname": "default_supplier", "fieldtype": "Link", "options": "Supplier", "width": 120}, 
         {"label": _("Stock UOM"), "fieldname": "stock_uom", "fieldtype": "Data", "width": 120}, 
         {"label": _("Bonus Quantity"), "fieldname": "bonus_qty", "fieldtype": "Float", "width": 120},
         {"label": _("Paid Quantity"), "fieldname": "paid_qty", "fieldtype": "Float", "width": 120},
@@ -40,11 +40,13 @@ def get_data(filters):
     if filters.get("invoice"):
         conditions += " AND pi.name = '{}'".format(filters["invoice"])
     if filters.get("supplier"):
-        conditions += " AND pi.supplier = '{}'".format(filters["supplier"])
+        conditions += " AND default_supplier = '{}'".format(filters["supplier"])
     if filters.get("company"):
         conditions += " AND pi.company = '{}'".format(filters["company"])
 
-    sql_query = """
+    where_clause = " WHERE pi.docstatus = 1" + conditions if conditions else ""
+
+    sql_query = f"""
         SELECT
             pii.item_code AS item_code,
             pii.item_name AS item_name,            
@@ -52,7 +54,7 @@ def get_data(filters):
             pii.description AS description, 
             pi.name AS invoice_name,
             pi.posting_date AS posting_date, 
-            pi.supplier AS supplier, 
+            item_default.default_supplier AS default_supplier,
             pii.uom AS stock_uom, 
             item_tax_detail.tax_rate AS vat_rate, 
             SUM(CASE WHEN pii.rate = 0 THEN pii.qty ELSE 0 END) AS bonus_qty,
@@ -86,11 +88,12 @@ def get_data(filters):
             GROUP BY
                 item_code
         ) max_rate ON pii.item_code = max_rate.item_code
-        WHERE
-            pi.docstatus = 1
+        LEFT JOIN
+            `tabItem Default` item_default ON item_default.parent = pii.item_code
+        {where_clause}
         GROUP BY
             pii.item_code, pi.name;
-    """.format(conditions)
+    """
 
     data = frappe.db.sql(sql_query, as_dict=True)
 
